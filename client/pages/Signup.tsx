@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus, Check, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, UserPlus, Check, X, Shield } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ export default function Signup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
-  const { signup, isFirebaseConnected } = useAuth();
+  const { signup, isFirebaseConnected, isDevelopmentMode } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -115,6 +115,19 @@ export default function Signup() {
   const getFieldError = (field: string) => validationErrors[field];
   const hasFieldError = (field: string) => !!validationErrors[field];
 
+  // Get authentication mode for display
+  const getAuthMode = () => {
+    if (isDevelopmentMode && !isFirebaseConnected) {
+      return { label: 'Mock Auth', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Shield };
+    } else if (isFirebaseConnected) {
+      return { label: 'Firebase', color: 'bg-green-100 text-green-700 border-green-200', icon: Check };
+    } else {
+      return { label: 'Offline Mode', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Shield };
+    }
+  };
+
+  const authMode = getAuthMode();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -134,23 +147,10 @@ export default function Signup() {
             <div className="flex justify-center mb-2">
               <Badge 
                 variant="secondary"
-                className={`flex items-center gap-1 ${
-                  isFirebaseConnected 
-                    ? 'bg-green-100 text-green-700 border-green-200' 
-                    : 'bg-blue-100 text-blue-700 border-blue-200'
-                }`}
+                className={`flex items-center gap-1 ${authMode.color}`}
               >
-                {isFirebaseConnected ? (
-                  <>
-                    <Check className="h-3 w-3" />
-                    Firebase Connected
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-3 w-3" />
-                    Demo Mode Active
-                  </>
-                )}
+                <authMode.icon className="h-3 w-3" />
+                {authMode.label}
               </Badge>
             </div>
 
@@ -165,12 +165,21 @@ export default function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Demo Mode Info */}
-            {!isFirebaseConnected && (
+            {/* Mode Info */}
+            {isDevelopmentMode && !isFirebaseConnected && (
               <Alert className="mb-4 border-blue-200 bg-blue-50">
-                <Check className="h-4 w-4 text-blue-600" />
+                <Shield className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-700">
-                  <strong>Demo Mode:</strong> Create accounts instantly for testing. All features are fully functional.
+                  <strong>Development Mode:</strong> Using secure mock authentication. All features are fully functional for testing.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {isFirebaseConnected && (
+              <Alert className="mb-4 border-green-200 bg-green-50">
+                <Check className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-700">
+                  <strong>Firebase Connected:</strong> Using real Firebase authentication and database.
                 </AlertDescription>
               </Alert>
             )}
@@ -322,12 +331,12 @@ export default function Signup() {
               </p>
             </div>
 
-            {/* Quick Test Info */}
-            {!isFirebaseConnected && (
+            {/* Development/Testing Info */}
+            {isDevelopmentMode && !isFirebaseConnected && (
               <div className="mt-6 p-4 bg-slate-50 rounded-lg border">
-                <h4 className="text-sm font-medium text-slate-900 mb-2">Quick Test</h4>
+                <h4 className="text-sm font-medium text-slate-900 mb-2">🧪 Testing Mode</h4>
                 <p className="text-xs text-slate-600 mb-2">
-                  Try creating an account with any email and password (min 6 characters).
+                  Create accounts instantly with any email and password (min 6 characters).
                 </p>
                 <p className="text-xs text-slate-500">
                   Example: <code>test@example.com</code> with password <code>123456</code>
