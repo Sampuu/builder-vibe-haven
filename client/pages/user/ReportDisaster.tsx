@@ -51,11 +51,13 @@ export default function ReportDisaster() {
     title: '',
     description: '',
     location: '',
+    coordinates: undefined as { lat: number; lng: number } | undefined,
     contactName: user?.name || '',
     contactPhone: '',
     images: [] as string[]
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showMap, setShowMap] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
