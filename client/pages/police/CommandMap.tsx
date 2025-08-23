@@ -89,17 +89,49 @@ export default function CommandMap() {
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <Card>
-              <CardContent className="p-0">
-                <div className="relative bg-slate-100 h-96 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Police Command Map</p>
-                    <p className="text-sm">Real-time unit tracking and incident mapping</p>
-                    <div className="mt-4 space-y-1 text-sm">
-                      <p>• Blue markers: Police units</p>
-                      <p>• Red markers: Active incidents</p>
-                      <p>• Green routes: Navigation paths</p>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Live Incident Map</span>
+                  <Badge variant="secondary">
+                    {disasterReports.length} Active Incidents
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="h-96 flex items-center justify-center bg-slate-50 rounded-lg">
+                    <div className="text-center">
+                      <div className="animate-spin w-8 h-8 border-2 border-slate-400 border-t-transparent rounded-full mx-auto mb-2"></div>
+                      <p className="text-slate-600">Loading incidents...</p>
                     </div>
+                  </div>
+                ) : (
+                  <GoogleMap
+                    center={{ lat: 40.7128, lng: -74.0060 }}
+                    zoom={11}
+                    height="400px"
+                    markers={mapMarkers}
+                    onMapClick={(location) => {
+                      console.log('Map clicked at:', location);
+                    }}
+                  />
+                )}
+                <div className="mt-4 flex items-center space-x-4 text-xs text-slate-600">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <span>Fire Emergencies</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                    <span>Medical Emergencies</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    <span>Police Incidents</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
+                    <span>Other</span>
                   </div>
                 </div>
               </CardContent>
