@@ -45,6 +45,7 @@ export default function ReportDisaster() {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     type: '',
     severity: 'medium',
