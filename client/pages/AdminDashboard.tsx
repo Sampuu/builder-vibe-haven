@@ -1,28 +1,34 @@
-import { useState } from 'react';
-import DashboardLayout from '@/components/DashboardLayout';
-import UserManagement from '@/components/UserManagement';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  AlertTriangle, 
-  Activity, 
-  Shield, 
+import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import UserManagement from "@/components/UserManagement";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Users,
+  AlertTriangle,
+  Activity,
+  Shield,
   Database,
   BarChart3,
   Bell,
   Settings,
   Eye,
-  TrendingUp
-} from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { userDatabase } from '@/lib/userDatabase';
+  TrendingUp,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { userDatabase } from "@/lib/userDatabase";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Get real-time stats
   const stats = userDatabase.getStats();
@@ -31,9 +37,9 @@ export default function AdminDashboard() {
     totalIncidents: 45,
     activeIncidents: 12,
     resolvedToday: 8,
-    responseTime: '4.2 min',
-    systemUptime: '99.8%',
-    totalAlerts: 156
+    responseTime: "4.2 min",
+    systemUptime: "99.8%",
+    totalAlerts: 156,
   };
 
   return (
@@ -52,9 +58,7 @@ export default function AdminDashboard() {
             <Badge variant="secondary" className="bg-red-100 text-red-700">
               Admin Access
             </Badge>
-            <Badge variant="outline">
-              {user?.name}
-            </Badge>
+            <Badge variant="outline">{user?.name}</Badge>
           </div>
         </div>
 
@@ -67,9 +71,13 @@ export default function AdminDashboard() {
                   <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600">Total Users</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    Total Users
+                  </p>
                   <p className="text-2xl font-bold">{stats.totalUsers}</p>
-                  <p className="text-xs text-green-600">+{stats.recentSignups} this week</p>
+                  <p className="text-xs text-green-600">
+                    +{stats.recentSignups} this week
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -82,8 +90,12 @@ export default function AdminDashboard() {
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600">Active Incidents</p>
-                  <p className="text-2xl font-bold">{systemStats.activeIncidents}</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    Active Incidents
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {systemStats.activeIncidents}
+                  </p>
                   <p className="text-xs text-orange-600">-3 from yesterday</p>
                 </div>
               </div>
@@ -97,8 +109,12 @@ export default function AdminDashboard() {
                   <Activity className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600">System Uptime</p>
-                  <p className="text-2xl font-bold">{systemStats.systemUptime}</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    System Uptime
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {systemStats.systemUptime}
+                  </p>
                   <p className="text-xs text-green-600">Excellent</p>
                 </div>
               </div>
@@ -112,8 +128,12 @@ export default function AdminDashboard() {
                   <TrendingUp className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-600">Avg Response</p>
-                  <p className="text-2xl font-bold">{systemStats.responseTime}</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    Avg Response
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {systemStats.responseTime}
+                  </p>
                   <p className="text-xs text-green-600">15% faster</p>
                 </div>
               </div>
@@ -122,7 +142,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
@@ -145,26 +169,36 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">New user registered</p>
-                        <p className="text-xs text-slate-600">police@newuser.com - Police role</p>
+                        <p className="text-sm font-medium">
+                          New user registered
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          police@newuser.com - Police role
+                        </p>
                       </div>
                       <span className="text-xs text-slate-500">2m ago</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
                       <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">Critical incident reported</p>
-                        <p className="text-xs text-slate-600">Fire emergency - Downtown area</p>
+                        <p className="text-sm font-medium">
+                          Critical incident reported
+                        </p>
+                        <p className="text-xs text-slate-600">
+                          Fire emergency - Downtown area
+                        </p>
                       </div>
                       <span className="text-xs text-slate-500">15m ago</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium">Incident resolved</p>
-                        <p className="text-xs text-slate-600">Medical emergency - Hospital dispatch</p>
+                        <p className="text-xs text-slate-600">
+                          Medical emergency - Hospital dispatch
+                        </p>
                       </div>
                       <span className="text-xs text-slate-500">1h ago</span>
                     </div>
@@ -183,28 +217,49 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     {Object.entries(stats.usersByRole).map(([role, count]) => (
-                      <div key={role} className="flex items-center justify-between">
+                      <div
+                        key={role}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            role === 'admin' ? 'bg-red-500' :
-                            role === 'police' ? 'bg-blue-500' :
-                            role === 'fire' ? 'bg-orange-500' :
-                            role === 'ambulance' ? 'bg-green-500' :
-                            role === 'hospital' ? 'bg-cyan-500' : 'bg-gray-500'
-                          }`}></div>
-                          <span className="text-sm font-medium capitalize">{role}</span>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              role === "admin"
+                                ? "bg-red-500"
+                                : role === "police"
+                                  ? "bg-blue-500"
+                                  : role === "fire"
+                                    ? "bg-orange-500"
+                                    : role === "ambulance"
+                                      ? "bg-green-500"
+                                      : role === "hospital"
+                                        ? "bg-cyan-500"
+                                        : "bg-gray-500"
+                            }`}
+                          ></div>
+                          <span className="text-sm font-medium capitalize">
+                            {role}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
+                            <div
                               className={`h-2 rounded-full ${
-                                role === 'admin' ? 'bg-red-500' :
-                                role === 'police' ? 'bg-blue-500' :
-                                role === 'fire' ? 'bg-orange-500' :
-                                role === 'ambulance' ? 'bg-green-500' :
-                                role === 'hospital' ? 'bg-cyan-500' : 'bg-gray-500'
+                                role === "admin"
+                                  ? "bg-red-500"
+                                  : role === "police"
+                                    ? "bg-blue-500"
+                                    : role === "fire"
+                                      ? "bg-orange-500"
+                                      : role === "ambulance"
+                                        ? "bg-green-500"
+                                        : role === "hospital"
+                                          ? "bg-cyan-500"
+                                          : "bg-gray-500"
                               }`}
-                              style={{ width: `${Math.max((count / stats.totalUsers) * 100, 5)}%` }}
+                              style={{
+                                width: `${Math.max((count / stats.totalUsers) * 100, 5)}%`,
+                              }}
                             ></div>
                           </div>
                           <span className="text-sm font-bold w-8">{count}</span>
@@ -265,7 +320,9 @@ export default function AdminDashboard() {
                 <div className="text-center py-8">
                   <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600">Incident management interface</p>
-                  <p className="text-sm text-gray-500">Real-time incident tracking and response coordination</p>
+                  <p className="text-sm text-gray-500">
+                    Real-time incident tracking and response coordination
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -287,23 +344,33 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">Emergency Notifications</h4>
-                      <p className="text-sm text-gray-600">Real-time alerts for critical incidents</p>
+                      <p className="text-sm text-gray-600">
+                        Real-time alerts for critical incidents
+                      </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-700">Enabled</Badge>
+                    <Badge className="bg-green-100 text-green-700">
+                      Enabled
+                    </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">Auto-Backup</h4>
-                      <p className="text-sm text-gray-600">Automatic data backup every 5 minutes</p>
+                      <p className="text-sm text-gray-600">
+                        Automatic data backup every 5 minutes
+                      </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-700">Active</Badge>
+                    <Badge className="bg-green-100 text-green-700">
+                      Active
+                    </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">Development Mode</h4>
-                      <p className="text-sm text-gray-600">Enhanced debugging and testing features</p>
+                      <p className="text-sm text-gray-600">
+                        Enhanced debugging and testing features
+                      </p>
                     </div>
                     <Badge className="bg-blue-100 text-blue-700">Enabled</Badge>
                   </div>

@@ -5,6 +5,7 @@
 The app now works in **two modes**:
 
 ### 1. 🔥 **Demo Mode** (Current - Working!)
+
 - ✅ **No Firebase setup required**
 - ✅ **All features work normally**
 - ✅ **Uses local storage for data**
@@ -15,6 +16,7 @@ The app now works in **two modes**:
 To connect to real Firebase (optional):
 
 #### Step 1: Create Firebase Project
+
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Create a new project called `disaster-management-system`
 3. Enable Authentication with Email/Password
@@ -22,11 +24,13 @@ To connect to real Firebase (optional):
 5. Enable Cloud Functions
 
 #### Step 2: Get Configuration
+
 1. Go to Project Settings → General → Your apps
 2. Click "Web" and register your app
 3. Copy the Firebase config object
 
 #### Step 3: Update Config
+
 Replace the config in `client/lib/firebase.ts`:
 
 ```typescript
@@ -36,11 +40,12 @@ const firebaseConfig = {
   projectId: "your-project-id",
   storageBucket: "your-project.appspot.com",
   messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  appId: "your-app-id",
 };
 ```
 
 #### Step 4: Deploy (Optional)
+
 ```bash
 # Install Firebase CLI
 npm install -g firebase-tools
@@ -65,6 +70,7 @@ firebase deploy --only hosting
 The app is **fully functional** right now in demo mode:
 
 ### ✅ **Working Features:**
+
 - ✅ Authentication (signup/login) with role-based access
 - ✅ Real-time disaster reporting
 - ✅ Emergency alerts and notifications
@@ -74,6 +80,7 @@ The app is **fully functional** right now in demo mode:
 - ✅ News and bulletin system
 
 ### 🔧 **Demo Credentials:**
+
 - **User:** `user@demo.com` / `demo123`
 - **Police:** `police@demo.com` / `demo123`
 - **Fire:** `fire@demo.com` / `demo123`
@@ -91,6 +98,7 @@ The app is **fully functional** right now in demo mode:
 ## 🔧 **Development**
 
 ### Run with Firebase Emulators (Optional)
+
 ```bash
 # Install dependencies
 npm install -g firebase-tools
@@ -103,6 +111,7 @@ firebase emulators:start
 ```
 
 ### Local Development
+
 ```bash
 # Just run the app - no Firebase needed!
 pnpm dev
@@ -111,6 +120,7 @@ pnpm dev
 ## 🎉 **Result**
 
 Your disaster management system is **100% functional** with:
+
 - Enterprise-grade authentication
 - Real-time emergency coordination
 - Role-based dashboards

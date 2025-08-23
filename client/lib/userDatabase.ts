@@ -1,4 +1,4 @@
-import { UserRole } from '@/hooks/use-auth';
+import { UserRole } from "@/hooks/use-auth";
 
 export interface UserRecord {
   id: string;
@@ -32,8 +32,8 @@ class UserDatabaseService {
   private static instance: UserDatabaseService;
   private users: Map<string, UserRecord> = new Map();
   private emailIndex: Map<string, string> = new Map(); // email -> userId mapping
-  private storageKey = 'disaster-management-users';
-  private backupKey = 'disaster-management-users-backup';
+  private storageKey = "disaster-management-users";
+  private backupKey = "disaster-management-users-backup";
 
   constructor() {
     this.loadFromStorage();
@@ -55,11 +55,11 @@ class UserDatabaseService {
         const data = JSON.parse(stored);
         this.users = new Map(data.users || []);
         this.emailIndex = new Map(data.emailIndex || []);
-        
+
         console.log(`📊 Loaded ${this.users.size} users from database`);
       }
     } catch (error) {
-      console.error('Failed to load user database:', error);
+      console.error("Failed to load user database:", error);
       this.createBackup();
     }
   }
@@ -70,17 +70,18 @@ class UserDatabaseService {
         users: Array.from(this.users.entries()),
         emailIndex: Array.from(this.emailIndex.entries()),
         lastSaved: new Date().toISOString(),
-        version: '1.0'
+        version: "1.0",
       };
-      
+
       localStorage.setItem(this.storageKey, JSON.stringify(data));
-      
+
       // Create periodic backup
-      if (Math.random() < 0.1) { // 10% chance to backup
+      if (Math.random() < 0.1) {
+        // 10% chance to backup
         this.createBackup();
       }
     } catch (error) {
-      console.error('Failed to save user database:', error);
+      console.error("Failed to save user database:", error);
     }
   }
 
@@ -89,38 +90,71 @@ class UserDatabaseService {
       const current = localStorage.getItem(this.storageKey);
       if (current) {
         localStorage.setItem(this.backupKey, current);
-        console.log('📦 User database backup created');
+        console.log("📦 User database backup created");
       }
     } catch (error) {
-      console.error('Failed to create backup:', error);
+      console.error("Failed to create backup:", error);
     }
   }
 
   private setupAutoBackup() {
     // Auto-backup every 5 minutes
-    setInterval(() => {
-      this.createBackup();
-    }, 5 * 60 * 1000);
+    setInterval(
+      () => {
+        this.createBackup();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   private initializeDemoUsers() {
     const demoUsers = [
-      { email: 'user@demo.com', password: 'demo123', name: 'Demo User', role: 'user' as UserRole },
-      { email: 'police@demo.com', password: 'demo123', name: 'Police Officer', role: 'police' as UserRole },
-      { email: 'fire@demo.com', password: 'demo123', name: 'Fire Fighter', role: 'fire' as UserRole },
-      { email: 'ambulance@demo.com', password: 'demo123', name: 'Paramedic', role: 'ambulance' as UserRole },
-      { email: 'hospital@demo.com', password: 'demo123', name: 'Hospital Staff', role: 'hospital' as UserRole },
-      { email: 'admin@demo.com', password: 'demo123', name: 'System Admin', role: 'admin' as UserRole },
+      {
+        email: "user@demo.com",
+        password: "demo123",
+        name: "Demo User",
+        role: "user" as UserRole,
+      },
+      {
+        email: "police@demo.com",
+        password: "demo123",
+        name: "Police Officer",
+        role: "police" as UserRole,
+      },
+      {
+        email: "fire@demo.com",
+        password: "demo123",
+        name: "Fire Fighter",
+        role: "fire" as UserRole,
+      },
+      {
+        email: "ambulance@demo.com",
+        password: "demo123",
+        name: "Paramedic",
+        role: "ambulance" as UserRole,
+      },
+      {
+        email: "hospital@demo.com",
+        password: "demo123",
+        name: "Hospital Staff",
+        role: "hospital" as UserRole,
+      },
+      {
+        email: "admin@demo.com",
+        password: "demo123",
+        name: "System Admin",
+        role: "admin" as UserRole,
+      },
     ];
 
     let addedUsers = 0;
-    demoUsers.forEach(demoUser => {
+    demoUsers.forEach((demoUser) => {
       if (!this.emailIndex.has(demoUser.email)) {
         this.createUser({
           email: demoUser.email,
           password: demoUser.password,
           name: demoUser.name,
-          role: demoUser.role
+          role: demoUser.role,
         });
         addedUsers++;
       }
@@ -143,12 +177,12 @@ class UserDatabaseService {
   }): UserRecord {
     // Check if email already exists
     if (this.emailIndex.has(userData.email.toLowerCase())) {
-      throw new Error('An account with this email already exists');
+      throw new Error("An account with this email already exists");
     }
 
     // Validate password
     if (userData.password.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
+      throw new Error("Password must be at least 6 characters long");
     }
 
     const now = new Date().toISOString();
@@ -169,8 +203,8 @@ class UserDatabaseService {
       preferences: {
         notifications: true,
         darkMode: false,
-        language: 'en'
-      }
+        language: "en",
+      },
     };
 
     this.users.set(userId, user);
@@ -182,27 +216,33 @@ class UserDatabaseService {
   }
 
   // Authenticate user
-  authenticateUser(email: string, password: string, expectedRole?: UserRole): UserRecord {
+  authenticateUser(
+    email: string,
+    password: string,
+    expectedRole?: UserRole,
+  ): UserRecord {
     const userId = this.emailIndex.get(email.toLowerCase());
     if (!userId) {
-      throw new Error('No account found with this email address');
+      throw new Error("No account found with this email address");
     }
 
     const user = this.users.get(userId);
     if (!user) {
-      throw new Error('User data corrupted');
+      throw new Error("User data corrupted");
     }
 
     if (!user.isActive) {
-      throw new Error('Account is disabled');
+      throw new Error("Account is disabled");
     }
 
     if (user.password !== password) {
-      throw new Error('Incorrect password');
+      throw new Error("Incorrect password");
     }
 
     if (expectedRole && user.role !== expectedRole) {
-      throw new Error(`Role mismatch. This account is registered as ${user.role}, not ${expectedRole}`);
+      throw new Error(
+        `Role mismatch. This account is registered as ${user.role}, not ${expectedRole}`,
+      );
     }
 
     // Update login info
@@ -230,7 +270,7 @@ class UserDatabaseService {
   updateUser(userId: string, updates: Partial<UserRecord>): UserRecord {
     const user = this.users.get(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     // Prevent changing critical fields
@@ -261,67 +301,73 @@ class UserDatabaseService {
 
   // Get all users (admin function)
   getAllUsers(): UserRecord[] {
-    return Array.from(this.users.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    return Array.from(this.users.values()).sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   }
 
   // Get users by role
   getUsersByRole(role: UserRole): UserRecord[] {
-    return Array.from(this.users.values()).filter(user => user.role === role);
+    return Array.from(this.users.values()).filter((user) => user.role === role);
   }
 
   // Search users
   searchUsers(query: string): UserRecord[] {
     const searchTerm = query.toLowerCase();
-    return Array.from(this.users.values()).filter(user =>
-      user.name.toLowerCase().includes(searchTerm) ||
-      user.email.toLowerCase().includes(searchTerm) ||
-      user.role.toLowerCase().includes(searchTerm)
+    return Array.from(this.users.values()).filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm) ||
+        user.email.toLowerCase().includes(searchTerm) ||
+        user.role.toLowerCase().includes(searchTerm),
     );
   }
 
   // Get database statistics
   getStats(): UserDatabaseStats {
     const allUsers = Array.from(this.users.values());
-    const activeUsers = allUsers.filter(user => user.isActive);
-    
+    const activeUsers = allUsers.filter((user) => user.isActive);
+
     const usersByRole = {
       user: 0,
       police: 0,
       fire: 0,
       ambulance: 0,
       hospital: 0,
-      admin: 0
+      admin: 0,
     } as Record<UserRole, number>;
 
-    allUsers.forEach(user => {
+    allUsers.forEach((user) => {
       usersByRole[user.role]++;
     });
 
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const recentSignups = allUsers.filter(user => user.createdAt > oneWeekAgo).length;
+    const oneWeekAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    const recentSignups = allUsers.filter(
+      (user) => user.createdAt > oneWeekAgo,
+    ).length;
 
     return {
       totalUsers: allUsers.length,
       activeUsers: activeUsers.length,
       usersByRole,
       recentSignups,
-      lastBackup: localStorage.getItem(this.backupKey) ? 'Available' : 'None'
+      lastBackup: localStorage.getItem(this.backupKey) ? "Available" : "None",
     };
   }
 
   // Export user data (for admin)
   exportUsers(): string {
     const data = {
-      users: this.getAllUsers().map(user => ({
+      users: this.getAllUsers().map((user) => ({
         ...user,
-        password: '[REDACTED]' // Don't export passwords
+        password: "[REDACTED]", // Don't export passwords
       })),
       stats: this.getStats(),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
-    
+
     return JSON.stringify(data, null, 2);
   }
 
@@ -330,18 +376,18 @@ class UserDatabaseService {
     try {
       const data = JSON.parse(jsonData);
       let imported = 0;
-      
+
       if (data.users && Array.isArray(data.users)) {
         data.users.forEach((userData: any) => {
           try {
             if (!this.emailIndex.has(userData.email)) {
               this.createUser({
                 email: userData.email,
-                password: userData.password || 'temp123',
+                password: userData.password || "temp123",
                 name: userData.name,
                 role: userData.role,
                 phoneNumber: userData.phoneNumber,
-                department: userData.department
+                department: userData.department,
               });
               imported++;
             }
@@ -350,11 +396,11 @@ class UserDatabaseService {
           }
         });
       }
-      
+
       this.saveToStorage();
       return imported;
     } catch (error) {
-      throw new Error('Invalid import data format');
+      throw new Error("Invalid import data format");
     }
   }
 
@@ -364,8 +410,8 @@ class UserDatabaseService {
     this.emailIndex.clear();
     localStorage.removeItem(this.storageKey);
     localStorage.removeItem(this.backupKey);
-    console.log('🧹 User database cleared');
-    
+    console.log("🧹 User database cleared");
+
     // Re-initialize demo users
     this.initializeDemoUsers();
   }

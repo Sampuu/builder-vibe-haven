@@ -5,8 +5,8 @@
  * This script configures the environment for development mode
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 const envContent = `# Development Mode Configuration
 VITE_USE_MOCK_AUTH=false
@@ -26,7 +26,7 @@ VITE_DEBUG_AUTH=true
 `;
 
 // Write .env.local file to override defaults
-fs.writeFileSync('.env.local', envContent);
+fs.writeFileSync(".env.local", envContent);
 
 console.log(`
 🚀 DEVELOPMENT MODE ACTIVATED!

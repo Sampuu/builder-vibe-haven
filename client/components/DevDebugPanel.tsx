@@ -1,24 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
-  Settings, 
-  Database, 
-  Zap, 
-  User, 
-  ChevronDown, 
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Settings,
+  Database,
+  Zap,
+  User,
+  ChevronDown,
   ChevronUp,
   RefreshCw,
   Eye,
   EyeOff,
   Wifi,
   WifiOff,
-  Bug
-} from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { devUtils, isDevelopmentMode, isUsingEmulators, isFirebaseAvailable } from '@/lib/firebase';
+  Bug,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  devUtils,
+  isDevelopmentMode,
+  isUsingEmulators,
+  isFirebaseAvailable,
+} from "@/lib/firebase";
 
 interface DevDebugPanelProps {
   className?: string;
@@ -35,26 +50,26 @@ export default function DevDebugPanel({ className = "" }: DevDebugPanelProps) {
     if (isDevelopmentMode()) {
       // Get initial status
       updateStatus();
-      
+
       // Capture console logs for debugging
       const originalLog = console.log;
       const originalError = console.error;
       const originalWarn = console.warn;
 
       console.log = (...args) => {
-        if (args[0]?.includes?.('[DEV]')) {
-          setLogs(prev => [...prev.slice(-19), args.join(' ')]);
+        if (args[0]?.includes?.("[DEV]")) {
+          setLogs((prev) => [...prev.slice(-19), args.join(" ")]);
         }
         originalLog(...args);
       };
 
       console.error = (...args) => {
-        setLogs(prev => [...prev.slice(-19), `ERROR: ${args.join(' ')}`]);
+        setLogs((prev) => [...prev.slice(-19), `ERROR: ${args.join(" ")}`]);
         originalError(...args);
       };
 
       console.warn = (...args) => {
-        setLogs(prev => [...prev.slice(-19), `WARN: ${args.join(' ')}`]);
+        setLogs((prev) => [...prev.slice(-19), `WARN: ${args.join(" ")}`]);
         originalWarn(...args);
       };
 
@@ -108,7 +123,10 @@ export default function DevDebugPanel({ className = "" }: DevDebugPanelProps) {
                   <CardTitle className="text-sm">Dev Debug Panel</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-yellow-400 text-yellow-400">
+                  <Badge
+                    variant="outline"
+                    className="border-yellow-400 text-yellow-400"
+                  >
                     DEV
                   </Badge>
                   <Button
@@ -176,9 +194,15 @@ export default function DevDebugPanel({ className = "" }: DevDebugPanelProps) {
                 </h4>
                 {user ? (
                   <div className="text-xs bg-slate-800 p-2 rounded">
-                    <div><strong>Email:</strong> {user.email}</div>
-                    <div><strong>Role:</strong> {user.role}</div>
-                    <div><strong>ID:</strong> {user.id}</div>
+                    <div>
+                      <strong>Email:</strong> {user.email}
+                    </div>
+                    <div>
+                      <strong>Role:</strong> {user.role}
+                    </div>
+                    <div>
+                      <strong>ID:</strong> {user.id}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-xs text-gray-400">No user logged in</div>
@@ -193,10 +217,20 @@ export default function DevDebugPanel({ className = "" }: DevDebugPanelProps) {
                     System Status
                   </h4>
                   <div className="text-xs bg-slate-800 p-2 rounded space-y-1">
-                    <div><strong>Mode:</strong> {status.mode}</div>
-                    <div><strong>Environment:</strong> {status.environment}</div>
-                    <div><strong>Firebase:</strong> {status.firebaseInitialized ? '✅' : '❌'}</div>
-                    <div><strong>Emulators:</strong> {status.emulatorsConnected ? '✅' : '❌'}</div>
+                    <div>
+                      <strong>Mode:</strong> {status.mode}
+                    </div>
+                    <div>
+                      <strong>Environment:</strong> {status.environment}
+                    </div>
+                    <div>
+                      <strong>Firebase:</strong>{" "}
+                      {status.firebaseInitialized ? "✅" : "❌"}
+                    </div>
+                    <div>
+                      <strong>Emulators:</strong>{" "}
+                      {status.emulatorsConnected ? "✅" : "❌"}
+                    </div>
                   </div>
                 </div>
               )}
@@ -208,7 +242,9 @@ export default function DevDebugPanel({ className = "" }: DevDebugPanelProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open('http://localhost:4000', '_blank')}
+                    onClick={() =>
+                      window.open("http://localhost:4000", "_blank")
+                    }
                     className="text-xs h-8 bg-slate-800 border-slate-600 hover:bg-slate-700"
                   >
                     Emulator UI

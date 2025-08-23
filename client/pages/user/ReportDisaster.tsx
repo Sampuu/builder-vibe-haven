@@ -1,25 +1,31 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import DisasterReportForm from '@/components/DisasterReportForm';
-import RealTimeAlerts from '@/components/RealTimeAlerts';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  AlertTriangle, 
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import DisasterReportForm from "@/components/DisasterReportForm";
+import RealTimeAlerts from "@/components/RealTimeAlerts";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertTriangle,
   ArrowLeft,
   Phone,
   Shield,
   Clock,
-  MapPin
-} from 'lucide-react';
+  MapPin,
+} from "lucide-react";
 
 export default function ReportDisaster() {
   const navigate = useNavigate();
 
   const handleSubmitSuccess = () => {
     // Could navigate somewhere or show additional UI
-    console.log('Report submitted successfully');
+    console.log("Report submitted successfully");
   };
 
   return (
@@ -27,7 +33,7 @@ export default function ReportDisaster() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/user')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/user")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
@@ -36,7 +42,10 @@ export default function ReportDisaster() {
               <AlertTriangle className="mr-3 h-8 w-8 text-emergency-danger" />
               Report Emergency
             </h1>
-            <p className="text-slate-600">Report fires, accidents, medical emergencies, and other incidents with real-time tracking</p>
+            <p className="text-slate-600">
+              Report fires, accidents, medical emergencies, and other incidents
+              with real-time tracking
+            </p>
           </div>
         </div>
 
@@ -44,14 +53,16 @@ export default function ReportDisaster() {
         <Alert className="border-emergency-danger bg-emergency-danger/5">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-emergency-danger font-medium">
-            <strong>FOR LIFE-THREATENING EMERGENCIES:</strong> Call 911 immediately before filling out this form. This system provides additional coordination but should not replace emergency calls.
+            <strong>FOR LIFE-THREATENING EMERGENCIES:</strong> Call 911
+            immediately before filling out this form. This system provides
+            additional coordination but should not replace emergency calls.
           </AlertDescription>
         </Alert>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Report Form */}
           <div className="lg:col-span-2">
-            <DisasterReportForm 
+            <DisasterReportForm
               onSubmitSuccess={handleSubmitSuccess}
               className="mb-6"
             />
@@ -60,7 +71,7 @@ export default function ReportDisaster() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Real-time Alerts */}
-            <RealTimeAlerts 
+            <RealTimeAlerts
               showDisasterRequests={true}
               showNewsAlerts={true}
               maxAlerts={3}
@@ -80,28 +91,43 @@ export default function ReportDisaster() {
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emergency-danger rounded-full mt-2 flex-shrink-0"></div>
                     <div className="text-sm">
-                      <strong className="text-emergency-danger">Life-threatening emergencies:</strong> Call 911 immediately and follow their instructions
+                      <strong className="text-emergency-danger">
+                        Life-threatening emergencies:
+                      </strong>{" "}
+                      Call 911 immediately and follow their instructions
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emergency-warning rounded-full mt-2 flex-shrink-0"></div>
                     <div className="text-sm">
-                      <strong className="text-emergency-warning">Location accuracy:</strong> Provide exact addresses, landmarks, or GPS coordinates when possible
+                      <strong className="text-emergency-warning">
+                        Location accuracy:
+                      </strong>{" "}
+                      Provide exact addresses, landmarks, or GPS coordinates
+                      when possible
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emergency-info rounded-full mt-2 flex-shrink-0"></div>
                     <div className="text-sm">
-                      <strong className="text-emergency-info">Personal safety:</strong> Only take photos or videos if it's completely safe to do so
+                      <strong className="text-emergency-info">
+                        Personal safety:
+                      </strong>{" "}
+                      Only take photos or videos if it's completely safe to do
+                      so
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-emergency-resolved rounded-full mt-2 flex-shrink-0"></div>
                     <div className="text-sm">
-                      <strong className="text-emergency-resolved">Follow up:</strong> Emergency responders may contact you for additional information
+                      <strong className="text-emergency-resolved">
+                        Follow up:
+                      </strong>{" "}
+                      Emergency responders may contact you for additional
+                      information
                     </div>
                   </div>
                 </div>
@@ -128,33 +154,43 @@ export default function ReportDisaster() {
                   <Phone className="mr-2 h-5 w-5 text-green-600" />
                   Emergency Contacts
                 </CardTitle>
-                <CardDescription>Quick access to emergency services</CardDescription>
+                <CardDescription>
+                  Quick access to emergency services
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-emergency-danger/5 rounded-lg border border-emergency-danger/20">
                   <div>
-                    <div className="font-medium text-emergency-danger">Emergency Services</div>
-                    <div className="text-sm text-slate-600">Police, Fire, Medical</div>
+                    <div className="font-medium text-emergency-danger">
+                      Emergency Services
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      Police, Fire, Medical
+                    </div>
                   </div>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     size="sm"
-                    onClick={() => window.open('tel:911')}
+                    onClick={() => window.open("tel:911")}
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     911
                   </Button>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div>
-                    <div className="font-medium text-blue-700">Non-Emergency Police</div>
-                    <div className="text-sm text-slate-600">For non-urgent situations</div>
+                    <div className="font-medium text-blue-700">
+                      Non-Emergency Police
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      For non-urgent situations
+                    </div>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => window.open('tel:311')}
+                    onClick={() => window.open("tel:311")}
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     311
@@ -163,13 +199,17 @@ export default function ReportDisaster() {
 
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                   <div>
-                    <div className="font-medium text-green-700">Poison Control</div>
-                    <div className="text-sm text-slate-600">24/7 poison emergencies</div>
+                    <div className="font-medium text-green-700">
+                      Poison Control
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      24/7 poison emergencies
+                    </div>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => window.open('tel:1-800-222-1222')}
+                    onClick={() => window.open("tel:1-800-222-1222")}
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call
@@ -190,13 +230,17 @@ export default function ReportDisaster() {
               <CardContent>
                 <div className="text-sm text-muted-foreground space-y-2">
                   <p>
-                    <strong>Enable location services</strong> in your browser to automatically populate your current location in emergency reports.
+                    <strong>Enable location services</strong> in your browser to
+                    automatically populate your current location in emergency
+                    reports.
                   </p>
                   <p>
-                    This helps emergency responders reach you faster and more accurately.
+                    This helps emergency responders reach you faster and more
+                    accurately.
                   </p>
                   <div className="mt-3 p-2 bg-blue-50 rounded text-xs">
-                    <strong>Privacy:</strong> Your location is only used during emergency reporting and is not stored permanently.
+                    <strong>Privacy:</strong> Your location is only used during
+                    emergency reporting and is not stored permanently.
                   </div>
                 </div>
               </CardContent>
