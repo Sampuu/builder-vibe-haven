@@ -26,16 +26,17 @@ interface SafeInteractiveMapProps {
   showUserLocation?: boolean;
 }
 
+// Import static placeholder
+import StaticMapPlaceholder from './StaticMapPlaceholder';
+
 // Lazy load the actual map component to prevent React context issues
-const LazyInteractiveMap = React.lazy(() => 
+const LazyInteractiveMap = React.lazy(() =>
   import('./InteractiveMap').then(module => ({
     default: module.default
   })).catch((error) => {
-    console.warn('Failed to load map component:', error);
+    console.warn('Failed to load interactive map, using static placeholder:', error);
     return {
-      default: ({ incidents, height = '400px', onIncidentClick }: SafeInteractiveMapProps) => (
-        <MapFallback incidents={incidents} height={height} onIncidentClick={onIncidentClick} />
-      )
+      default: StaticMapPlaceholder
     };
   })
 );
@@ -108,7 +109,7 @@ const SafeInteractiveMap: React.FC<SafeInteractiveMapProps> = (props) => {
   }
 
   if (hasError) {
-    return <MapFallback {...props} />;
+    return <StaticMapPlaceholder {...props} />;
   }
 
   return (
