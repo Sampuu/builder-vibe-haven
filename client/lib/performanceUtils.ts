@@ -1,4 +1,5 @@
 // Performance utilities to monitor and prevent excessive updates
+import { useEffect } from 'react';
 
 export class PerformanceMonitor {
   private static renderCounts: Map<string, number> = new Map();
@@ -88,9 +89,9 @@ export function throttle<T extends (...args: any[]) => any>(
 
 // Hook for performance monitoring in React components
 export function usePerformanceMonitor(componentName: string) {
-  React.useEffect(() => {
+  useEffect(() => {
     const shouldRender = PerformanceMonitor.trackRender(componentName);
-    
+
     if (!shouldRender) {
       console.warn(`Skipping render for ${componentName} due to performance constraints`);
     }
@@ -100,6 +101,3 @@ export function usePerformanceMonitor(componentName: string) {
     };
   });
 }
-
-// React import for the hook
-import React from 'react';
