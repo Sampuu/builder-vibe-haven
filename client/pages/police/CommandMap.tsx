@@ -1,16 +1,19 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import {
+  Map,
   ArrowLeft,
   MapPin,
   Shield,
   Radio,
   Navigation
 } from 'lucide-react';
+import GoogleMap from '@/components/GoogleMap';
+import { disasterReportsService, DisasterReport } from '@/services/firestore';
 
 const activeUnits = [
   { id: 'Unit 12', status: 'responding', location: 'Highway 101', incident: 'Traffic Accident' },
