@@ -12,6 +12,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useInitializeData } from "@/hooks/use-data";
+import { useDashboardIntegration } from "@/hooks/use-dashboard-integration";
 
 // Pages
 import Index from "./pages/Index";
@@ -54,9 +55,10 @@ import SupplyRequests from "./pages/hospital/SupplyRequests";
 
 const queryClient = new QueryClient();
 
-// Data initialization component
+// Data initialization component with dashboard integration
 function DataInitializer({ children }: { children: React.ReactNode }) {
   useInitializeData();
+  useDashboardIntegration(); // Enable real-time dashboard communication
   return <>{children}</>;
 }
 

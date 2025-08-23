@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import SimpleNotificationCenter from '@/components/SimpleNotificationCenter';
+import DashboardStatus from '@/components/DashboardStatus';
 import {
   AlertTriangle,
   LogOut,
