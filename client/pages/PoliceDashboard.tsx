@@ -97,9 +97,9 @@ export default function PoliceDashboard() {
                 <AlertTriangle className="mr-2 h-5 w-5 text-emergency-danger" />
                 All Active Incidents
               </span>
-              <Button variant="danger" size="sm">
+              <Button variant="danger" size="sm" onClick={() => navigate('/police/incidents')}>
                 <Users className="mr-2 h-4 w-4" />
-                Request Help
+                View All
               </Button>
             </CardTitle>
             <CardDescription>
