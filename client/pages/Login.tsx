@@ -1,55 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login } = useAuth();
+
+  const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    if (user) {
+      navigate(`/dashboard/${user.role}`);
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
-    } else {
+    const success = await login(email, password);
+
+    if (!success) {
       setError('Invalid credentials. Please try again.');
     }
-    
+
     setIsSubmitting(false);
   };
-
-  const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
