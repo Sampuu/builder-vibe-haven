@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useIncidents, useInitializeData } from '@/hooks/use-data';
 import InteractiveMap, { type MapIncident } from '@/components/InteractiveMap';
+import { MapErrorBoundary, useResizeObserverErrorSuppression } from '@/components/MapErrorBoundary';
 import {
   Map,
   ArrowLeft,
@@ -23,6 +24,9 @@ export default function ViewMap() {
   const { toast } = useToast();
   const { incidents, loading, error, refresh } = useIncidents();
   const dataInitialized = useInitializeData();
+
+  // Suppress ResizeObserver errors
+  useResizeObserverErrorSuppression();
   const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('all');

@@ -16,14 +16,30 @@ export default function NotificationCenter() {
   const { notifications, unreadCount, markAsRead, refresh } = useNotifications(user?.id || '');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Auto-refresh notifications every 30 seconds
+  // Auto-refresh notifications every 30 seconds, but only when component is visible
   useEffect(() => {
-    const interval = setInterval(() => {
-      refresh();
-    }, 30000);
+    let interval: number | null = null;
 
-    return () => clearInterval(interval);
-  }, [refresh]);
+    const startInterval = () => {
+      if (interval) clearInterval(interval);
+      interval = window.setInterval(() => {
+        // Only refresh if the notification center is not open to avoid layout shifts
+        if (!isOpen) {
+          refresh();
+        }
+      }, 30000);
+    };
+
+    // Start the interval
+    startInterval();
+
+    // Cleanup function
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [refresh, isOpen]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
