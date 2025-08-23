@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signOut,
-  User as FirebaseUser 
-} from 'firebase/auth';
-import { auth, isFirebaseAvailable, isUsingMockAuth, isDevelopmentMode, devUtils } from '@/lib/firebase';
-import { firestoreService, UserProfile } from '@/lib/firestore';
+import { userDatabase, UserRecord } from '@/lib/userDatabase';
+import { isDevelopmentMode } from '@/lib/firebase';
 
 export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
 
@@ -44,80 +37,94 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Enhanced mock authentication service
-class MockAuthService {
-  private users: Map<string, User & { password: string }> = new Map();
+// Convert UserRecord to User interface
+const userRecordToUser = (record: UserRecord): User => ({
+  id: record.id,
+  email: record.email,
+  name: record.name,
+  role: record.role,
+  phoneNumber: record.phoneNumber,
+  department: record.department
+});
+
+// Session management
+class SessionManager {
+  private static instance: SessionManager;
   private currentUser: User | null = null;
   private listeners: ((user: User | null) => void)[] = [];
+  private sessionKey = 'disaster-management-session';
 
   constructor() {
-    // Load from localStorage
-    this.loadFromStorage();
-    
-    // Add demo users if they don't exist
-    this.initializeDemoUsers();
-    
-    if (isDevelopmentMode()) {
-      devUtils.log('Mock authentication service initialized');
-    }
+    this.loadSession();
   }
 
-  private loadFromStorage() {
+  static getInstance(): SessionManager {
+    if (!SessionManager.instance) {
+      SessionManager.instance = new SessionManager();
+    }
+    return SessionManager.instance;
+  }
+
+  private loadSession() {
     try {
-      const stored = localStorage.getItem('mock-auth-users');
+      const stored = localStorage.getItem(this.sessionKey);
       if (stored) {
-        const userData = JSON.parse(stored);
-        this.users = new Map(userData.users || []);
-        this.currentUser = userData.currentUser || null;
+        const sessionData = JSON.parse(stored);
+        
+        // Check if session is still valid (24 hours)
+        const expiresAt = new Date(sessionData.expiresAt);
+        if (expiresAt > new Date()) {
+          this.currentUser = sessionData.user;
+          console.log('📋 Session restored:', this.currentUser?.email);
+        } else {
+          this.clearSession();
+          console.log('⏰ Session expired, cleared');
+        }
       }
-    } catch (e) {
-      console.warn('Failed to load mock auth data');
+    } catch (error) {
+      console.error('Failed to load session:', error);
+      this.clearSession();
     }
   }
 
-  private saveToStorage() {
+  private saveSession() {
     try {
-      localStorage.setItem('mock-auth-users', JSON.stringify({
-        users: Array.from(this.users.entries()),
-        currentUser: this.currentUser
-      }));
-    } catch (e) {
-      console.warn('Failed to save mock auth data');
+      if (this.currentUser) {
+        const sessionData = {
+          user: this.currentUser,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        };
+        localStorage.setItem(this.sessionKey, JSON.stringify(sessionData));
+      } else {
+        this.clearSession();
+      }
+    } catch (error) {
+      console.error('Failed to save session:', error);
     }
   }
 
-  private initializeDemoUsers() {
-    const demoUsers = [
-      { email: 'user@demo.com', password: 'demo123', name: 'Demo User', role: 'user' as UserRole },
-      { email: 'police@demo.com', password: 'demo123', name: 'Police Officer', role: 'police' as UserRole },
-      { email: 'fire@demo.com', password: 'demo123', name: 'Fire Fighter', role: 'fire' as UserRole },
-      { email: 'ambulance@demo.com', password: 'demo123', name: 'Paramedic', role: 'ambulance' as UserRole },
-      { email: 'hospital@demo.com', password: 'demo123', name: 'Hospital Staff', role: 'hospital' as UserRole },
-      { email: 'admin@demo.com', password: 'demo123', name: 'System Admin', role: 'admin' as UserRole },
-    ];
+  private clearSession() {
+    localStorage.removeItem(this.sessionKey);
+    this.currentUser = null;
+  }
 
-    demoUsers.forEach(demoUser => {
-      if (!this.users.has(demoUser.email)) {
-        const user: User & { password: string } = {
-          id: `demo-${demoUser.role}`,
-          email: demoUser.email,
-          name: demoUser.name,
-          role: demoUser.role,
-          password: demoUser.password
-        };
-        this.users.set(demoUser.email, user);
-      }
-    });
+  setUser(user: User | null) {
+    this.currentUser = user;
+    this.saveSession();
+    this.notifyListeners();
+  }
 
-    this.saveToStorage();
+  getUser(): User | null {
+    return this.currentUser;
   }
 
   private notifyListeners() {
     this.listeners.forEach(listener => {
       try {
         listener(this.currentUser);
-      } catch (e) {
-        console.error('Error in auth listener:', e);
+      } catch (error) {
+        console.error('Error in auth listener:', error);
       }
     });
   }
@@ -132,225 +139,27 @@ class MockAuthService {
     };
   }
 
-  async signUp(email: string, password: string, name: string, role: UserRole, phoneNumber?: string): Promise<boolean> {
-    if (isDevelopmentMode()) {
-      devUtils.log(`Mock signup attempt: ${email}, role: ${role}`);
-    }
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    if (this.users.has(email)) {
-      throw new Error('An account with this email already exists');
-    }
-
-    if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
-    }
-
-    const user: User & { password: string } = {
-      id: `mock-${Date.now()}`,
-      email,
-      name,
-      role,
-      phoneNumber,
-      password
-    };
-
-    this.users.set(email, user);
-    this.currentUser = { ...user };
-    delete (this.currentUser as any).password; // Remove password from current user
-    this.saveToStorage();
-    this.notifyListeners();
-    
-    if (isDevelopmentMode()) {
-      devUtils.log(`Mock signup successful: ${email}`);
-    }
-    
-    return true;
-  }
-
-  async signIn(email: string, password: string, expectedRole?: UserRole): Promise<boolean> {
-    if (isDevelopmentMode()) {
-      devUtils.log(`Mock login attempt: ${email}, expected role: ${expectedRole}`);
-    }
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const user = this.users.get(email);
-    if (!user) {
-      throw new Error('No account found with this email address');
-    }
-
-    if (user.password !== password) {
-      throw new Error('Incorrect password');
-    }
-
-    if (expectedRole && user.role !== expectedRole) {
-      throw new Error(`Role mismatch. This account is registered as ${user.role}, not ${expectedRole}`);
-    }
-
-    this.currentUser = { ...user };
-    delete (this.currentUser as any).password; // Remove password from current user
-    this.saveToStorage();
-    this.notifyListeners();
-    
-    if (isDevelopmentMode()) {
-      devUtils.log(`Mock login successful: ${email}, role: ${user.role}`);
-    }
-    
-    return true;
-  }
-
-  async signOut(): Promise<void> {
-    if (isDevelopmentMode()) {
-      devUtils.log('Mock logout');
-    }
-    
-    this.currentUser = null;
-    this.saveToStorage();
-    this.notifyListeners();
-  }
-
-  getCurrentUser(): User | null {
-    return this.currentUser;
+  logout() {
+    this.setUser(null);
+    console.log('👋 User logged out');
   }
 }
 
-const mockAuth = new MockAuthService();
+const sessionManager = SessionManager.getInstance();
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
 
   useEffect(() => {
-    // Check if we should use Firebase or mock auth
-    const shouldUseFirebase = isFirebaseAvailable() && !isUsingMockAuth();
-    setIsFirebaseConnected(shouldUseFirebase);
-
-    if (isDevelopmentMode()) {
-      devUtils.log(`Auth provider initialized - Firebase: ${shouldUseFirebase}, Mock: ${!shouldUseFirebase}`);
-    }
-
-    let unsubscribe: (() => void) | undefined;
-
-    if (shouldUseFirebase && auth) {
-      if (isDevelopmentMode()) {
-        devUtils.log('Using Firebase authentication');
-      }
-      
-      // Use Firebase authentication
-      unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-        if (firebaseUser) {
-          try {
-            // Get user profile from Firestore
-            const profileDoc = await firestoreService.getUserProfile(firebaseUser.uid);
-            
-            if (profileDoc.exists()) {
-              const profileData = profileDoc.data() as UserProfile;
-              setUser({
-                id: firebaseUser.uid,
-                email: firebaseUser.email!,
-                name: profileData.name,
-                role: profileData.role,
-                phoneNumber: profileData.phoneNumber,
-                department: profileData.department
-              });
-              
-              if (isDevelopmentMode()) {
-                devUtils.log(`Firebase user loaded: ${firebaseUser.email}, role: ${profileData.role}`);
-              }
-            } else {
-              // If no profile exists, user might be incomplete
-              setUser({
-                id: firebaseUser.uid,
-                email: firebaseUser.email!,
-                name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
-                role: 'user' // Default role
-              });
-              
-              if (isDevelopmentMode()) {
-                devUtils.log(`Firebase user loaded without profile: ${firebaseUser.email}`);
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-          if (isDevelopmentMode()) {
-            devUtils.log('Firebase user signed out');
-          }
-        }
-        setIsLoading(false);
-      });
-    } else {
-      if (isDevelopmentMode()) {
-        devUtils.log('Using mock authentication');
-      }
-      
-      // Use mock authentication
-      unsubscribe = mockAuth.onAuthStateChanged((mockUser) => {
-        setUser(mockUser);
-        setIsLoading(false);
-      });
-    }
-
-    return () => unsubscribe?.();
-  }, []);
-
-  const login = async (email: string, password: string, role?: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    
-    try {
-      if (isFirebaseConnected && auth) {
-        if (isDevelopmentMode()) {
-          devUtils.log(`Firebase login attempt: ${email}`);
-        }
-        
-        // Firebase authentication
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
-
-        // Get or create user profile
-        const profileDoc = await firestoreService.getUserProfile(firebaseUser.uid);
-        
-        if (profileDoc.exists()) {
-          const profileData = profileDoc.data() as UserProfile;
-          
-          // If role is provided, verify it matches the stored role
-          if (role && profileData.role !== role) {
-            await signOut(auth);
-            setIsLoading(false);
-            throw new Error(`Role mismatch. This account is registered as ${profileData.role}, not ${role}`);
-          }
-
-          // Update last login
-          await firestoreService.updateUserProfile(firebaseUser.uid, {
-            lastLoginAt: new Date() as any
-          });
-        }
-
-        setIsLoading(false);
-        return true;
-      } else {
-        // Mock authentication
-        await mockAuth.signIn(email, password, role);
-        setIsLoading(false);
-        return true;
-      }
-    } catch (error: any) {
-      if (isDevelopmentMode()) {
-        devUtils.log(`Login failed: ${error.message}`);
-      }
-      
+    // Subscribe to auth state changes
+    const unsubscribe = sessionManager.onAuthStateChanged((user) => {
+      setUser(user);
       setIsLoading(false);
-      throw error; // Re-throw to let the UI handle the error message
-    }
-  };
+    });
+
+    return unsubscribe;
+  }, []);
 
   const signup = async (
     email: string, 
@@ -362,49 +171,75 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     
     try {
-      if (isFirebaseConnected && auth) {
-        if (isDevelopmentMode()) {
-          devUtils.log(`Firebase signup attempt: ${email}, role: ${role}`);
-        }
-        
-        // Firebase authentication
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
-
-        // Create user profile in Firestore
-        await firestoreService.createUserProfile(firebaseUser.uid, {
-          email: firebaseUser.email!,
-          name,
-          role,
-          phoneNumber,
-          isActive: true
-        });
-
-        setIsLoading(false);
-        return true;
-      } else {
-        // Mock authentication
-        await mockAuth.signUp(email, password, name, role, phoneNumber);
-        setIsLoading(false);
-        return true;
-      }
-    } catch (error: any) {
-      if (isDevelopmentMode()) {
-        devUtils.log(`Signup failed: ${error.message}`);
-      }
+      console.log('🔄 Starting instant signup process...');
       
+      // Validate input immediately
+      if (!email || !password || !name || !role) {
+        throw new Error('All required fields must be filled');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Create user in database (instant)
+      const userRecord = userDatabase.createUser({
+        email,
+        password,
+        name,
+        role,
+        phoneNumber
+      });
+
+      // Set current user (instant)
+      const newUser = userRecordToUser(userRecord);
+      sessionManager.setUser(newUser);
+
+      console.log('✅ Instant signup completed:', email);
       setIsLoading(false);
-      throw error; // Re-throw to let the UI handle the error message
+      return true;
+    } catch (error: any) {
+      console.error('❌ Signup failed:', error.message);
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
+  const login = async (email: string, password: string, role?: UserRole): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      console.log('🔄 Starting instant login process...');
+      
+      // Validate input immediately
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      // Authenticate user (instant)
+      const userRecord = userDatabase.authenticateUser(email, password, role);
+
+      // Set current user (instant)
+      const loginUser = userRecordToUser(userRecord);
+      sessionManager.setUser(loginUser);
+
+      console.log('✅ Instant login completed:', email);
+      setIsLoading(false);
+      return true;
+    } catch (error: any) {
+      console.error('❌ Login failed:', error.message);
+      setIsLoading(false);
+      throw error;
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      if (isFirebaseConnected && auth) {
-        await signOut(auth);
-      } else {
-        await mockAuth.signOut();
-      }
+      sessionManager.logout();
       setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -417,9 +252,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signup,
     logout,
     isLoading,
-    isFirebaseConnected,
+    isFirebaseConnected: false, // Always use local database
     isDevelopmentMode: isDevelopmentMode(),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// Export user database for admin functions
+export { userDatabase };
