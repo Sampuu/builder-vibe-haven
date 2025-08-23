@@ -212,6 +212,11 @@ export default function ReportDisaster() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
                   {/* Emergency Type */}
                   <div className="space-y-2">
                     <Label htmlFor="type">Emergency Type *</Label>
