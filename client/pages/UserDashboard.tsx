@@ -1,34 +1,33 @@
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  AlertTriangle, 
-  MapPin, 
-  Phone, 
-  Plus, 
+import {
+  AlertTriangle,
+  MapPin,
+  Phone,
+  Plus,
   Newspaper,
   Map
 } from 'lucide-react';
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
+
   const handleReportDisaster = () => {
-    // TODO: Open disaster reporting form
-    console.log('Opening disaster report form');
+    navigate('/user/report');
   };
 
   const handleRequestHelp = () => {
-    // TODO: Open medical help request form
-    console.log('Opening help request form');
+    navigate('/user/help');
   };
 
   const handleViewMap = () => {
-    // TODO: Open map view
-    console.log('Opening map view');
+    navigate('/user/map');
   };
 
   const handleNews = () => {
-    // TODO: Open news portal
-    console.log('Opening news portal');
+    navigate('/user/news');
   };
 
   return (
