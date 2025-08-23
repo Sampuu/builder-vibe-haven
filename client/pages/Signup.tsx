@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, UserPlus, Wifi, WifiOff, Cloud } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { signup } = useAuth();
+  const { signup, isFirebaseConnected } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -35,7 +36,7 @@ export default function Signup() {
 
     // Validation
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+      setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
     }
@@ -52,23 +53,28 @@ export default function Signup() {
       return;
     }
 
-    // Create account with Firebase
-    const success = await signup(
-      formData.email, 
-      formData.password, 
-      formData.name, 
-      formData.role,
-      formData.phoneNumber || undefined
-    );
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${formData.role}`);
-    } else {
-      setError('Failed to create account. Please check your information and try again.');
+    try {
+      // Create account with Firebase or mock service
+      const success = await signup(
+        formData.email, 
+        formData.password, 
+        formData.name, 
+        formData.role,
+        formData.phoneNumber || undefined
+      );
+      
+      if (success) {
+        // Redirect to appropriate dashboard based on role
+        navigate(`/dashboard/${formData.role}`);
+      } else {
+        setError('Failed to create account. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError(err.message || 'Failed to create account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const roleOptions = [
@@ -95,6 +101,30 @@ export default function Signup() {
 
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center">
+            {/* Connection Status */}
+            <div className="flex justify-center mb-2">
+              <Badge 
+                variant={isFirebaseConnected ? "secondary" : "outline"}
+                className={`flex items-center gap-1 ${
+                  isFirebaseConnected 
+                    ? 'bg-green-100 text-green-700 border-green-200' 
+                    : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                }`}
+              >
+                {isFirebaseConnected ? (
+                  <>
+                    <Cloud className="h-3 w-3" />
+                    Firebase Connected
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-3 w-3" />
+                    Demo Mode
+                  </>
+                )}
+              </Badge>
+            </div>
+
             <div className="flex justify-center mb-4">
               <div className="bg-emergency-info/10 p-3 rounded-full">
                 <UserPlus className="h-8 w-8 text-emergency-info" />
@@ -106,15 +136,26 @@ export default function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Connection Info */}
+            {!isFirebaseConnected && (
+              <Alert className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong>Demo Mode:</strong> Running with local storage. All features work normally for testing.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input
                   id="name"
                   type="text"
@@ -126,7 +167,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -149,7 +190,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role">Role *</Label>
                 <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />
@@ -168,7 +209,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password *</Label>
                 <Input
                   id="password"
                   type="password"
@@ -181,7 +222,7 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Confirm Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -222,6 +263,16 @@ export default function Signup() {
                 </Button>
               </p>
             </div>
+
+            {/* Development Info */}
+            {!isFirebaseConnected && (
+              <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-900 mb-1">Development Mode</h4>
+                <p className="text-xs text-blue-700">
+                  To connect to Firebase, set up your project and run: <code>firebase emulators:start</code>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
