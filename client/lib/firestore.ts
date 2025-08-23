@@ -11,9 +11,10 @@ import {
   orderBy, 
   onSnapshot,
   Timestamp,
-  GeoPoint
+  GeoPoint,
+  setDoc
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, isFirebaseAvailable } from './firebase';
 import { UserRole } from '@/hooks/use-auth';
 
 // Firestore Types
@@ -119,110 +120,336 @@ export const collections = {
   auditLogs: 'audit_logs'
 };
 
+// Mock data store for when Firebase is unavailable
+class MockFirestoreService {
+  private data: Map<string, Map<string, any>> = new Map();
+  private listeners: Map<string, ((data: any[]) => void)[]> = new Map();
+
+  constructor() {
+    // Initialize collections
+    Object.values(collections).forEach(collectionName => {
+      this.data.set(collectionName, new Map());
+      this.listeners.set(collectionName, []);
+    });
+
+    // Load from localStorage
+    this.loadFromStorage();
+
+    // Add some sample data
+    this.addSampleData();
+  }
+
+  private saveToStorage() {
+    try {
+      const serialized = {};
+      this.data.forEach((docs, collection) => {
+        serialized[collection] = Array.from(docs.entries());
+      });
+      localStorage.setItem('mock-firestore', JSON.stringify(serialized));
+    } catch (e) {
+      console.warn('Failed to save mock data to localStorage');
+    }
+  }
+
+  private loadFromStorage() {
+    try {
+      const stored = localStorage.getItem('mock-firestore');
+      if (stored) {
+        const data = JSON.parse(stored);
+        Object.keys(data).forEach(collection => {
+          if (this.data.has(collection)) {
+            this.data.set(collection, new Map(data[collection]));
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to load mock data from localStorage');
+    }
+  }
+
+  private addSampleData() {
+    // Add sample news alerts if none exist
+    const newsCollection = this.data.get(collections.news)!;
+    if (newsCollection.size === 0) {
+      const sampleAlert = {
+        id: 'sample-1',
+        title: 'System Online - Mock Mode',
+        content: 'The disaster management system is running in demo mode. Firebase is not connected, but all features are functional for testing.',
+        type: 'info',
+        priority: 'low',
+        publishedBy: 'system',
+        publishedAt: { toDate: () => new Date() },
+        isActive: true,
+        targetRoles: ['user', 'police', 'fire', 'ambulance', 'hospital', 'admin']
+      };
+      newsCollection.set('sample-1', sampleAlert);
+      this.saveToStorage();
+    }
+  }
+
+  private notifyListeners(collectionName: string) {
+    const listeners = this.listeners.get(collectionName) || [];
+    const collectionData = this.data.get(collectionName);
+    if (collectionData) {
+      const docs = Array.from(collectionData.values());
+      listeners.forEach(callback => callback(docs));
+    }
+  }
+
+  async addDoc(collectionName: string, data: any) {
+    const id = `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const collection = this.data.get(collectionName);
+    if (collection) {
+      collection.set(id, { ...data, id });
+      this.saveToStorage();
+      this.notifyListeners(collectionName);
+    }
+    return { id };
+  }
+
+  async getDoc(collectionName: string, docId: string) {
+    const collection = this.data.get(collectionName);
+    const doc = collection?.get(docId);
+    return {
+      exists: () => !!doc,
+      data: () => doc
+    };
+  }
+
+  async getDocs(collectionName: string) {
+    const collection = this.data.get(collectionName);
+    const docs = Array.from(collection?.values() || []);
+    return {
+      docs: docs.map(doc => ({
+        id: doc.id,
+        data: () => doc
+      }))
+    };
+  }
+
+  async updateDoc(collectionName: string, docId: string, updates: any) {
+    const collection = this.data.get(collectionName);
+    const existingDoc = collection?.get(docId);
+    if (existingDoc) {
+      collection.set(docId, { ...existingDoc, ...updates });
+      this.saveToStorage();
+      this.notifyListeners(collectionName);
+    }
+  }
+
+  onSnapshot(collectionName: string, callback: (docs: any[]) => void) {
+    const listeners = this.listeners.get(collectionName) || [];
+    listeners.push(callback);
+    this.listeners.set(collectionName, listeners);
+
+    // Immediately call with current data
+    const collection = this.data.get(collectionName);
+    if (collection) {
+      callback(Array.from(collection.values()));
+    }
+
+    // Return unsubscribe function
+    return () => {
+      const currentListeners = this.listeners.get(collectionName) || [];
+      this.listeners.set(collectionName, currentListeners.filter(l => l !== callback));
+    };
+  }
+}
+
+const mockFirestore = new MockFirestoreService();
+
 // Helper functions for Firestore operations
 export const firestoreService = {
   // Disaster Requests
   async createDisasterRequest(data: Omit<DisasterRequest, 'id' | 'createdAt' | 'updatedAt'>) {
-    const now = Timestamp.now();
-    return await addDoc(collection(db, collections.disasters), {
+    const now = new Date();
+    const requestData = {
       ...data,
-      createdAt: now,
-      updatedAt: now
-    });
+      createdAt: { toDate: () => now },
+      updatedAt: { toDate: () => now }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      const firestoreNow = Timestamp.now();
+      return await addDoc(collection(db, collections.disasters), {
+        ...data,
+        createdAt: firestoreNow,
+        updatedAt: firestoreNow
+      });
+    } else {
+      return await mockFirestore.addDoc(collections.disasters, requestData);
+    }
   },
 
   async getDisasterRequests() {
-    const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
-    return await getDocs(q);
+    if (isFirebaseAvailable() && db) {
+      const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
+      return await getDocs(q);
+    } else {
+      return await mockFirestore.getDocs(collections.disasters);
+    }
   },
 
   async updateDisasterRequest(id: string, updates: Partial<DisasterRequest>) {
-    const docRef = doc(db, collections.disasters, id);
-    return await updateDoc(docRef, {
+    const updateData = {
       ...updates,
-      updatedAt: Timestamp.now()
-    });
+      updatedAt: isFirebaseAvailable() ? Timestamp.now() : { toDate: () => new Date() }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      const docRef = doc(db, collections.disasters, id);
+      return await updateDoc(docRef, updateData);
+    } else {
+      return await mockFirestore.updateDoc(collections.disasters, id, updateData);
+    }
   },
 
   // News & Alerts
   async createNewsAlert(data: Omit<NewsAlert, 'id' | 'publishedAt'>) {
-    return await addDoc(collection(db, collections.news), {
+    const alertData = {
       ...data,
-      publishedAt: Timestamp.now()
-    });
+      publishedAt: isFirebaseAvailable() ? Timestamp.now() : { toDate: () => new Date() }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      return await addDoc(collection(db, collections.news), alertData);
+    } else {
+      return await mockFirestore.addDoc(collections.news, alertData);
+    }
   },
 
   async getActiveNews() {
-    const q = query(
-      collection(db, collections.news), 
-      where('isActive', '==', true),
-      orderBy('publishedAt', 'desc')
-    );
-    return await getDocs(q);
+    if (isFirebaseAvailable() && db) {
+      const q = query(
+        collection(db, collections.news), 
+        where('isActive', '==', true),
+        orderBy('publishedAt', 'desc')
+      );
+      return await getDocs(q);
+    } else {
+      // Mock implementation - filter active news
+      const allNews = await mockFirestore.getDocs(collections.news);
+      const activeDocs = allNews.docs.filter(doc => doc.data().isActive);
+      return { docs: activeDocs };
+    }
   },
 
   // Hospital Supplies
   async createSupplyRequest(data: Omit<HospitalSupplyRequest, 'id' | 'requestedAt'>) {
-    return await addDoc(collection(db, collections.supplies), {
+    const requestData = {
       ...data,
-      requestedAt: Timestamp.now()
-    });
+      requestedAt: isFirebaseAvailable() ? Timestamp.now() : { toDate: () => new Date() }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      return await addDoc(collection(db, collections.supplies), requestData);
+    } else {
+      return await mockFirestore.addDoc(collections.supplies, requestData);
+    }
   },
 
   async getSupplyRequests() {
-    const q = query(collection(db, collections.supplies), orderBy('requestedAt', 'desc'));
-    return await getDocs(q);
+    if (isFirebaseAvailable() && db) {
+      const q = query(collection(db, collections.supplies), orderBy('requestedAt', 'desc'));
+      return await getDocs(q);
+    } else {
+      return await mockFirestore.getDocs(collections.supplies);
+    }
   },
 
   // User Profiles
   async createUserProfile(uid: string, data: Omit<UserProfile, 'uid' | 'createdAt' | 'lastLoginAt'>) {
-    const now = Timestamp.now();
-    const docRef = doc(db, collections.users, uid);
-    await updateDoc(docRef, {
+    const now = new Date();
+    const profileData = {
       uid,
       ...data,
-      createdAt: now,
-      lastLoginAt: now
-    });
+      createdAt: { toDate: () => now },
+      lastLoginAt: { toDate: () => now }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      const firestoreNow = Timestamp.now();
+      const docRef = doc(db, collections.users, uid);
+      await setDoc(docRef, {
+        uid,
+        ...data,
+        createdAt: firestoreNow,
+        lastLoginAt: firestoreNow
+      });
+    } else {
+      await mockFirestore.addDoc(collections.users, profileData);
+    }
   },
 
   async getUserProfile(uid: string) {
-    const docRef = doc(db, collections.users, uid);
-    return await getDoc(docRef);
+    if (isFirebaseAvailable() && db) {
+      const docRef = doc(db, collections.users, uid);
+      return await getDoc(docRef);
+    } else {
+      return await mockFirestore.getDoc(collections.users, uid);
+    }
   },
 
   async updateUserProfile(uid: string, updates: Partial<UserProfile>) {
-    const docRef = doc(db, collections.users, uid);
-    return await updateDoc(docRef, {
+    const updateData = {
       ...updates,
-      lastLoginAt: Timestamp.now()
-    });
+      lastLoginAt: isFirebaseAvailable() ? Timestamp.now() : { toDate: () => new Date() }
+    };
+
+    if (isFirebaseAvailable() && db) {
+      const docRef = doc(db, collections.users, uid);
+      return await updateDoc(docRef, updateData);
+    } else {
+      return await mockFirestore.updateDoc(collections.users, uid, updateData);
+    }
   },
 
   // Real-time subscriptions
   subscribeToDisasterRequests(callback: (requests: DisasterRequest[]) => void) {
-    const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
-    return onSnapshot(q, (snapshot) => {
-      const requests = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as DisasterRequest));
-      callback(requests);
-    });
+    if (isFirebaseAvailable() && db) {
+      const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
+      return onSnapshot(q, (snapshot) => {
+        const requests = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as DisasterRequest));
+        callback(requests);
+      });
+    } else {
+      return mockFirestore.onSnapshot(collections.disasters, (docs) => {
+        const requests = docs.map(doc => ({
+          id: doc.id,
+          ...doc
+        } as DisasterRequest));
+        callback(requests);
+      });
+    }
   },
 
   subscribeToNews(callback: (news: NewsAlert[]) => void) {
-    const q = query(
-      collection(db, collections.news), 
-      where('isActive', '==', true),
-      orderBy('publishedAt', 'desc')
-    );
-    return onSnapshot(q, (snapshot) => {
-      const news = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as NewsAlert));
-      callback(news);
-    });
+    if (isFirebaseAvailable() && db) {
+      const q = query(
+        collection(db, collections.news), 
+        where('isActive', '==', true),
+        orderBy('publishedAt', 'desc')
+      );
+      return onSnapshot(q, (snapshot) => {
+        const news = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as NewsAlert));
+        callback(news);
+      });
+    } else {
+      return mockFirestore.onSnapshot(collections.news, (docs) => {
+        const news = docs
+          .filter(doc => doc.isActive)
+          .map(doc => ({
+            id: doc.id,
+            ...doc
+          } as NewsAlert));
+        callback(news);
+      });
+    }
   }
 };
