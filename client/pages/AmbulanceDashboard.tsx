@@ -27,7 +27,7 @@ export default function AmbulanceDashboard() {
               <CardDescription>View medical/injury incidents</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success">View Incidents</Button>
+              <Button className="w-full" variant="success" onClick={() => navigate('/ambulance/incidents')}>View Incidents</Button>
             </CardContent>
           </Card>
 
@@ -40,7 +40,7 @@ export default function AmbulanceDashboard() {
               <CardDescription>Navigate to patient locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info">Open Map</Button>
+              <Button className="w-full" variant="info" onClick={() => navigate('/ambulance/incidents')}>Open Map</Button>
             </CardContent>
           </Card>
 
