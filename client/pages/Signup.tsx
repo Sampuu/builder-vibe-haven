@@ -16,11 +16,12 @@ export default function Signup() {
     password: '',
     confirmPassword: '',
     role: 'user' as UserRole,
+    phoneNumber: ''
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -51,14 +52,20 @@ export default function Signup() {
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
+    // Create account with Firebase
+    const success = await signup(
+      formData.email, 
+      formData.password, 
+      formData.name, 
+      formData.role,
+      formData.phoneNumber || undefined
+    );
     
     if (success) {
       // Redirect to appropriate dashboard based on role
       navigate(`/dashboard/${formData.role}`);
     } else {
-      setError('Failed to create account. Please try again.');
+      setError('Failed to create account. Please check your information and try again.');
     }
     
     setIsSubmitting(false);
@@ -131,6 +138,17 @@ export default function Signup() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
                   <SelectTrigger>
@@ -156,8 +174,9 @@ export default function Signup() {
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 6 characters)"
                   required
+                  minLength={6}
                 />
               </div>
 
@@ -173,11 +192,11 @@ export default function Signup() {
                 />
               </div>
 
-              {(formData.role === 'police' || formData.role === 'admin') && (
+              {(formData.role === 'police' || formData.role === 'admin' || formData.role === 'fire' || formData.role === 'ambulance') && (
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    This role requires additional verification and enhanced security in production.
+                    Emergency service roles require additional verification in production environments.
                   </AlertDescription>
                 </Alert>
               )}
@@ -185,7 +204,6 @@ export default function Signup() {
               <Button 
                 type="submit" 
                 className="w-full" 
-                variant="info"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creating Account...' : 'Create Account'}
@@ -198,7 +216,7 @@ export default function Signup() {
                 <Button 
                   variant="link" 
                   onClick={() => navigate('/login')}
-                  className="p-0 h-auto text-emergency-info hover:text-emergency-info/80"
+                  className="p-0 h-auto text-primary hover:text-primary/80"
                 >
                   Login here
                 </Button>
