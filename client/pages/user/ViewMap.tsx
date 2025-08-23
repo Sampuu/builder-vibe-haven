@@ -188,12 +188,14 @@ export default function ViewMap() {
                     </div>
                   </div>
                 ) : (
-                  <InteractiveMap
-                    incidents={mapIncidents}
-                    height="500px"
-                    onIncidentClick={handleIncidentClick}
-                    showUserLocation={true}
-                  />
+                  <MapErrorBoundary>
+                    <InteractiveMap
+                      incidents={mapIncidents}
+                      height="500px"
+                      onIncidentClick={handleIncidentClick}
+                      showUserLocation={true}
+                    />
+                  </MapErrorBoundary>
                 )}
               </CardContent>
             </Card>

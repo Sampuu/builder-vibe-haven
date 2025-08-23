@@ -1,0 +1,92 @@
+/* CSS fixes to prevent ResizeObserver loops and layout shifts */
+
+/* Ensure stable dimensions for dynamic content */
+.leaflet-container {
+  contain: layout style;
+  transition: none !important;
+}
+
+/* Prevent layout shifts in notification components */
+[data-radix-popper-content-wrapper] {
+  contain: layout;
+  will-change: auto;
+}
+
+/* Prevent layout shifts in select and popover components */
+[data-radix-select-content],
+[data-radix-popover-content] {
+  contain: layout;
+  transform: translateZ(0);
+}
+
+/* Stabilize dashboard cards */
+.dashboard-card {
+  contain: layout style;
+  min-height: 120px;
+}
+
+/* Prevent unnecessary reflows in map components */
+.map-container {
+  contain: layout;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optimize badge and status indicators to prevent layout shifts */
+.status-badge {
+  contain: layout;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Prevent layout shifts in notification center */
+.notification-center {
+  contain: layout;
+  will-change: auto;
+}
+
+/* Stabilize card content areas */
+.card-content-stable {
+  contain: layout;
+  min-height: 100px;
+}
+
+/* Prevent layout shifts in dynamic lists */
+.incident-list {
+  contain: layout;
+}
+
+.incident-item {
+  contain: layout;
+  min-height: 80px;
+}
+
+/* Optimize scroll areas */
+[data-radix-scroll-area-viewport] {
+  contain: layout;
+  will-change: scroll-position;
+}
+
+/* Prevent layout shifts in dialogs */
+[data-radix-dialog-content] {
+  contain: layout;
+  transform: translateZ(0);
+}
+
+/* Stabilize toast notifications */
+[data-sonner-toast] {
+  contain: layout;
+  transform: translateZ(0);
+}
+
+/* Performance optimization for frequent updates */
+.auto-updating {
+  contain: layout style;
+  will-change: contents;
+}
+
+/* Prevent layout shifts in loading states */
+.loading-skeleton {
+  contain: layout;
+  min-height: 40px;
+}
