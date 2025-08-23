@@ -265,6 +265,9 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        {/* Real-time Dashboard Integration */}
+        <RealTimeDashboardStats />
+
         {/* Admin Access Controls */}
         <Card>
           <CardHeader>
