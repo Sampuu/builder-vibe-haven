@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useIncidents, useInitializeData } from '@/hooks/use-data';
-import InteractiveMap, { type MapIncident } from '@/components/InteractiveMap';
-import { MapErrorBoundary, useResizeObserverErrorSuppression } from '@/components/MapErrorBoundary';
+import SafeInteractiveMap, { type MapIncident } from '@/components/SafeInteractiveMap';
+import { useResizeObserverErrorSuppression } from '@/components/MapErrorBoundary';
 import {
   Map,
   ArrowLeft,
@@ -188,14 +188,12 @@ export default function ViewMap() {
                     </div>
                   </div>
                 ) : (
-                  <MapErrorBoundary>
-                    <InteractiveMap
-                      incidents={mapIncidents}
-                      height="500px"
-                      onIncidentClick={handleIncidentClick}
-                      showUserLocation={true}
-                    />
-                  </MapErrorBoundary>
+                  <SafeInteractiveMap
+                    incidents={mapIncidents}
+                    height="500px"
+                    onIncidentClick={handleIncidentClick}
+                    showUserLocation={true}
+                  />
                 )}
               </CardContent>
             </Card>
