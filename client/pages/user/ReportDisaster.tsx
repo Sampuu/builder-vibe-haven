@@ -473,6 +473,41 @@ export default function ReportDisaster() {
           </div>
         </div>
 
+        {/* Map Selection Dialog */}
+        <Dialog open={showMap} onOpenChange={setShowMap}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Select Emergency Location</DialogTitle>
+              <DialogDescription>
+                Click on the map to select the exact location of the emergency
+              </DialogDescription>
+            </DialogHeader>
+            <div className="h-96">
+              <GoogleMap
+                center={formData.coordinates || { lat: 40.7128, lng: -74.0060 }}
+                zoom={13}
+                height="100%"
+                onMapClick={handleMapClick}
+                markers={formData.coordinates ? [{
+                  position: formData.coordinates,
+                  title: "Emergency Location",
+                  type: "user"
+                }] : []}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowMap(false)}>
+                Cancel
+              </Button>
+              {formData.coordinates && (
+                <Button onClick={() => setShowMap(false)}>
+                  Use Selected Location
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Success Dialog */}
         <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
           <DialogContent>
