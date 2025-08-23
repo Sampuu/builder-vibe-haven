@@ -6,7 +6,7 @@ import {
   signOut,
   User as FirebaseUser 
 } from 'firebase/auth';
-import { auth, isFirebaseAvailable } from '@/lib/firebase';
+import { auth, isFirebaseAvailable, isUsingMockAuth } from '@/lib/firebase';
 import { firestoreService, UserProfile } from '@/lib/firestore';
 
 export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
@@ -43,41 +43,84 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Mock authentication for when Firebase is not available
+// Enhanced mock authentication service
 class MockAuthService {
-  private users: Map<string, User> = new Map();
+  private users: Map<string, User & { password: string }> = new Map();
   private currentUser: User | null = null;
   private listeners: ((user: User | null) => void)[] = [];
 
   constructor() {
     // Load from localStorage
-    const stored = localStorage.getItem('mock-auth-users');
-    if (stored) {
-      try {
+    this.loadFromStorage();
+    
+    // Add demo users if they don't exist
+    this.initializeDemoUsers();
+  }
+
+  private loadFromStorage() {
+    try {
+      const stored = localStorage.getItem('mock-auth-users');
+      if (stored) {
         const userData = JSON.parse(stored);
         this.users = new Map(userData.users || []);
         this.currentUser = userData.currentUser || null;
-      } catch (e) {
-        console.warn('Failed to load mock auth data');
       }
+    } catch (e) {
+      console.warn('Failed to load mock auth data');
     }
   }
 
   private saveToStorage() {
-    localStorage.setItem('mock-auth-users', JSON.stringify({
-      users: Array.from(this.users.entries()),
-      currentUser: this.currentUser
-    }));
+    try {
+      localStorage.setItem('mock-auth-users', JSON.stringify({
+        users: Array.from(this.users.entries()),
+        currentUser: this.currentUser
+      }));
+    } catch (e) {
+      console.warn('Failed to save mock auth data');
+    }
+  }
+
+  private initializeDemoUsers() {
+    const demoUsers = [
+      { email: 'user@demo.com', password: 'demo123', name: 'Demo User', role: 'user' as UserRole },
+      { email: 'police@demo.com', password: 'demo123', name: 'Police Officer', role: 'police' as UserRole },
+      { email: 'fire@demo.com', password: 'demo123', name: 'Fire Fighter', role: 'fire' as UserRole },
+      { email: 'ambulance@demo.com', password: 'demo123', name: 'Paramedic', role: 'ambulance' as UserRole },
+      { email: 'hospital@demo.com', password: 'demo123', name: 'Hospital Staff', role: 'hospital' as UserRole },
+      { email: 'admin@demo.com', password: 'demo123', name: 'System Admin', role: 'admin' as UserRole },
+    ];
+
+    demoUsers.forEach(demoUser => {
+      if (!this.users.has(demoUser.email)) {
+        const user: User & { password: string } = {
+          id: `demo-${demoUser.role}`,
+          email: demoUser.email,
+          name: demoUser.name,
+          role: demoUser.role,
+          password: demoUser.password
+        };
+        this.users.set(demoUser.email, user);
+      }
+    });
+
+    this.saveToStorage();
   }
 
   private notifyListeners() {
-    this.listeners.forEach(listener => listener(this.currentUser));
+    this.listeners.forEach(listener => {
+      try {
+        listener(this.currentUser);
+      } catch (e) {
+        console.error('Error in auth listener:', e);
+      }
+    });
   }
 
   onAuthStateChanged(callback: (user: User | null) => void) {
     this.listeners.push(callback);
     // Immediately call with current user
-    callback(this.currentUser);
+    setTimeout(() => callback(this.currentUser), 0);
     
     return () => {
       this.listeners = this.listeners.filter(l => l !== callback);
@@ -85,36 +128,53 @@ class MockAuthService {
   }
 
   async signUp(email: string, password: string, name: string, role: UserRole, phoneNumber?: string): Promise<boolean> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     if (this.users.has(email)) {
-      throw new Error('User already exists');
+      throw new Error('An account with this email already exists');
     }
 
-    const user: User = {
+    if (password.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
+
+    const user: User & { password: string } = {
       id: `mock-${Date.now()}`,
       email,
       name,
       role,
-      phoneNumber
+      phoneNumber,
+      password
     };
 
     this.users.set(email, user);
-    this.currentUser = user;
+    this.currentUser = { ...user };
+    delete (this.currentUser as any).password; // Remove password from current user
     this.saveToStorage();
     this.notifyListeners();
     return true;
   }
 
   async signIn(email: string, password: string, expectedRole?: UserRole): Promise<boolean> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const user = this.users.get(email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('No account found with this email address');
+    }
+
+    if (user.password !== password) {
+      throw new Error('Incorrect password');
     }
 
     if (expectedRole && user.role !== expectedRole) {
-      throw new Error('Role mismatch');
+      throw new Error(`Role mismatch. This account is registered as ${user.role}, not ${expectedRole}`);
     }
 
-    this.currentUser = user;
+    this.currentUser = { ...user };
+    delete (this.currentUser as any).password; // Remove password from current user
     this.saveToStorage();
     this.notifyListeners();
     return true;
@@ -139,12 +199,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
 
   useEffect(() => {
-    const firebaseAvailable = isFirebaseAvailable();
-    setIsFirebaseConnected(firebaseAvailable);
+    // Check if we should use Firebase or mock auth
+    const shouldUseFirebase = isFirebaseAvailable() && !isUsingMockAuth();
+    setIsFirebaseConnected(shouldUseFirebase);
 
     let unsubscribe: (() => void) | undefined;
 
-    if (firebaseAvailable && auth) {
+    if (shouldUseFirebase && auth) {
+      console.log('🔥 Using Firebase authentication');
       // Use Firebase authentication
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
         if (firebaseUser) {
@@ -181,8 +243,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(false);
       });
     } else {
+      console.log('🎭 Using mock authentication');
       // Use mock authentication
-      console.log('🔄 Using mock authentication (Firebase not available)');
       unsubscribe = mockAuth.onAuthStateChanged((mockUser) => {
         setUser(mockUser);
         setIsLoading(false);
@@ -211,7 +273,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (role && profileData.role !== role) {
             await signOut(auth);
             setIsLoading(false);
-            return false;
+            throw new Error(`Role mismatch. This account is registered as ${profileData.role}, not ${role}`);
           }
 
           // Update last login
@@ -231,21 +293,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       console.error('Login failed:', error);
       setIsLoading(false);
-      
-      // Provide user-friendly error messages
-      if (error.code === 'auth/network-request-failed') {
-        throw new Error('Network connection failed. Please check your internet connection and try again.');
-      } else if (error.code === 'auth/user-not-found') {
-        throw new Error('No account found with this email address.');
-      } else if (error.code === 'auth/wrong-password') {
-        throw new Error('Incorrect password.');
-      } else if (error.code === 'auth/invalid-email') {
-        throw new Error('Invalid email address.');
-      } else if (error.message) {
-        throw new Error(error.message);
-      } else {
-        throw new Error('Login failed. Please try again.');
-      }
+      throw error; // Re-throw to let the UI handle the error message
     }
   };
 
@@ -284,21 +332,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       console.error('Signup failed:', error);
       setIsLoading(false);
-      
-      // Provide user-friendly error messages
-      if (error.code === 'auth/network-request-failed') {
-        throw new Error('Network connection failed. Please check your internet connection and try again.');
-      } else if (error.code === 'auth/email-already-in-use') {
-        throw new Error('An account with this email already exists.');
-      } else if (error.code === 'auth/weak-password') {
-        throw new Error('Password is too weak. Please use at least 6 characters.');
-      } else if (error.code === 'auth/invalid-email') {
-        throw new Error('Invalid email address.');
-      } else if (error.message) {
-        throw new Error(error.message);
-      } else {
-        throw new Error('Account creation failed. Please try again.');
-      }
+      throw error; // Re-throw to let the UI handle the error message
     }
   };
 
