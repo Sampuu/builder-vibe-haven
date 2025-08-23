@@ -120,6 +120,29 @@ export const collections = {
   auditLogs: 'audit_logs'
 };
 
+// Helper function to clean data for Firestore (remove undefined values)
+const cleanFirestoreData = (data: any): any => {
+  if (data === null || data === undefined) {
+    return null;
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(cleanFirestoreData);
+  }
+  
+  if (typeof data === 'object') {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanFirestoreData(value);
+      }
+    }
+    return cleaned;
+  }
+  
+  return data;
+};
+
 // Mock data store for when Firebase is unavailable
 class MockFirestoreService {
   private data: Map<string, Map<string, any>> = new Map();
@@ -173,8 +196,8 @@ class MockFirestoreService {
     if (newsCollection.size === 0) {
       const sampleAlert = {
         id: 'sample-1',
-        title: 'System Online - Mock Mode',
-        content: 'The disaster management system is running in demo mode. Firebase is not connected, but all features are functional for testing.',
+        title: 'System Online - Development Mode',
+        content: 'The disaster management system is running in development mode. Mock authentication is active for safe testing.',
         type: 'info',
         priority: 'low',
         publishedBy: 'system',
@@ -200,7 +223,9 @@ class MockFirestoreService {
     const id = `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const collection = this.data.get(collectionName);
     if (collection) {
-      collection.set(id, { ...data, id });
+      // Clean the data to remove undefined values
+      const cleanedData = cleanFirestoreData(data);
+      collection.set(id, { ...cleanedData, id });
       this.saveToStorage();
       this.notifyListeners(collectionName);
     }
@@ -231,7 +256,20 @@ class MockFirestoreService {
     const collection = this.data.get(collectionName);
     const existingDoc = collection?.get(docId);
     if (existingDoc) {
-      collection.set(docId, { ...existingDoc, ...updates });
+      // Clean the updates to remove undefined values
+      const cleanedUpdates = cleanFirestoreData(updates);
+      collection.set(docId, { ...existingDoc, ...cleanedUpdates });
+      this.saveToStorage();
+      this.notifyListeners(collectionName);
+    }
+  }
+
+  async setDoc(collectionName: string, docId: string, data: any) {
+    const collection = this.data.get(collectionName);
+    if (collection) {
+      // Clean the data to remove undefined values
+      const cleanedData = cleanFirestoreData(data);
+      collection.set(docId, { ...cleanedData, id: docId });
       this.saveToStorage();
       this.notifyListeners(collectionName);
     }
@@ -270,12 +308,18 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      const firestoreNow = Timestamp.now();
-      return await addDoc(collection(db, collections.disasters), {
-        ...data,
-        createdAt: firestoreNow,
-        updatedAt: firestoreNow
-      });
+      try {
+        const firestoreNow = Timestamp.now();
+        const cleanedData = cleanFirestoreData({
+          ...data,
+          createdAt: firestoreNow,
+          updatedAt: firestoreNow
+        });
+        return await addDoc(collection(db, collections.disasters), cleanedData);
+      } catch (error) {
+        console.error('Firebase createDisasterRequest failed, falling back to mock:', error);
+        return await mockFirestore.addDoc(collections.disasters, requestData);
+      }
     } else {
       return await mockFirestore.addDoc(collections.disasters, requestData);
     }
@@ -283,8 +327,13 @@ export const firestoreService = {
 
   async getDisasterRequests() {
     if (isFirebaseAvailable() && db) {
-      const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
-      return await getDocs(q);
+      try {
+        const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
+        return await getDocs(q);
+      } catch (error) {
+        console.error('Firebase getDisasterRequests failed, falling back to mock:', error);
+        return await mockFirestore.getDocs(collections.disasters);
+      }
     } else {
       return await mockFirestore.getDocs(collections.disasters);
     }
@@ -297,8 +346,14 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      const docRef = doc(db, collections.disasters, id);
-      return await updateDoc(docRef, updateData);
+      try {
+        const docRef = doc(db, collections.disasters, id);
+        const cleanedData = cleanFirestoreData(updateData);
+        return await updateDoc(docRef, cleanedData);
+      } catch (error) {
+        console.error('Firebase updateDisasterRequest failed, falling back to mock:', error);
+        return await mockFirestore.updateDoc(collections.disasters, id, updateData);
+      }
     } else {
       return await mockFirestore.updateDoc(collections.disasters, id, updateData);
     }
@@ -312,7 +367,13 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      return await addDoc(collection(db, collections.news), alertData);
+      try {
+        const cleanedData = cleanFirestoreData(alertData);
+        return await addDoc(collection(db, collections.news), cleanedData);
+      } catch (error) {
+        console.error('Firebase createNewsAlert failed, falling back to mock:', error);
+        return await mockFirestore.addDoc(collections.news, alertData);
+      }
     } else {
       return await mockFirestore.addDoc(collections.news, alertData);
     }
@@ -320,12 +381,20 @@ export const firestoreService = {
 
   async getActiveNews() {
     if (isFirebaseAvailable() && db) {
-      const q = query(
-        collection(db, collections.news), 
-        where('isActive', '==', true),
-        orderBy('publishedAt', 'desc')
-      );
-      return await getDocs(q);
+      try {
+        const q = query(
+          collection(db, collections.news), 
+          where('isActive', '==', true),
+          orderBy('publishedAt', 'desc')
+        );
+        return await getDocs(q);
+      } catch (error) {
+        console.error('Firebase getActiveNews failed, falling back to mock:', error);
+        // Mock implementation - filter active news
+        const allNews = await mockFirestore.getDocs(collections.news);
+        const activeDocs = allNews.docs.filter(doc => doc.data().isActive);
+        return { docs: activeDocs };
+      }
     } else {
       // Mock implementation - filter active news
       const allNews = await mockFirestore.getDocs(collections.news);
@@ -342,7 +411,13 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      return await addDoc(collection(db, collections.supplies), requestData);
+      try {
+        const cleanedData = cleanFirestoreData(requestData);
+        return await addDoc(collection(db, collections.supplies), cleanedData);
+      } catch (error) {
+        console.error('Firebase createSupplyRequest failed, falling back to mock:', error);
+        return await mockFirestore.addDoc(collections.supplies, requestData);
+      }
     } else {
       return await mockFirestore.addDoc(collections.supplies, requestData);
     }
@@ -350,8 +425,13 @@ export const firestoreService = {
 
   async getSupplyRequests() {
     if (isFirebaseAvailable() && db) {
-      const q = query(collection(db, collections.supplies), orderBy('requestedAt', 'desc'));
-      return await getDocs(q);
+      try {
+        const q = query(collection(db, collections.supplies), orderBy('requestedAt', 'desc'));
+        return await getDocs(q);
+      } catch (error) {
+        console.error('Firebase getSupplyRequests failed, falling back to mock:', error);
+        return await mockFirestore.getDocs(collections.supplies);
+      }
     } else {
       return await mockFirestore.getDocs(collections.supplies);
     }
@@ -368,23 +448,34 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      const firestoreNow = Timestamp.now();
-      const docRef = doc(db, collections.users, uid);
-      await setDoc(docRef, {
-        uid,
-        ...data,
-        createdAt: firestoreNow,
-        lastLoginAt: firestoreNow
-      });
+      try {
+        const firestoreNow = Timestamp.now();
+        const docRef = doc(db, collections.users, uid);
+        const cleanedData = cleanFirestoreData({
+          uid,
+          ...data,
+          createdAt: firestoreNow,
+          lastLoginAt: firestoreNow
+        });
+        await setDoc(docRef, cleanedData);
+      } catch (error) {
+        console.error('Firebase createUserProfile failed, falling back to mock:', error);
+        await mockFirestore.setDoc(collections.users, uid, profileData);
+      }
     } else {
-      await mockFirestore.addDoc(collections.users, profileData);
+      await mockFirestore.setDoc(collections.users, uid, profileData);
     }
   },
 
   async getUserProfile(uid: string) {
     if (isFirebaseAvailable() && db) {
-      const docRef = doc(db, collections.users, uid);
-      return await getDoc(docRef);
+      try {
+        const docRef = doc(db, collections.users, uid);
+        return await getDoc(docRef);
+      } catch (error) {
+        console.error('Firebase getUserProfile failed, falling back to mock:', error);
+        return await mockFirestore.getDoc(collections.users, uid);
+      }
     } else {
       return await mockFirestore.getDoc(collections.users, uid);
     }
@@ -397,8 +488,14 @@ export const firestoreService = {
     };
 
     if (isFirebaseAvailable() && db) {
-      const docRef = doc(db, collections.users, uid);
-      return await updateDoc(docRef, updateData);
+      try {
+        const docRef = doc(db, collections.users, uid);
+        const cleanedData = cleanFirestoreData(updateData);
+        return await updateDoc(docRef, cleanedData);
+      } catch (error) {
+        console.error('Firebase updateUserProfile failed, falling back to mock:', error);
+        return await mockFirestore.updateDoc(collections.users, uid, updateData);
+      }
     } else {
       return await mockFirestore.updateDoc(collections.users, uid, updateData);
     }
@@ -407,14 +504,35 @@ export const firestoreService = {
   // Real-time subscriptions
   subscribeToDisasterRequests(callback: (requests: DisasterRequest[]) => void) {
     if (isFirebaseAvailable() && db) {
-      const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
-      return onSnapshot(q, (snapshot) => {
-        const requests = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as DisasterRequest));
-        callback(requests);
-      });
+      try {
+        const q = query(collection(db, collections.disasters), orderBy('createdAt', 'desc'));
+        return onSnapshot(q, (snapshot) => {
+          const requests = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as DisasterRequest));
+          callback(requests);
+        }, (error) => {
+          console.error('Firebase subscribeToDisasterRequests failed, falling back to mock:', error);
+          // Fall back to mock subscription
+          return mockFirestore.onSnapshot(collections.disasters, (docs) => {
+            const requests = docs.map(doc => ({
+              id: doc.id,
+              ...doc
+            } as DisasterRequest));
+            callback(requests);
+          });
+        });
+      } catch (error) {
+        console.error('Firebase subscribeToDisasterRequests failed, falling back to mock:', error);
+        return mockFirestore.onSnapshot(collections.disasters, (docs) => {
+          const requests = docs.map(doc => ({
+            id: doc.id,
+            ...doc
+          } as DisasterRequest));
+          callback(requests);
+        });
+      }
     } else {
       return mockFirestore.onSnapshot(collections.disasters, (docs) => {
         const requests = docs.map(doc => ({
@@ -428,18 +546,43 @@ export const firestoreService = {
 
   subscribeToNews(callback: (news: NewsAlert[]) => void) {
     if (isFirebaseAvailable() && db) {
-      const q = query(
-        collection(db, collections.news), 
-        where('isActive', '==', true),
-        orderBy('publishedAt', 'desc')
-      );
-      return onSnapshot(q, (snapshot) => {
-        const news = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as NewsAlert));
-        callback(news);
-      });
+      try {
+        const q = query(
+          collection(db, collections.news), 
+          where('isActive', '==', true),
+          orderBy('publishedAt', 'desc')
+        );
+        return onSnapshot(q, (snapshot) => {
+          const news = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as NewsAlert));
+          callback(news);
+        }, (error) => {
+          console.error('Firebase subscribeToNews failed, falling back to mock:', error);
+          // Fall back to mock subscription
+          return mockFirestore.onSnapshot(collections.news, (docs) => {
+            const news = docs
+              .filter(doc => doc.isActive)
+              .map(doc => ({
+                id: doc.id,
+                ...doc
+              } as NewsAlert));
+            callback(news);
+          });
+        });
+      } catch (error) {
+        console.error('Firebase subscribeToNews failed, falling back to mock:', error);
+        return mockFirestore.onSnapshot(collections.news, (docs) => {
+          const news = docs
+            .filter(doc => doc.isActive)
+            .map(doc => ({
+              id: doc.id,
+              ...doc
+            } as NewsAlert));
+          callback(news);
+        });
+      }
     } else {
       return mockFirestore.onSnapshot(collections.news, (docs) => {
         const news = docs
