@@ -23,20 +23,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { disasterReportsService } from '@/services/firestore';
 import GoogleMap from '@/components/GoogleMap';
 
-interface DisasterReport {
-  id: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  location: string;
-  coordinates?: { lat: number; lng: number };
-  contactName: string;
-  contactPhone: string;
-  images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
-  timestamp: string;
-}
+// Using the DisasterReport interface from the firestore service
 
 const disasterTypes = [
   { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
