@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { useEffect, useRef, useState } from "react";
+import { Loader } from "@googlemaps/js-api-loader";
 
 interface GoogleMapProps {
   center?: { lat: number; lng: number };
@@ -10,7 +10,7 @@ interface GoogleMapProps {
     position: { lat: number; lng: number };
     title?: string;
     info?: string;
-    type?: 'fire' | 'medical' | 'police' | 'hospital' | 'user' | 'general';
+    type?: "fire" | "medical" | "police" | "hospital" | "user" | "general";
   }>;
   onMapClick?: (location: { lat: number; lng: number }) => void;
   directions?: {
@@ -21,28 +21,34 @@ interface GoogleMapProps {
 }
 
 // Default center to a central location (can be overridden)
-const DEFAULT_CENTER = { lat: 40.7128, lng: -74.0060 }; // New York City
+const DEFAULT_CENTER = { lat: 40.7128, lng: -74.006 }; // New York City
 
 const getMarkerColor = (type?: string) => {
   switch (type) {
-    case 'fire': return '#ef4444'; // red
-    case 'medical': return '#f59e0b'; // yellow
-    case 'police': return '#3b82f6'; // blue
-    case 'hospital': return '#10b981'; // green
-    case 'user': return '#8b5cf6'; // purple
-    default: return '#6b7280'; // gray
+    case "fire":
+      return "#ef4444"; // red
+    case "medical":
+      return "#f59e0b"; // yellow
+    case "police":
+      return "#3b82f6"; // blue
+    case "hospital":
+      return "#10b981"; // green
+    case "user":
+      return "#8b5cf6"; // purple
+    default:
+      return "#6b7280"; // gray
   }
 };
 
 export default function GoogleMap({
   center = DEFAULT_CENTER,
   zoom = 10,
-  height = '400px',
-  width = '100%',
+  height = "400px",
+  width = "100%",
   markers = [],
   onMapClick,
   directions,
-  className = ''
+  className = "",
 }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -53,13 +59,13 @@ export default function GoogleMap({
     const initMap = async () => {
       try {
         const loader = new Loader({
-          apiKey: 'AIzaSyAPGnT4qxz8YHGmXujEsN_w1nPtetdCa8s',
-          version: 'weekly',
-          libraries: ['places', 'geometry']
+          apiKey: "AIzaSyAPGnT4qxz8YHGmXujEsN_w1nPtetdCa8s",
+          version: "weekly",
+          libraries: ["places", "geometry"],
         });
 
         const google = await loader.load();
-        
+
         if (!mapRef.current) return;
 
         const mapInstance = new google.maps.Map(mapRef.current, {
@@ -73,21 +79,24 @@ export default function GoogleMap({
 
         // Handle map clicks
         if (onMapClick) {
-          mapInstance.addListener('click', (event: google.maps.MapMouseEvent) => {
-            if (event.latLng) {
-              onMapClick({
-                lat: event.latLng.lat(),
-                lng: event.latLng.lng()
-              });
-            }
-          });
+          mapInstance.addListener(
+            "click",
+            (event: google.maps.MapMouseEvent) => {
+              if (event.latLng) {
+                onMapClick({
+                  lat: event.latLng.lat(),
+                  lng: event.latLng.lng(),
+                });
+              }
+            },
+          );
         }
 
         setMap(mapInstance);
         setIsLoading(false);
       } catch (err) {
-        console.error('Error loading Google Maps:', err);
-        setError('Failed to load Google Maps');
+        console.error("Error loading Google Maps:", err);
+        setError("Failed to load Google Maps");
         setIsLoading(false);
       }
     };
@@ -112,17 +121,17 @@ export default function GoogleMap({
           scale: 8,
           fillColor: getMarkerColor(marker.type),
           fillOpacity: 0.8,
-          strokeColor: '#ffffff',
+          strokeColor: "#ffffff",
           strokeWeight: 2,
-        }
+        },
       });
 
       if (marker.info) {
         const infoWindow = new window.google.maps.InfoWindow({
-          content: marker.info
+          content: marker.info,
         });
 
-        mapMarker.addListener('click', () => {
+        mapMarker.addListener("click", () => {
           infoWindow.open(map, mapMarker);
         });
       }
@@ -132,7 +141,7 @@ export default function GoogleMap({
 
     // Cleanup function
     return () => {
-      currentMarkers.forEach(marker => marker.setMap(null));
+      currentMarkers.forEach((marker) => marker.setMap(null));
     };
   }, [map, markers]);
 
@@ -144,25 +153,28 @@ export default function GoogleMap({
     const directionsRenderer = new window.google.maps.DirectionsRenderer({
       suppressMarkers: false,
       polylineOptions: {
-        strokeColor: '#3b82f6',
+        strokeColor: "#3b82f6",
         strokeWeight: 4,
-        strokeOpacity: 0.8
-      }
+        strokeOpacity: 0.8,
+      },
     });
 
     directionsRenderer.setMap(map);
 
-    directionsService.route({
-      origin: directions.origin,
-      destination: directions.destination,
-      travelMode: window.google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (status === 'OK' && result) {
-        directionsRenderer.setDirections(result);
-      } else {
-        console.error('Directions request failed due to ' + status);
-      }
-    });
+    directionsService.route(
+      {
+        origin: directions.origin,
+        destination: directions.destination,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === "OK" && result) {
+          directionsRenderer.setDirections(result);
+        } else {
+          console.error("Directions request failed due to " + status);
+        }
+      },
+    );
 
     // Cleanup function
     return () => {
@@ -172,8 +184,8 @@ export default function GoogleMap({
 
   if (error) {
     return (
-      <div 
-        style={{ height, width }} 
+      <div
+        style={{ height, width }}
         className={`flex items-center justify-center bg-slate-100 border rounded-lg ${className}`}
       >
         <div className="text-center text-slate-600">
@@ -186,13 +198,13 @@ export default function GoogleMap({
 
   return (
     <div className={`relative ${className}`}>
-      <div 
-        ref={mapRef} 
+      <div
+        ref={mapRef}
         style={{ height, width }}
         className="rounded-lg border border-slate-200"
       />
       {isLoading && (
-        <div 
+        <div
           style={{ height, width }}
           className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-lg"
         >

@@ -1,30 +1,36 @@
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Map,
   ArrowLeft,
   MapPin,
   Shield,
   Radio,
-  Navigation
-} from 'lucide-react';
-import GoogleMap from '@/components/GoogleMap';
-import { disasterReportsService, DisasterReport } from '@/services/firestore';
+  Navigation,
+} from "lucide-react";
+import GoogleMap from "@/components/GoogleMap";
+import { disasterReportsService, DisasterReport } from "@/services/firestore";
 
 const activeUnits = [
-  { id: 'Unit 12', status: 'responding', location: 'Highway 101', incident: 'Traffic Accident' },
-  { id: 'Unit 8', status: 'patrolling', location: 'Downtown', incident: null },
-  { id: 'Unit 15', status: 'available', location: 'Station 2', incident: null },
+  {
+    id: "Unit 12",
+    status: "responding",
+    location: "Highway 101",
+    incident: "Traffic Accident",
+  },
+  { id: "Unit 8", status: "patrolling", location: "Downtown", incident: null },
+  { id: "Unit 15", status: "available", location: "Station 2", incident: null },
 ];
 
 export default function CommandMap() {
   const navigate = useNavigate();
   const [disasterReports, setDisasterReports] = useState<DisasterReport[]>([]);
-  const [selectedIncident, setSelectedIncident] = useState<DisasterReport | null>(null);
+  const [selectedIncident, setSelectedIncident] =
+    useState<DisasterReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +38,9 @@ export default function CommandMap() {
     const loadReports = async () => {
       try {
         const reports = await disasterReportsService.getAll();
-        setDisasterReports(reports.filter(r => r.status !== 'resolved'));
+        setDisasterReports(reports.filter((r) => r.status !== "resolved"));
       } catch (error) {
-        console.error('Error loading reports:', error);
+        console.error("Error loading reports:", error);
       } finally {
         setIsLoading(false);
       }
@@ -44,7 +50,7 @@ export default function CommandMap() {
 
     // Subscribe to real-time updates
     const unsubscribe = disasterReportsService.subscribeToUpdates((reports) => {
-      setDisasterReports(reports.filter(r => r.status !== 'resolved'));
+      setDisasterReports(reports.filter((r) => r.status !== "resolved"));
     });
 
     return () => unsubscribe();
@@ -52,8 +58,8 @@ export default function CommandMap() {
 
   // Convert disaster reports to map markers
   const mapMarkers = disasterReports
-    .filter(report => report.coordinates)
-    .map(report => ({
+    .filter((report) => report.coordinates)
+    .map((report) => ({
       position: report.coordinates!,
       title: report.title,
       info: `
@@ -64,16 +70,21 @@ export default function CommandMap() {
           <p class="text-xs text-gray-500">Status: ${report.status}</p>
         </div>
       `,
-      type: report.type === 'fire' ? 'fire' :
-            report.type === 'medical' ? 'medical' :
-            report.type === 'accident' ? 'police' : 'general'
+      type:
+        report.type === "fire"
+          ? "fire"
+          : report.type === "medical"
+            ? "medical"
+            : report.type === "accident"
+              ? "police"
+              : "general",
     }));
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/police')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/police")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Police Dashboard
           </Button>
@@ -82,7 +93,9 @@ export default function CommandMap() {
               <Map className="mr-3 h-8 w-8 text-emergency-info" />
               Police Command Map
             </h1>
-            <p className="text-slate-600">Real-time tracking of units and incidents</p>
+            <p className="text-slate-600">
+              Real-time tracking of units and incidents
+            </p>
           </div>
         </div>
 
@@ -107,12 +120,12 @@ export default function CommandMap() {
                   </div>
                 ) : (
                   <GoogleMap
-                    center={{ lat: 40.7128, lng: -74.0060 }}
+                    center={{ lat: 40.7128, lng: -74.006 }}
                     zoom={11}
                     height="400px"
                     markers={mapMarkers}
                     onMapClick={(location) => {
-                      console.log('Map clicked at:', location);
+                      console.log("Map clicked at:", location);
                     }}
                   />
                 )}
@@ -152,10 +165,15 @@ export default function CommandMap() {
                     <div key={unit.id} className="p-3 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium">{unit.id}</span>
-                        <Badge className={`text-xs ${
-                          unit.status === 'responding' ? 'bg-emergency-danger' :
-                          unit.status === 'patrolling' ? 'bg-emergency-warning' : 'bg-emergency-resolved'
-                        } text-white`}>
+                        <Badge
+                          className={`text-xs ${
+                            unit.status === "responding"
+                              ? "bg-emergency-danger"
+                              : unit.status === "patrolling"
+                                ? "bg-emergency-warning"
+                                : "bg-emergency-resolved"
+                          } text-white`}
+                        >
                           {unit.status}
                         </Badge>
                       </div>
@@ -168,7 +186,11 @@ export default function CommandMap() {
                           Responding to: {unit.incident}
                         </div>
                       )}
-                      <Button size="sm" variant="outline" className="w-full mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-2"
+                      >
                         <Radio className="mr-2 h-4 w-4" />
                         Contact Unit
                       </Button>
