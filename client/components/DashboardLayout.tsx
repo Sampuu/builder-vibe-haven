@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import NotificationCenter from '@/components/NotificationCenter';
+import SimpleNotificationCenter from '@/components/SimpleNotificationCenter';
 import {
   AlertTriangle,
   LogOut,
@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <NotificationCenter />
+              <SimpleNotificationCenter />
 
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">

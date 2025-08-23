@@ -1,83 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bell, X, Check, AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useNotifications } from '@/hooks/use-data';
-import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
-export default function NotificationCenter() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { notifications, unreadCount, markAsRead, refresh } = useNotifications(user?.id || '');
+// Simple mock notifications for now
+const mockNotifications = [
+  {
+    id: '1',
+    title: 'New Incident Reported',
+    message: 'Fire emergency at Downtown Plaza requires immediate attention',
+    type: 'warning' as const,
+    isRead: false,
+    createdAt: new Date(Date.now() - 300000).toISOString(), // 5 mins ago
+  },
+  {
+    id: '2',
+    title: 'Backup Request Approved',
+    message: 'Ambulance Unit 7 has been dispatched to assist',
+    type: 'success' as const,
+    isRead: false,
+    createdAt: new Date(Date.now() - 900000).toISOString(), // 15 mins ago
+  },
+  {
+    id: '3',
+    title: 'Mission Completed',
+    message: 'Traffic accident on Highway 101 has been resolved',
+    type: 'info' as const,
+    isRead: true,
+    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+  },
+];
+
+export default function SimpleNotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
 
-  // Auto-refresh notifications - temporarily disabled to prevent React context issues
-  useEffect(() => {
-    // TODO: Re-enable auto-refresh once React context issues are resolved
-    // For now, users can manually refresh by opening/closing the notification center
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
-    // Cleanup function for consistency
-    return () => {
-      // No cleanup needed while auto-refresh is disabled
-    };
-  }, [refresh, isOpen]);
-
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      await markAsRead(notificationId);
-      toast({
-        title: "Notification marked as read",
-        description: "Notification has been marked as read",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark notification as read",
-        variant: "destructive",
-      });
-    }
+  const handleMarkAsRead = (notificationId: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
   };
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      for (const notification of notifications.filter(n => !n.isRead)) {
-        await markAsRead(notification.id);
-      }
-      toast({
-        title: "All notifications marked as read",
-        description: "All notifications have been marked as read",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark all notifications as read",
-        variant: "destructive",
-      });
-    }
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, isRead: true }))
+    );
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'error': return <XCircle className="h-4 w-4 text-emergency-danger" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-emergency-warning" />;
-      case 'success': return <CheckCircle className="h-4 w-4 text-emergency-resolved" />;
+      case 'error': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'info': 
-      default: return <Info className="h-4 w-4 text-emergency-info" />;
+      default: return <Info className="h-4 w-4 text-blue-500" />;
     }
   };
 
   const getNotificationBgColor = (type: string) => {
     switch (type) {
-      case 'error': return 'bg-emergency-danger/10 border-emergency-danger/20';
-      case 'warning': return 'bg-emergency-warning/10 border-emergency-warning/20';
-      case 'success': return 'bg-emergency-resolved/10 border-emergency-resolved/20';
+      case 'error': return 'bg-red-50 border-red-200';
+      case 'warning': return 'bg-yellow-50 border-yellow-200';
+      case 'success': return 'bg-green-50 border-green-200';
       case 'info': 
-      default: return 'bg-emergency-info/10 border-emergency-info/20';
+      default: return 'bg-blue-50 border-blue-200';
     }
   };
 
@@ -151,11 +146,9 @@ export default function NotificationCenter() {
                   {notifications.map((notification) => (
                     <div 
                       key={notification.id}
-                      className={cn(
-                        "p-3 rounded-lg border cursor-pointer transition-colors hover:bg-slate-50",
-                        !notification.isRead && "bg-slate-50/50",
-                        getNotificationBgColor(notification.type)
-                      )}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-slate-50 ${
+                        !notification.isRead ? 'bg-slate-50/50' : ''
+                      } ${getNotificationBgColor(notification.type)}`}
                       onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                     >
                       <div className="flex items-start space-x-3">
@@ -164,29 +157,23 @@ export default function NotificationCenter() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h4 className={cn(
-                              "text-sm font-medium truncate",
-                              !notification.isRead && "font-semibold"
-                            )}>
+                            <h4 className={`text-sm font-medium truncate ${
+                              !notification.isRead ? 'font-semibold' : ''
+                            }`}>
                               {notification.title}
                             </h4>
                             <div className="flex items-center space-x-1">
                               {!notification.isRead && (
-                                <div className="w-2 h-2 bg-emergency-info rounded-full"></div>
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                               )}
                               <span className="text-xs text-slate-500">
                                 {formatNotificationTime(notification.createdAt)}
                               </span>
                             </div>
                           </div>
-                          <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+                          <p className="text-sm text-slate-600 mt-1">
                             {notification.message}
                           </p>
-                          {notification.actionRequired && (
-                            <Badge variant="outline" className="mt-2 text-xs">
-                              Action Required
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -199,38 +186,4 @@ export default function NotificationCenter() {
       </PopoverContent>
     </Popover>
   );
-}
-
-// Hook for creating notifications easily from components
-export function useCreateNotification() {
-  const { user } = useAuth();
-  const { createNotification } = useNotifications(user?.id || '');
-  
-  const notify = async (
-    title: string, 
-    message: string, 
-    type: 'info' | 'warning' | 'error' | 'success' = 'info',
-    actionRequired: boolean = false,
-    relatedId?: string,
-    relatedType?: 'incident' | 'mission'
-  ) => {
-    if (!user?.id) return;
-    
-    try {
-      await createNotification({
-        userId: user.id,
-        title,
-        message,
-        type,
-        isRead: false,
-        actionRequired,
-        relatedId,
-        relatedType
-      });
-    } catch (error) {
-      console.error('Failed to create notification:', error);
-    }
-  };
-
-  return { notify };
 }
