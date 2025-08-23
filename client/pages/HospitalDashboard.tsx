@@ -27,7 +27,7 @@ export default function HospitalDashboard() {
               <CardDescription>Medical equipment/supplies requests</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info">View Requests</Button>
+              <Button className="w-full" variant="info" onClick={() => navigate('/hospital/supplies')}>View Requests</Button>
             </CardContent>
           </Card>
 
@@ -40,7 +40,7 @@ export default function HospitalDashboard() {
               <CardDescription>Assign ambulance for delivery</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success">Assign Vehicle</Button>
+              <Button className="w-full" variant="success" onClick={() => navigate('/hospital/supplies')}>Assign Vehicle</Button>
             </CardContent>
           </Card>
 
@@ -53,7 +53,7 @@ export default function HospitalDashboard() {
               <CardDescription>View supply request locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning">View Map</Button>
+              <Button className="w-full" variant="warning" onClick={() => navigate('/hospital/supplies')}>View Map</Button>
             </CardContent>
           </Card>
         </div>
