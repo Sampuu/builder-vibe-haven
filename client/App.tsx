@@ -115,6 +115,122 @@ const App = () => (
               }
             />
 
+            {/* Admin Pages */}
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <ManageUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/missions"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <MissionControl />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/logs"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboards"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AllDashboards />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* User Pages */}
+            <Route
+              path="/user/report"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <ReportDisaster />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user/help"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <RequestHelp />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user/map"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <ViewMap />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user/news"
+              element={
+                <ProtectedRoute requiredRole="user">
+                  <News />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Police Pages */}
+            <Route
+              path="/police/incidents"
+              element={
+                <ProtectedRoute requiredRole="police">
+                  <AllIncidents />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/police/map"
+              element={
+                <ProtectedRoute requiredRole="police">
+                  <CommandMap />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Fire Pages */}
+            <Route
+              path="/fire/incidents"
+              element={
+                <ProtectedRoute requiredRole="fire">
+                  <FireIncidents />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Ambulance Pages */}
+            <Route
+              path="/ambulance/incidents"
+              element={
+                <ProtectedRoute requiredRole="ambulance">
+                  <MedicalIncidents />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Hospital Pages */}
+            <Route
+              path="/hospital/supplies"
+              element={
+                <ProtectedRoute requiredRole="hospital">
+                  <SupplyRequests />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
