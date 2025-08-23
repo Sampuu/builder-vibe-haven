@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Shield, Users, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Index() {
+  const navigate = useNavigate();
+
   const handleSignUp = () => {
-    // TODO: Navigate to signup
-    console.log("Navigate to signup");
+    navigate("/signup");
   };
 
   const handleLogin = () => {
-    // TODO: Navigate to login
-    console.log("Navigate to login");
+    navigate("/login");
   };
 
   return (
