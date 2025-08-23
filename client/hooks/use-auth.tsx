@@ -6,7 +6,7 @@ import {
   signOut,
   User as FirebaseUser 
 } from 'firebase/auth';
-import { auth, isFirebaseAvailable, isUsingMockAuth } from '@/lib/firebase';
+import { auth, isFirebaseAvailable, isUsingMockAuth, isDevelopmentMode, devUtils } from '@/lib/firebase';
 import { firestoreService, UserProfile } from '@/lib/firestore';
 
 export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
@@ -27,6 +27,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isLoading: boolean;
   isFirebaseConnected: boolean;
+  isDevelopmentMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,6 +56,10 @@ class MockAuthService {
     
     // Add demo users if they don't exist
     this.initializeDemoUsers();
+    
+    if (isDevelopmentMode()) {
+      devUtils.log('Mock authentication service initialized');
+    }
   }
 
   private loadFromStorage() {
@@ -128,6 +133,10 @@ class MockAuthService {
   }
 
   async signUp(email: string, password: string, name: string, role: UserRole, phoneNumber?: string): Promise<boolean> {
+    if (isDevelopmentMode()) {
+      devUtils.log(`Mock signup attempt: ${email}, role: ${role}`);
+    }
+    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -153,10 +162,19 @@ class MockAuthService {
     delete (this.currentUser as any).password; // Remove password from current user
     this.saveToStorage();
     this.notifyListeners();
+    
+    if (isDevelopmentMode()) {
+      devUtils.log(`Mock signup successful: ${email}`);
+    }
+    
     return true;
   }
 
   async signIn(email: string, password: string, expectedRole?: UserRole): Promise<boolean> {
+    if (isDevelopmentMode()) {
+      devUtils.log(`Mock login attempt: ${email}, expected role: ${expectedRole}`);
+    }
+    
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -177,10 +195,19 @@ class MockAuthService {
     delete (this.currentUser as any).password; // Remove password from current user
     this.saveToStorage();
     this.notifyListeners();
+    
+    if (isDevelopmentMode()) {
+      devUtils.log(`Mock login successful: ${email}, role: ${user.role}`);
+    }
+    
     return true;
   }
 
   async signOut(): Promise<void> {
+    if (isDevelopmentMode()) {
+      devUtils.log('Mock logout');
+    }
+    
     this.currentUser = null;
     this.saveToStorage();
     this.notifyListeners();
@@ -203,10 +230,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const shouldUseFirebase = isFirebaseAvailable() && !isUsingMockAuth();
     setIsFirebaseConnected(shouldUseFirebase);
 
+    if (isDevelopmentMode()) {
+      devUtils.log(`Auth provider initialized - Firebase: ${shouldUseFirebase}, Mock: ${!shouldUseFirebase}`);
+    }
+
     let unsubscribe: (() => void) | undefined;
 
     if (shouldUseFirebase && auth) {
-      console.log('🔥 Using Firebase authentication');
+      if (isDevelopmentMode()) {
+        devUtils.log('Using Firebase authentication');
+      }
+      
       // Use Firebase authentication
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
         if (firebaseUser) {
@@ -224,6 +258,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 phoneNumber: profileData.phoneNumber,
                 department: profileData.department
               });
+              
+              if (isDevelopmentMode()) {
+                devUtils.log(`Firebase user loaded: ${firebaseUser.email}, role: ${profileData.role}`);
+              }
             } else {
               // If no profile exists, user might be incomplete
               setUser({
@@ -232,6 +270,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
                 role: 'user' // Default role
               });
+              
+              if (isDevelopmentMode()) {
+                devUtils.log(`Firebase user loaded without profile: ${firebaseUser.email}`);
+              }
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);
@@ -239,11 +281,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         } else {
           setUser(null);
+          if (isDevelopmentMode()) {
+            devUtils.log('Firebase user signed out');
+          }
         }
         setIsLoading(false);
       });
     } else {
-      console.log('🎭 Using mock authentication');
+      if (isDevelopmentMode()) {
+        devUtils.log('Using mock authentication');
+      }
+      
       // Use mock authentication
       unsubscribe = mockAuth.onAuthStateChanged((mockUser) => {
         setUser(mockUser);
@@ -259,6 +307,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     try {
       if (isFirebaseConnected && auth) {
+        if (isDevelopmentMode()) {
+          devUtils.log(`Firebase login attempt: ${email}`);
+        }
+        
         // Firebase authentication
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
@@ -291,7 +343,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return true;
       }
     } catch (error: any) {
-      console.error('Login failed:', error);
+      if (isDevelopmentMode()) {
+        devUtils.log(`Login failed: ${error.message}`);
+      }
+      
       setIsLoading(false);
       throw error; // Re-throw to let the UI handle the error message
     }
@@ -308,6 +363,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     try {
       if (isFirebaseConnected && auth) {
+        if (isDevelopmentMode()) {
+          devUtils.log(`Firebase signup attempt: ${email}, role: ${role}`);
+        }
+        
         // Firebase authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
@@ -330,7 +389,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return true;
       }
     } catch (error: any) {
-      console.error('Signup failed:', error);
+      if (isDevelopmentMode()) {
+        devUtils.log(`Signup failed: ${error.message}`);
+      }
+      
       setIsLoading(false);
       throw error; // Re-throw to let the UI handle the error message
     }
@@ -356,6 +418,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     isLoading,
     isFirebaseConnected,
+    isDevelopmentMode: isDevelopmentMode(),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
