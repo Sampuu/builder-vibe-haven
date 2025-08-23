@@ -1,7 +1,7 @@
-import React, { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { Component, ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Props {
   children: ReactNode;
@@ -26,8 +26,8 @@ export class MapErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Only log non-ResizeObserver errors
-    if (!error.message.includes('ResizeObserver')) {
-      console.error('Map component error:', error, errorInfo);
+    if (!error.message.includes("ResizeObserver")) {
+      console.error("Map component error:", error, errorInfo);
     }
   }
 
@@ -46,7 +46,9 @@ export class MapErrorBoundary extends Component<Props, State> {
           <CardContent className="flex items-center justify-center h-full">
             <div className="text-center">
               <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">Map Error</h3>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                Map Error
+              </h3>
               <p className="text-sm text-slate-600 mb-4">
                 There was an issue loading the map. Please try again.
               </p>
@@ -68,14 +70,14 @@ export class MapErrorBoundary extends Component<Props, State> {
 export function useResizeObserverErrorSuppression() {
   React.useEffect(() => {
     const handleError = (e: ErrorEvent) => {
-      if (e.message && e.message.includes('ResizeObserver')) {
+      if (e.message && e.message.includes("ResizeObserver")) {
         e.preventDefault();
         return false;
       }
     };
 
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
+    window.addEventListener("error", handleError);
+    return () => window.removeEventListener("error", handleError);
   }, []);
 }
 

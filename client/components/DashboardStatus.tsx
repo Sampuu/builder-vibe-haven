@@ -1,10 +1,20 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useDashboardIntegration } from '@/hooks/use-dashboard-integration';
-import { Wifi, WifiOff, Users, RefreshCw, Clock } from 'lucide-react';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useDashboardIntegration } from "@/hooks/use-dashboard-integration";
+import { Wifi, WifiOff, Users, RefreshCw, Clock } from "lucide-react";
 
 export default function DashboardStatus() {
   const {
@@ -12,14 +22,14 @@ export default function DashboardStatus() {
     isConnected,
     connectedUsers,
     realtimeEvents,
-    refreshStats
+    refreshStats,
   } = useDashboardIntegration();
 
   const getConnectionIcon = () => {
     switch (connectionStatus) {
-      case 'connected':
+      case "connected":
         return <Wifi className="h-4 w-4 text-green-500" />;
-      case 'connecting':
+      case "connecting":
         return <RefreshCw className="h-4 w-4 animate-spin text-yellow-500" />;
       default:
         return <WifiOff className="h-4 w-4 text-red-500" />;
@@ -28,23 +38,23 @@ export default function DashboardStatus() {
 
   const getConnectionText = () => {
     switch (connectionStatus) {
-      case 'connected':
-        return 'Live';
-      case 'connecting':
-        return 'Connecting...';
+      case "connected":
+        return "Live";
+      case "connecting":
+        return "Connecting...";
       default:
-        return 'Offline';
+        return "Offline";
     }
   };
 
   const getStatusColor = () => {
     switch (connectionStatus) {
-      case 'connected':
-        return 'bg-green-500';
-      case 'connecting':
-        return 'bg-yellow-500';
+      case "connected":
+        return "bg-green-500";
+      case "connecting":
+        return "bg-yellow-500";
       default:
-        return 'bg-red-500';
+        return "bg-red-500";
     }
   };
 
@@ -55,7 +65,9 @@ export default function DashboardStatus() {
           {getConnectionIcon()}
           <span className="ml-2 text-xs">{getConnectionText()}</span>
           {isConnected && (
-            <div className={`absolute -top-1 -right-1 h-3 w-3 ${getStatusColor()} rounded-full animate-pulse`}></div>
+            <div
+              className={`absolute -top-1 -right-1 h-3 w-3 ${getStatusColor()} rounded-full animate-pulse`}
+            ></div>
           )}
         </Button>
       </PopoverTrigger>
@@ -90,12 +102,17 @@ export default function DashboardStatus() {
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  {Object.entries(connectedUsers.usersByRole || {}).map(([role, count]) => (
-                    <div key={role} className="flex justify-between p-2 bg-slate-50 rounded">
-                      <span className="capitalize">{role}</span>
-                      <span className="font-medium">{count}</span>
-                    </div>
-                  ))}
+                  {Object.entries(connectedUsers.usersByRole || {}).map(
+                    ([role, count]) => (
+                      <div
+                        key={role}
+                        className="flex justify-between p-2 bg-slate-50 rounded"
+                      >
+                        <span className="capitalize">{role}</span>
+                        <span className="font-medium">{count}</span>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -109,10 +126,13 @@ export default function DashboardStatus() {
                 </div>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {realtimeEvents.slice(0, 5).map((event, index) => (
-                    <div key={index} className="text-xs p-2 bg-slate-50 rounded">
+                    <div
+                      key={index}
+                      className="text-xs p-2 bg-slate-50 rounded"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="font-medium capitalize">
-                          {event.type.replace('_', ' ')}
+                          {event.type.replace("_", " ")}
                         </span>
                         <span className="text-slate-500 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
@@ -132,9 +152,9 @@ export default function DashboardStatus() {
 
             {/* Actions */}
             <div className="flex space-x-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={refreshStats}
                 disabled={!isConnected}
                 className="flex-1"
@@ -147,7 +167,8 @@ export default function DashboardStatus() {
             {/* Debug Info */}
             {connectedUsers && (
               <div className="text-xs text-slate-500 border-t pt-2">
-                Last updated: {new Date(connectedUsers.timestamp).toLocaleTimeString()}
+                Last updated:{" "}
+                {new Date(connectedUsers.timestamp).toLocaleTimeString()}
               </div>
             )}
           </CardContent>

@@ -1,9 +1,9 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import SimpleNotificationCenter from '@/components/SimpleNotificationCenter';
-import DashboardStatus from '@/components/DashboardStatus';
+import { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import SimpleNotificationCenter from "@/components/SimpleNotificationCenter";
+import DashboardStatus from "@/components/DashboardStatus";
 import {
   AlertTriangle,
   LogOut,
@@ -12,8 +12,8 @@ import {
   Truck,
   Building2,
   User,
-  Settings
-} from 'lucide-react';
+  Settings,
+} from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -29,24 +29,24 @@ const roleIcons = {
 };
 
 const roleColors = {
-  user: 'text-emergency-info',
-  police: 'text-emergency-danger',
-  fire: 'text-emergency-warning',
-  ambulance: 'text-emergency-resolved',
-  hospital: 'text-emergency-info',
-  admin: 'text-slate-700',
+  user: "text-emergency-info",
+  police: "text-emergency-danger",
+  fire: "text-emergency-warning",
+  ambulance: "text-emergency-resolved",
+  hospital: "text-emergency-info",
+  admin: "text-slate-700",
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
-  
+
   if (!user) return null;
 
   const RoleIcon = roleIcons[user.role];
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   return (
@@ -83,9 +83,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {user.name}
+                  </p>
                   <p className="text-xs text-slate-500 capitalize flex items-center">
-                    <RoleIcon className={`h-3 w-3 mr-1 ${roleColors[user.role]}`} />
+                    <RoleIcon
+                      className={`h-3 w-3 mr-1 ${roleColors[user.role]}`}
+                    />
                     {user.role}
                   </p>
                 </div>

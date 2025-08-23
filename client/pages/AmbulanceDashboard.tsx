@@ -1,15 +1,36 @@
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useIncidents, useInitializeData } from '@/hooks/use-data';
-import { useAuth } from '@/hooks/use-auth';
-import { Truck, MapPin, Heart, RefreshCw, Navigation, Clock, AlertTriangle, Activity } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useIncidents, useInitializeData } from "@/hooks/use-data";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  Truck,
+  MapPin,
+  Heart,
+  RefreshCw,
+  Navigation,
+  Clock,
+  AlertTriangle,
+  Activity,
+} from "lucide-react";
 
 export default function AmbulanceDashboard() {
   const navigate = useNavigate();
@@ -19,17 +40,17 @@ export default function AmbulanceDashboard() {
   const dataInitialized = useInitializeData();
 
   // Filter incidents relevant to ambulance service
-  const medicalIncidents = incidents.filter(incident => 
-    incident.type === 'medical' || 
-    incident.assignedRole === 'ambulance'
+  const medicalIncidents = incidents.filter(
+    (incident) =>
+      incident.type === "medical" || incident.assignedRole === "ambulance",
   );
 
   const handleDispatch = async (incidentId: string) => {
     try {
-      await updateIncident(incidentId, { 
-        status: 'in-progress',
-        assignedTo: user?.name || 'Ambulance Unit',
-        assignedRole: 'ambulance'
+      await updateIncident(incidentId, {
+        status: "in-progress",
+        assignedTo: user?.name || "Ambulance Unit",
+        assignedRole: "ambulance",
       });
       toast({
         title: "Ambulance Dispatched",
@@ -47,15 +68,15 @@ export default function AmbulanceDashboard() {
   const handleUpdateStatus = async (incidentId: string, newStatus: string) => {
     try {
       const statusMap: { [key: string]: string } = {
-        'pending': 'pending',
-        'dispatched': 'in-progress',
-        'en-route': 'in-progress',
-        'on-scene': 'in-progress',
-        'transporting': 'in-progress',
-        'at-hospital': 'resolved',
-        'resolved': 'resolved'
+        pending: "pending",
+        dispatched: "in-progress",
+        "en-route": "in-progress",
+        "on-scene": "in-progress",
+        transporting: "in-progress",
+        "at-hospital": "resolved",
+        resolved: "resolved",
       };
-      
+
       await updateIncident(incidentId, { status: statusMap[newStatus] as any });
       toast({
         title: "Status Updated",
@@ -75,13 +96,13 @@ export default function AmbulanceDashboard() {
       title: "Navigation Started",
       description: `Navigating to patient at ${incident.location}`,
     });
-    
+
     if (incident.latitude && incident.longitude) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${incident.latitude},${incident.longitude}`;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     } else {
       const url = `https://www.google.com/maps/search/${encodeURIComponent(incident.location)}`;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
   };
 
@@ -103,32 +124,44 @@ export default function AmbulanceDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-emergency-warning';
-      case 'in-progress': return 'bg-emergency-info';
-      case 'resolved': return 'bg-emergency-resolved';
-      default: return 'bg-slate-500';
+      case "pending":
+        return "bg-emergency-warning";
+      case "in-progress":
+        return "bg-emergency-info";
+      case "resolved":
+        return "bg-emergency-resolved";
+      default:
+        return "bg-slate-500";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-emergency-danger';
-      case 'high': return 'bg-emergency-warning';
-      case 'medium': return 'bg-emergency-info';
-      default: return 'bg-slate-500';
+      case "critical":
+        return "bg-emergency-danger";
+      case "high":
+        return "bg-emergency-warning";
+      case "medium":
+        return "bg-emergency-info";
+      default:
+        return "bg-slate-500";
     }
   };
 
   const getAmbulanceStatus = (incident: any) => {
-    if (incident.status === 'pending') return 'Available';
-    if (incident.status === 'in-progress') return 'En Route/On Scene';
-    if (incident.status === 'resolved') return 'At Hospital';
-    return 'Unknown';
+    if (incident.status === "pending") return "Available";
+    if (incident.status === "in-progress") return "En Route/On Scene";
+    if (incident.status === "resolved") return "At Hospital";
+    return "Unknown";
   };
 
   useEffect(() => {
     if (dataInitialized) {
-      console.log('Ambulance dashboard data loaded:', medicalIncidents.length, 'medical incidents');
+      console.log(
+        "Ambulance dashboard data loaded:",
+        medicalIncidents.length,
+        "medical incidents",
+      );
     }
   }, [dataInitialized, medicalIncidents.length]);
 
@@ -143,19 +176,25 @@ export default function AmbulanceDashboard() {
                 <Truck className="mr-3 h-8 w-8 text-emergency-resolved" />
                 Ambulance Service Command
               </h2>
-              <p className="text-slate-600">Respond to medical emergencies and transport patients.</p>
+              <p className="text-slate-600">
+                Respond to medical emergencies and transport patients.
+              </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-emergency-resolved">🚑</div>
+              <div className="text-2xl font-bold text-emergency-resolved">
+                🚑
+              </div>
               <div className="text-sm text-slate-500">Medical Units Ready</div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleRefresh}
                 disabled={loading}
                 className="mt-2"
               >
-                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                />
                 Refresh
               </Button>
             </div>
@@ -175,7 +214,7 @@ export default function AmbulanceDashboard() {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-emergency-danger">
-                {medicalIncidents.filter(i => i.status !== 'resolved').length}
+                {medicalIncidents.filter((i) => i.status !== "resolved").length}
               </div>
               <div className="text-sm text-slate-600">Active Cases</div>
             </CardContent>
@@ -183,7 +222,10 @@ export default function AmbulanceDashboard() {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-emergency-warning">
-                {medicalIncidents.filter(i => i.priority === 'critical').length}
+                {
+                  medicalIncidents.filter((i) => i.priority === "critical")
+                    .length
+                }
               </div>
               <div className="text-sm text-slate-600">Critical Priority</div>
             </CardContent>
@@ -191,7 +233,10 @@ export default function AmbulanceDashboard() {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-emergency-info">
-                {medicalIncidents.filter(i => i.status === 'in-progress').length}
+                {
+                  medicalIncidents.filter((i) => i.status === "in-progress")
+                    .length
+                }
               </div>
               <div className="text-sm text-slate-600">Units Dispatched</div>
             </CardContent>
@@ -199,10 +244,19 @@ export default function AmbulanceDashboard() {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-emergency-resolved">
-                {incidents.filter(i => i.type === 'medical' && i.status === 'resolved' && 
-                  new Date(i.updatedAt).toDateString() === new Date().toDateString()).length}
+                {
+                  incidents.filter(
+                    (i) =>
+                      i.type === "medical" &&
+                      i.status === "resolved" &&
+                      new Date(i.updatedAt).toDateString() ===
+                        new Date().toDateString(),
+                  ).length
+                }
               </div>
-              <div className="text-sm text-slate-600">Patients Helped Today</div>
+              <div className="text-sm text-slate-600">
+                Patients Helped Today
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -213,9 +267,15 @@ export default function AmbulanceDashboard() {
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
                 <Heart className="mr-2 h-5 w-5 text-emergency-resolved" />
-                Active Medical Incidents ({medicalIncidents.filter(i => i.status !== 'resolved').length})
+                Active Medical Incidents (
+                {medicalIncidents.filter((i) => i.status !== "resolved").length}
+                )
               </span>
-              <Button variant="success" size="sm" onClick={() => navigate('/ambulance/incidents')}>
+              <Button
+                variant="success"
+                size="sm"
+                onClick={() => navigate("/ambulance/incidents")}
+              >
                 <Heart className="mr-2 h-4 w-4" />
                 View All
               </Button>
@@ -238,11 +298,18 @@ export default function AmbulanceDashboard() {
             ) : (
               <div className="space-y-4">
                 {medicalIncidents.slice(0, 3).map((incident) => (
-                  <div key={incident.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
+                  <div
+                    key={incident.id}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
+                  >
                     <div className="flex items-center space-x-4">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(incident.status)}`}></div>
+                      <div
+                        className={`w-3 h-3 rounded-full ${getStatusColor(incident.status)}`}
+                      ></div>
                       <div>
-                        <div className="font-medium text-slate-900">{incident.title}</div>
+                        <div className="font-medium text-slate-900">
+                          {incident.title}
+                        </div>
                         <div className="text-sm text-slate-600 flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
                           {incident.location}
@@ -253,24 +320,26 @@ export default function AmbulanceDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <Badge className={`${getPriorityColor(incident.priority)} text-white`}>
+                      <Badge
+                        className={`${getPriorityColor(incident.priority)} text-white`}
+                      >
                         {incident.priority}
                       </Badge>
                       <div className="text-sm text-slate-500 flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
                         {new Date(incident.createdAt).toLocaleTimeString()}
                       </div>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleNavigateToPatient(incident)}
                       >
                         <Navigation className="mr-2 h-4 w-4" />
                         Navigate
                       </Button>
-                      {incident.status === 'pending' && (
-                        <Button 
-                          variant="success" 
+                      {incident.status === "pending" && (
+                        <Button
+                          variant="success"
                           size="sm"
                           onClick={() => handleDispatch(incident.id)}
                         >
@@ -278,17 +347,27 @@ export default function AmbulanceDashboard() {
                           Dispatch
                         </Button>
                       )}
-                      <Select onValueChange={(value) => handleUpdateStatus(incident.id, value)}>
+                      <Select
+                        onValueChange={(value) =>
+                          handleUpdateStatus(incident.id, value)
+                        }
+                      >
                         <SelectTrigger className="w-40">
-                          <SelectValue placeholder={getAmbulanceStatus(incident)} />
+                          <SelectValue
+                            placeholder={getAmbulanceStatus(incident)}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">Available</SelectItem>
                           <SelectItem value="dispatched">Dispatched</SelectItem>
                           <SelectItem value="en-route">En Route</SelectItem>
                           <SelectItem value="on-scene">On Scene</SelectItem>
-                          <SelectItem value="transporting">Transporting</SelectItem>
-                          <SelectItem value="at-hospital">At Hospital</SelectItem>
+                          <SelectItem value="transporting">
+                            Transporting
+                          </SelectItem>
+                          <SelectItem value="at-hospital">
+                            At Hospital
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -307,10 +386,16 @@ export default function AmbulanceDashboard() {
                 <Heart className="h-8 w-8 text-emergency-resolved" />
               </div>
               <CardTitle>All Medical Incidents</CardTitle>
-              <CardDescription>View and manage all medical emergencies</CardDescription>
+              <CardDescription>
+                View and manage all medical emergencies
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success" onClick={() => navigate('/ambulance/incidents')}>
+              <Button
+                className="w-full"
+                variant="success"
+                onClick={() => navigate("/ambulance/incidents")}
+              >
                 <Heart className="mr-2 h-4 w-4" />
                 View All Incidents
               </Button>
@@ -326,7 +411,11 @@ export default function AmbulanceDashboard() {
               <CardDescription>View patient locations on map</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info" onClick={() => navigate('/user/map')}>
+              <Button
+                className="w-full"
+                variant="info"
+                onClick={() => navigate("/user/map")}
+              >
                 <MapPin className="mr-2 h-4 w-4" />
                 Open Map
               </Button>
@@ -339,10 +428,16 @@ export default function AmbulanceDashboard() {
                 <Activity className="h-8 w-8 text-emergency-warning" />
               </div>
               <CardTitle>Unit Status</CardTitle>
-              <CardDescription>Manage ambulance unit assignments</CardDescription>
+              <CardDescription>
+                Manage ambulance unit assignments
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning" onClick={() => navigate('/ambulance/incidents')}>
+              <Button
+                className="w-full"
+                variant="warning"
+                onClick={() => navigate("/ambulance/incidents")}
+              >
                 <Truck className="mr-2 h-4 w-4" />
                 Manage Units
               </Button>

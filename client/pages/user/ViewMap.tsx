@@ -1,14 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { useIncidents, useInitializeData } from '@/hooks/use-data';
-import SafeInteractiveMap, { type MapIncident } from '@/components/SafeInteractiveMap';
-import { useResizeObserverErrorSuppression } from '@/components/MapErrorBoundary';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useIncidents, useInitializeData } from "@/hooks/use-data";
+import SafeInteractiveMap, {
+  type MapIncident,
+} from "@/components/SafeInteractiveMap";
+import { useResizeObserverErrorSuppression } from "@/components/MapErrorBoundary";
 import {
   Map,
   ArrowLeft,
@@ -16,8 +24,8 @@ import {
   AlertTriangle,
   Filter,
   RefreshCw,
-  Navigation
-} from 'lucide-react';
+  Navigation,
+} from "lucide-react";
 
 export default function ViewMap() {
   const navigate = useNavigate();
@@ -29,28 +37,29 @@ export default function ViewMap() {
   useResizeObserverErrorSuppression();
   const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Convert incidents to map format
   const mapIncidents: MapIncident[] = incidents
-    .filter(incident => {
-      const matchesType = typeFilter === 'all' || incident.type === typeFilter;
-      const matchesStatus = statusFilter === 'all' || incident.status === statusFilter;
+    .filter((incident) => {
+      const matchesType = typeFilter === "all" || incident.type === typeFilter;
+      const matchesStatus =
+        statusFilter === "all" || incident.status === statusFilter;
       return matchesType && matchesStatus;
     })
-    .map(incident => ({
+    .map((incident) => ({
       id: incident.id,
       type: incident.type,
       title: incident.title,
       location: incident.location,
-      latitude: incident.latitude || (40.7128 + (Math.random() - 0.5) * 0.02),
-      longitude: incident.longitude || (-74.0060 + (Math.random() - 0.5) * 0.02),
+      latitude: incident.latitude || 40.7128 + (Math.random() - 0.5) * 0.02,
+      longitude: incident.longitude || -74.006 + (Math.random() - 0.5) * 0.02,
       status: incident.status,
       priority: incident.priority,
       description: incident.description,
       time: new Date(incident.createdAt).toLocaleTimeString(),
-      assignedTo: incident.assignedTo
+      assignedTo: incident.assignedTo,
     }));
 
   const handleIncidentClick = (incident: MapIncident) => {
@@ -71,7 +80,7 @@ export default function ViewMap() {
     // For demo, open Google Maps
     if (incident.latitude && incident.longitude) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${incident.latitude},${incident.longitude}`;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
   };
 
@@ -93,7 +102,7 @@ export default function ViewMap() {
 
   useEffect(() => {
     if (dataInitialized && incidents.length > 0) {
-      console.log('Map data loaded:', incidents.length, 'incidents');
+      console.log("Map data loaded:", incidents.length, "incidents");
     }
   }, [dataInitialized, incidents]);
 
@@ -102,7 +111,7 @@ export default function ViewMap() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard/user')}>
+            <Button variant="ghost" onClick={() => navigate("/dashboard/user")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
@@ -111,15 +120,27 @@ export default function ViewMap() {
                 <Map className="mr-3 h-8 w-8 text-emergency-info" />
                 Emergency Map
               </h1>
-              <p className="text-slate-600">View danger zones and reported incidents in your area ({mapIncidents.length} incidents)</p>
+              <p className="text-slate-600">
+                View danger zones and reported incidents in your area (
+                {mapIncidents.length} incidents)
+              </p>
             </div>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <Filter className="mr-2 h-4 w-4" />
               Filters
             </Button>
@@ -143,7 +164,9 @@ export default function ViewMap() {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Incident Type</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Incident Type
+                  </label>
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
@@ -158,7 +181,9 @@ export default function ViewMap() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Status</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Status
+                  </label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -204,13 +229,17 @@ export default function ViewMap() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Nearby Incidents</CardTitle>
-                <CardDescription>Active emergencies in your area</CardDescription>
+                <CardDescription>
+                  Active emergencies in your area
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="text-center py-4">
                     <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-slate-400" />
-                    <p className="text-sm text-slate-600">Loading incidents...</p>
+                    <p className="text-sm text-slate-600">
+                      Loading incidents...
+                    </p>
                   </div>
                 ) : mapIncidents.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
@@ -223,24 +252,40 @@ export default function ViewMap() {
                       <div
                         key={incident.id}
                         className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                          selectedIncident === incident.id
+                            ? "border-emergency-info bg-emergency-info/5"
+                            : "border-slate-200 hover:bg-slate-50"
                         }`}
                         onClick={() => setSelectedIncident(incident.id)}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <AlertTriangle className={`h-4 w-4 ${
-                              incident.type === 'fire' ? 'text-emergency-danger' :
-                              incident.type === 'accident' ? 'text-emergency-warning' :
-                              incident.type === 'medical' ? 'text-emergency-info' : 'text-emergency-resolved'
-                            }`} />
-                            <span className="text-sm font-medium capitalize">{incident.type}</span>
+                            <AlertTriangle
+                              className={`h-4 w-4 ${
+                                incident.type === "fire"
+                                  ? "text-emergency-danger"
+                                  : incident.type === "accident"
+                                    ? "text-emergency-warning"
+                                    : incident.type === "medical"
+                                      ? "text-emergency-info"
+                                      : "text-emergency-resolved"
+                              }`}
+                            />
+                            <span className="text-sm font-medium capitalize">
+                              {incident.type}
+                            </span>
                           </div>
-                          <Badge className={`text-xs ${
-                            incident.priority === 'critical' ? 'bg-emergency-danger' :
-                            incident.priority === 'high' ? 'bg-emergency-warning' :
-                            incident.priority === 'medium' ? 'bg-emergency-info' : 'bg-slate-500'
-                          } text-white`}>
+                          <Badge
+                            className={`text-xs ${
+                              incident.priority === "critical"
+                                ? "bg-emergency-danger"
+                                : incident.priority === "high"
+                                  ? "bg-emergency-warning"
+                                  : incident.priority === "medium"
+                                    ? "bg-emergency-info"
+                                    : "bg-slate-500"
+                            } text-white`}
+                          >
                             {incident.priority}
                           </Badge>
                         </div>
@@ -301,20 +346,20 @@ export default function ViewMap() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button 
-                  variant="danger" 
-                  size="sm" 
-                  className="w-full" 
-                  onClick={() => navigate('/user/report')}
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate("/user/report")}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Report Emergency
                 </Button>
-                <Button 
-                  variant="success" 
-                  size="sm" 
+                <Button
+                  variant="success"
+                  size="sm"
                   className="w-full"
-                  onClick={() => navigate('/user/help')}
+                  onClick={() => navigate("/user/help")}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   Request Help

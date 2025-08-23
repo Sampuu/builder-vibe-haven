@@ -1,17 +1,17 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { MapPin, RefreshCw } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect, Suspense } from "react";
+import { MapPin, RefreshCw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Type definition for map incidents
 export interface MapIncident {
   id: string;
-  type: 'fire' | 'medical' | 'accident' | 'police';
+  type: "fire" | "medical" | "accident" | "police";
   title: string;
   location: string;
   latitude: number;
   longitude: number;
-  status: 'pending' | 'in-progress' | 'resolved';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: "pending" | "in-progress" | "resolved";
+  priority: "low" | "medium" | "high" | "critical";
   description: string;
   time: string;
   assignedTo?: string;
@@ -27,24 +27,36 @@ interface SafeInteractiveMapProps {
 }
 
 // Import static placeholder
-import StaticMapPlaceholder from './StaticMapPlaceholder';
+import StaticMapPlaceholder from "./StaticMapPlaceholder";
 
 // Lazy load the actual map component to prevent React context issues
 const LazyInteractiveMap = React.lazy(() =>
-  import('./InteractiveMap').then(module => ({
-    default: module.default
-  })).catch((error) => {
-    console.warn('Failed to load interactive map, using static placeholder:', error);
-    return {
-      default: StaticMapPlaceholder
-    };
-  })
+  import("./InteractiveMap")
+    .then((module) => ({
+      default: module.default,
+    }))
+    .catch((error) => {
+      console.warn(
+        "Failed to load interactive map, using static placeholder:",
+        error,
+      );
+      return {
+        default: StaticMapPlaceholder,
+      };
+    }),
 );
 
 // Fallback component when map fails to load
-function MapFallback({ incidents, height = '400px', onIncidentClick }: SafeInteractiveMapProps) {
+function MapFallback({
+  incidents,
+  height = "400px",
+  onIncidentClick,
+}: SafeInteractiveMapProps) {
   return (
-    <div style={{ height, width: '100%' }} className="bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex flex-col">
+    <div
+      style={{ height, width: "100%" }}
+      className="bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex flex-col"
+    >
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center text-slate-500">
           <MapPin className="h-16 w-16 mx-auto mb-4 opacity-50" />
@@ -53,14 +65,16 @@ function MapFallback({ incidents, height = '400px', onIncidentClick }: SafeInter
           <p className="text-xs">Showing incident list instead</p>
         </div>
       </div>
-      
+
       {/* Show incidents as a list when map is unavailable */}
       {incidents.length > 0 && (
         <div className="p-4 border-t border-slate-300 max-h-32 overflow-y-auto">
-          <div className="text-xs font-medium text-slate-700 mb-2">Incidents ({incidents.length})</div>
+          <div className="text-xs font-medium text-slate-700 mb-2">
+            Incidents ({incidents.length})
+          </div>
           <div className="space-y-1">
             {incidents.slice(0, 5).map((incident) => (
-              <div 
+              <div
                 key={incident.id}
                 className="text-xs p-2 bg-white rounded border cursor-pointer hover:bg-slate-50"
                 onClick={() => onIncidentClick?.(incident)}
@@ -82,9 +96,12 @@ function MapFallback({ incidents, height = '400px', onIncidentClick }: SafeInter
 }
 
 // Loading component for the map
-function MapLoading({ height = '400px' }: { height?: string }) {
+function MapLoading({ height = "400px" }: { height?: string }) {
   return (
-    <div style={{ height, width: '100%' }} className="bg-slate-50 rounded-lg flex items-center justify-center">
+    <div
+      style={{ height, width: "100%" }}
+      className="bg-slate-50 rounded-lg flex items-center justify-center"
+    >
       <div className="text-center">
         <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-slate-400" />
         <p className="text-slate-600">Loading map...</p>
@@ -136,7 +153,7 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn('Map component error caught:', error);
+    console.warn("Map component error caught:", error);
     this.props.onError();
   }
 

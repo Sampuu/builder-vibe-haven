@@ -29,7 +29,7 @@ export function createServer() {
   app.get("/api/dashboard/stats", (_req, res) => {
     res.json({
       connectedUsers: dashboardWS.getConnectedUsers(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   });
 

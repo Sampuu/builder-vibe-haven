@@ -7,33 +7,41 @@ const originalConsoleError = console.error;
 // Override console.error to filter out ResizeObserver errors
 console.error = (...args: any[]) => {
   // Check if this is the ResizeObserver loop error
-  if (args[0] && typeof args[0] === 'string') {
-    if (args[0].includes('ResizeObserver loop completed with undelivered notifications')) {
+  if (args[0] && typeof args[0] === "string") {
+    if (
+      args[0].includes(
+        "ResizeObserver loop completed with undelivered notifications",
+      )
+    ) {
       // This is a known harmless error in many UI libraries - suppress it
       return;
     }
-    if (args[0].includes('ResizeObserver loop limit exceeded')) {
+    if (args[0].includes("ResizeObserver loop limit exceeded")) {
       // Another variant of the same error - suppress it
       return;
     }
   }
-  
+
   // For all other errors, use the original console.error
   originalConsoleError(...args);
 };
 
 // Add a global error handler for unhandled ResizeObserver errors
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (e) => {
-    if (e.message && e.message.includes('ResizeObserver')) {
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (e) => {
+    if (e.message && e.message.includes("ResizeObserver")) {
       e.preventDefault();
       return false;
     }
   });
 
   // Handle promise rejections that might be related to ResizeObserver
-  window.addEventListener('unhandledrejection', (e) => {
-    if (e.reason && e.reason.message && e.reason.message.includes('ResizeObserver')) {
+  window.addEventListener("unhandledrejection", (e) => {
+    if (
+      e.reason &&
+      e.reason.message &&
+      e.reason.message.includes("ResizeObserver")
+    ) {
       e.preventDefault();
       return false;
     }
@@ -58,16 +66,19 @@ export class DebouncedResizeObserver {
         if (this.timeout) {
           clearTimeout(this.timeout);
         }
-        
+
         this.timeout = window.setTimeout(() => {
           try {
             this.callback(entries, observer);
           } catch (error) {
             // Suppress ResizeObserver errors
-            if (error instanceof Error && error.message.includes('ResizeObserver')) {
+            if (
+              error instanceof Error &&
+              error.message.includes("ResizeObserver")
+            ) {
               return;
             }
-            console.error('ResizeObserver callback error:', error);
+            console.error("ResizeObserver callback error:", error);
           }
         }, this.debounceTime);
       });

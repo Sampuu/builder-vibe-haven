@@ -1,5 +1,5 @@
 // Performance utilities to monitor and prevent excessive updates
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export class PerformanceMonitor {
   private static renderCounts: Map<string, number> = new Map();
@@ -22,7 +22,9 @@ export class PerformanceMonitor {
     // Check if we're rendering too frequently
     if (renderCount > this.RENDER_THRESHOLD) {
       if (renderCount === this.WARNING_THRESHOLD) {
-        console.warn(`Performance warning: ${componentName} has rendered ${renderCount} times recently. This may cause ResizeObserver issues.`);
+        console.warn(
+          `Performance warning: ${componentName} has rendered ${renderCount} times recently. This may cause ResizeObserver issues.`,
+        );
       }
       return false; // Skip this render
     }
@@ -40,7 +42,7 @@ export class PerformanceMonitor {
   static getStats() {
     return {
       renderCounts: Object.fromEntries(this.renderCounts),
-      lastRenderTimes: Object.fromEntries(this.lastRenderTime)
+      lastRenderTimes: Object.fromEntries(this.lastRenderTime),
     };
   }
 }
@@ -49,24 +51,24 @@ export class PerformanceMonitor {
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
-  immediate = false
+  immediate = false,
 ): (...args: Parameters<T>) => void {
   let timeout: number | null = null;
-  
+
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
       timeout = null;
       if (!immediate) func(...args);
     };
-    
+
     const callNow = immediate && !timeout;
-    
+
     if (timeout !== null) {
       clearTimeout(timeout);
     }
-    
+
     timeout = window.setTimeout(later, wait);
-    
+
     if (callNow) func(...args);
   };
 }
@@ -74,15 +76,15 @@ export function debounce<T extends (...args: any[]) => any>(
 // Throttled function utility
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  
+
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }
@@ -93,7 +95,9 @@ export function usePerformanceMonitor(componentName: string) {
     const shouldRender = PerformanceMonitor.trackRender(componentName);
 
     if (!shouldRender) {
-      console.warn(`Skipping render for ${componentName} due to performance constraints`);
+      console.warn(
+        `Skipping render for ${componentName} due to performance constraints`,
+      );
     }
 
     return () => {
