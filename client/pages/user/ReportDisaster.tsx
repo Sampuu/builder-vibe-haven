@@ -296,10 +296,19 @@ export default function ReportDisaster() {
                         placeholder="Full address or detailed location description"
                         className={`flex-1 ${errors.location ? 'border-emergency-danger' : ''}`}
                       />
-                      <Button type="button" variant="outline" onClick={getCurrentLocation}>
+                      <Button type="button" variant="outline" onClick={getCurrentLocation} title="Use current location">
                         <MapPin className="h-4 w-4" />
                       </Button>
+                      <Button type="button" variant="outline" onClick={() => setShowMap(true)} title="Select on map">
+                        <MapPin className="h-4 w-4" />
+                        Map
+                      </Button>
                     </div>
+                    {formData.coordinates && (
+                      <p className="text-sm text-emergency-info">
+                        📍 Coordinates: {formData.coordinates.lat.toFixed(6)}, {formData.coordinates.lng.toFixed(6)}
+                      </p>
+                    )}
                     {errors.location && <p className="text-sm text-emergency-danger">{errors.location}</p>}
                   </div>
 
