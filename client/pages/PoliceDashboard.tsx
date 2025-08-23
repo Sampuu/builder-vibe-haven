@@ -1,17 +1,19 @@
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Shield, 
-  AlertTriangle, 
-  MapPin, 
-  Users, 
+import {
+  Shield,
+  AlertTriangle,
+  MapPin,
+  Users,
   Clock,
   CheckCircle
 } from 'lucide-react';
 
 export default function PoliceDashboard() {
+  const navigate = useNavigate();
   // Mock data for incidents
   const incidents = [
     { id: 1, type: 'Fire', location: 'Downtown Plaza', status: 'pending', priority: 'high', time: '2 mins ago' },
