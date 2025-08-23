@@ -150,7 +150,7 @@ export default function PoliceDashboard() {
               <CardDescription>Send requests to Fire Brigade, Ambulance, or Hospital</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="danger">Request Help</Button>
+              <Button className="w-full" variant="danger" onClick={() => navigate('/police/incidents')}>Request Help</Button>
             </CardContent>
           </Card>
 
@@ -163,7 +163,7 @@ export default function PoliceDashboard() {
               <CardDescription>View all incidents on interactive map</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info">Open Map</Button>
+              <Button className="w-full" variant="info" onClick={() => navigate('/police/map')}>Open Map</Button>
             </CardContent>
           </Card>
 
