@@ -20,7 +20,7 @@ const FireIcon = icon({
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 12.5 12.5 28.5 12.5 28.5s12.5-16 12.5-28.5C25 5.6 19.4 0 12.5 0z" fill="#dc2626"/>
       <circle cx="12.5" cy="12.5" r="8" fill="white"/>
-      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="10" fill="#dc2626">🔥</text>
+      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#dc2626">F</text>
     </svg>
   `),
   iconSize: [25, 41],
@@ -33,7 +33,7 @@ const MedicalIcon = icon({
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 12.5 12.5 28.5 12.5 28.5s12.5-16 12.5-28.5C25 5.6 19.4 0 12.5 0z" fill="#2563eb"/>
       <circle cx="12.5" cy="12.5" r="8" fill="white"/>
-      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="10" fill="#2563eb">🏥</text>
+      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#2563eb">M</text>
     </svg>
   `),
   iconSize: [25, 41],
@@ -46,7 +46,7 @@ const AccidentIcon = icon({
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 12.5 12.5 28.5 12.5 28.5s12.5-16 12.5-28.5C25 5.6 19.4 0 12.5 0z" fill="#f59e0b"/>
       <circle cx="12.5" cy="12.5" r="8" fill="white"/>
-      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="10" fill="#f59e0b">⚠️</text>
+      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#f59e0b">!</text>
     </svg>
   `),
   iconSize: [25, 41],
@@ -59,7 +59,7 @@ const PoliceIcon = icon({
     <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 12.5 12.5 28.5 12.5 28.5s12.5-16 12.5-28.5C25 5.6 19.4 0 12.5 0z" fill="#059669"/>
       <circle cx="12.5" cy="12.5" r="8" fill="white"/>
-      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="10" fill="#059669">🚔</text>
+      <text x="12.5" y="17" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#059669">P</text>
     </svg>
   `),
   iconSize: [25, 41],
