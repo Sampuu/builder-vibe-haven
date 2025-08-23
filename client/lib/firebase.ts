@@ -38,7 +38,7 @@ try {
         connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
       }
       if (!db._delegate._databaseId.projectId.includes('(default)')) {
-        connectFirestoreEmulator(db, 'localhost', 8080);
+        connectFirestoreEmulator(db, 'localhost', 8081);
       }
       if (!functions._delegate.region.includes('localhost')) {
         connectFunctionsEmulator(functions, 'localhost', 5001);
