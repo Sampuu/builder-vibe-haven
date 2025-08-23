@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useInitializeData } from "@/hooks/use-data";
 
 // Pages
 import Index from "./pages/Index";
@@ -52,13 +53,20 @@ import SupplyRequests from "./pages/hospital/SupplyRequests";
 
 const queryClient = new QueryClient();
 
+// Data initialization component
+function DataInitializer({ children }: { children: React.ReactNode }) {
+  useInitializeData();
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <DataInitializer>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
@@ -234,8 +242,9 @@ const App = () => (
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </DataInitializer>
     </AuthProvider>
   </QueryClientProvider>
 );
