@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus, Wifi, WifiOff, Cloud } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, UserPlus, Check, X } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -21,40 +21,65 @@ export default function Signup() {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const { signup, isFirebaseConnected } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear validation errors as user types
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    
+    // Clear general error
+    if (error) {
+      setError('');
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors.name = 'Full name is required';
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long';
+    }
+
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all required fields');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // Create account with Firebase or mock service
       const success = await signup(
         formData.email, 
         formData.password, 
@@ -64,10 +89,11 @@ export default function Signup() {
       );
       
       if (success) {
-        // Redirect to appropriate dashboard based on role
-        navigate(`/dashboard/${formData.role}`);
-      } else {
-        setError('Failed to create account. Please try again.');
+        // Show success message briefly then redirect
+        setError('');
+        setTimeout(() => {
+          navigate(`/dashboard/${formData.role}`);
+        }, 1000);
       }
     } catch (err: any) {
       console.error('Signup error:', err);
@@ -78,13 +104,16 @@ export default function Signup() {
   };
 
   const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
+    { value: 'user', label: 'User', description: 'Report disasters & request help', icon: '👤' },
+    { value: 'police', label: 'Police', description: 'Monitor & coordinate response', icon: '👮' },
+    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies', icon: '🚒' },
+    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response', icon: '🚑' },
+    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch', icon: '🏥' },
+    { value: 'admin', label: 'Admin', description: 'Full system access', icon: '⚙️' },
   ];
+
+  const getFieldError = (field: string) => validationErrors[field];
+  const hasFieldError = (field: string) => !!validationErrors[field];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
@@ -104,22 +133,22 @@ export default function Signup() {
             {/* Connection Status */}
             <div className="flex justify-center mb-2">
               <Badge 
-                variant={isFirebaseConnected ? "secondary" : "outline"}
+                variant="secondary"
                 className={`flex items-center gap-1 ${
                   isFirebaseConnected 
                     ? 'bg-green-100 text-green-700 border-green-200' 
-                    : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                    : 'bg-blue-100 text-blue-700 border-blue-200'
                 }`}
               >
                 {isFirebaseConnected ? (
                   <>
-                    <Cloud className="h-3 w-3" />
+                    <Check className="h-3 w-3" />
                     Firebase Connected
                   </>
                 ) : (
                   <>
-                    <WifiOff className="h-3 w-3" />
-                    Demo Mode
+                    <Check className="h-3 w-3" />
+                    Demo Mode Active
                   </>
                 )}
               </Badge>
@@ -136,12 +165,12 @@ export default function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Connection Info */}
+            {/* Demo Mode Info */}
             {!isFirebaseConnected && (
-              <Alert className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  <strong>Demo Mode:</strong> Running with local storage. All features work normally for testing.
+              <Alert className="mb-4 border-blue-200 bg-blue-50">
+                <Check className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-700">
+                  <strong>Demo Mode:</strong> Create accounts instantly for testing. All features are fully functional.
                 </AlertDescription>
               </Alert>
             )}
@@ -149,7 +178,7 @@ export default function Signup() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
@@ -162,8 +191,12 @@ export default function Signup() {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter your full name"
+                  className={hasFieldError('name') ? 'border-red-500 focus:border-red-500' : ''}
                   required
                 />
+                {hasFieldError('name') && (
+                  <p className="text-sm text-red-600">{getFieldError('name')}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -174,8 +207,12 @@ export default function Signup() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email"
+                  className={hasFieldError('email') ? 'border-red-500 focus:border-red-500' : ''}
                   required
                 />
+                {hasFieldError('email') && (
+                  <p className="text-sm text-red-600">{getFieldError('email')}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -198,9 +235,12 @@ export default function Signup() {
                   <SelectContent>
                     {roleOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
+                        <div className="flex items-center gap-2">
+                          <span>{option.icon}</span>
+                          <div>
+                            <div className="font-medium">{option.label}</div>
+                            <div className="text-xs text-slate-500">{option.description}</div>
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -216,9 +256,13 @@ export default function Signup() {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Create a password (min 6 characters)"
+                  className={hasFieldError('password') ? 'border-red-500 focus:border-red-500' : ''}
                   required
                   minLength={6}
                 />
+                {hasFieldError('password') && (
+                  <p className="text-sm text-red-600">{getFieldError('password')}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -229,8 +273,12 @@ export default function Signup() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   placeholder="Confirm your password"
+                  className={hasFieldError('confirmPassword') ? 'border-red-500 focus:border-red-500' : ''}
                   required
                 />
+                {hasFieldError('confirmPassword') && (
+                  <p className="text-sm text-red-600">{getFieldError('confirmPassword')}</p>
+                )}
               </div>
 
               {(formData.role === 'police' || formData.role === 'admin' || formData.role === 'fire' || formData.role === 'ambulance') && (
@@ -247,7 +295,17 @@ export default function Signup() {
                 className="w-full" 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Create Account
+                  </>
+                )}
               </Button>
             </form>
 
@@ -264,12 +322,15 @@ export default function Signup() {
               </p>
             </div>
 
-            {/* Development Info */}
+            {/* Quick Test Info */}
             {!isFirebaseConnected && (
-              <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="text-sm font-medium text-blue-900 mb-1">Development Mode</h4>
-                <p className="text-xs text-blue-700">
-                  To connect to Firebase, set up your project and run: <code>firebase emulators:start</code>
+              <div className="mt-6 p-4 bg-slate-50 rounded-lg border">
+                <h4 className="text-sm font-medium text-slate-900 mb-2">Quick Test</h4>
+                <p className="text-xs text-slate-600 mb-2">
+                  Try creating an account with any email and password (min 6 characters).
+                </p>
+                <p className="text-xs text-slate-500">
+                  Example: <code>test@example.com</code> with password <code>123456</code>
                 </p>
               </div>
             )}
