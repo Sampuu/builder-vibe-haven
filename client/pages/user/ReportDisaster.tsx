@@ -81,25 +81,31 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
+    if (!user) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
+      const reportData = {
+        type: formData.type as any,
+        severity: formData.severity as any,
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        coordinates: formData.coordinates,
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        contactEmail: user.email,
+        images: formData.images,
+        status: 'submitted' as const,
+        reportedBy: user.id
       };
 
-      console.log('Disaster report submitted:', report);
+      await disasterReportsService.create(reportData);
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
         type: '',
@@ -107,12 +113,14 @@ export default function ReportDisaster() {
         title: '',
         description: '',
         location: '',
+        coordinates: undefined,
         contactName: user?.name || '',
         contactPhone: '',
         images: []
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
+      setError('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
