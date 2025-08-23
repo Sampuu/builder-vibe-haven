@@ -27,7 +27,7 @@ export default function AdminDashboard() {
               <CardDescription>Add, remove, edit users</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="default">Manage Users</Button>
+              <Button className="w-full" variant="default" onClick={() => navigate('/admin/users')}>Manage Users</Button>
             </CardContent>
           </Card>
 
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
               <CardDescription>Mark complete, refresh, delete</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info">Mission Control</Button>
+              <Button className="w-full" variant="info" onClick={() => navigate('/admin/missions')}>Mission Control</Button>
             </CardContent>
           </Card>
 
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
               <CardDescription>View system activity logs</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning">View Logs</Button>
+              <Button className="w-full" variant="warning" onClick={() => navigate('/admin/logs')}>View Logs</Button>
             </CardContent>
           </Card>
 
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
               <CardDescription>Access to all role dashboards</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="danger">View All</Button>
+              <Button className="w-full" variant="danger" onClick={() => navigate('/admin/dashboards')}>View All</Button>
             </CardContent>
           </Card>
         </div>
