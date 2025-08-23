@@ -27,7 +27,7 @@ export default function FireDashboard() {
               <CardDescription>View fire-related incidents only</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning">View Incidents</Button>
+              <Button className="w-full" variant="warning" onClick={() => navigate('/fire/incidents')}>View Incidents</Button>
             </CardContent>
           </Card>
 
@@ -40,7 +40,7 @@ export default function FireDashboard() {
               <CardDescription>Navigate to fire locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info">Open Map</Button>
+              <Button className="w-full" variant="info" onClick={() => navigate('/fire/incidents')}>Open Map</Button>
             </CardContent>
           </Card>
 
