@@ -23,6 +23,51 @@ const activeUnits = [
 
 export default function CommandMap() {
   const navigate = useNavigate();
+  const [disasterReports, setDisasterReports] = useState<DisasterReport[]>([]);
+  const [selectedIncident, setSelectedIncident] = useState<DisasterReport | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load initial data
+    const loadReports = async () => {
+      try {
+        const reports = await disasterReportsService.getAll();
+        setDisasterReports(reports.filter(r => r.status !== 'resolved'));
+      } catch (error) {
+        console.error('Error loading reports:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReports();
+
+    // Subscribe to real-time updates
+    const unsubscribe = disasterReportsService.subscribeToUpdates((reports) => {
+      setDisasterReports(reports.filter(r => r.status !== 'resolved'));
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Convert disaster reports to map markers
+  const mapMarkers = disasterReports
+    .filter(report => report.coordinates)
+    .map(report => ({
+      position: report.coordinates!,
+      title: report.title,
+      info: `
+        <div class="p-2">
+          <h3 class="font-bold">${report.title}</h3>
+          <p class="text-sm text-gray-600">${report.type} - ${report.severity}</p>
+          <p class="text-sm">${report.description}</p>
+          <p class="text-xs text-gray-500">Status: ${report.status}</p>
+        </div>
+      `,
+      type: report.type === 'fire' ? 'fire' :
+            report.type === 'medical' ? 'medical' :
+            report.type === 'accident' ? 'police' : 'general'
+    }));
 
   return (
     <DashboardLayout>
