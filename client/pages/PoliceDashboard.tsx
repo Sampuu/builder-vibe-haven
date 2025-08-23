@@ -1,25 +1,141 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { useIncidents, useNotifications, useInitializeData } from '@/hooks/use-data';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Shield,
   AlertTriangle,
   MapPin,
   Users,
   Clock,
-  CheckCircle
+  CheckCircle,
+  RefreshCw,
+  Siren,
+  Phone
 } from 'lucide-react';
 
 export default function PoliceDashboard() {
   const navigate = useNavigate();
-  // Mock data for incidents
-  const incidents = [
-    { id: 1, type: 'Fire', location: 'Downtown Plaza', status: 'pending', priority: 'high', time: '2 mins ago' },
-    { id: 2, type: 'Medical', location: 'Oak Street', status: 'in-progress', priority: 'critical', time: '15 mins ago' },
-    { id: 3, type: 'Accident', location: 'Highway 101', status: 'resolved', priority: 'medium', time: '1 hour ago' },
-  ];
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { incidents, loading, error, updateIncident, refresh } = useIncidents();
+  const { createNotification } = useNotifications(user?.id || '');
+  const dataInitialized = useInitializeData();
+  const [backupRequestOpen, setBackupRequestOpen] = useState(false);
+  const [backupType, setBackupType] = useState('');
+  const [backupReason, setBackupReason] = useState('');
+  const [statusUpdateIncident, setStatusUpdateIncident] = useState<string | null>(null);
+
+  // Filter incidents relevant to police
+  const policeIncidents = incidents.filter(incident =>
+    incident.type === 'accident' ||
+    incident.type === 'police' ||
+    incident.status === 'pending' ||
+    incident.assignedRole === 'police'
+  );
+
+  const handleRequestBackup = async () => {
+    if (!backupType || !backupReason) {
+      toast({
+        title: "Missing Information",
+        description: "Please select backup type and provide reason",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create notification for the requested backup entity
+      await createNotification({
+        userId: `${backupType}-dispatch`, // This would be the actual user ID in real app
+        title: `Police Backup Request`,
+        message: `Police requesting ${backupType} backup: ${backupReason}`,
+        type: 'warning',
+        isRead: false,
+        actionRequired: true,
+      });
+
+      toast({
+        title: "Backup Requested",
+        description: `${backupType} backup has been notified`,
+      });
+
+      setBackupRequestOpen(false);
+      setBackupType('');
+      setBackupReason('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to request backup",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateStatus = async (incidentId: string, newStatus: string) => {
+    try {
+      await updateIncident(incidentId, { status: newStatus as any });
+      toast({
+        title: "Status Updated",
+        description: `Incident status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update incident status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNavigateToIncident = (incident: any) => {
+    // In a real app, this would open navigation app
+    toast({
+      title: "Navigation Started",
+      description: `Navigating to ${incident.location}`,
+    });
+
+    // For demo, open Google Maps
+    if (incident.latitude && incident.longitude) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${incident.latitude},${incident.longitude}`;
+      window.open(url, '_blank');
+    } else {
+      // Use location name if coordinates not available
+      const url = `https://www.google.com/maps/search/${encodeURIComponent(incident.location)}`;
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      await refresh();
+      toast({
+        title: "Dashboard Refreshed",
+        description: "Latest incident data loaded",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh dashboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (dataInitialized) {
+      console.log('Police dashboard data loaded:', policeIncidents.length, 'relevant incidents');
+    }
+  }, [dataInitialized, policeIncidents.length]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -57,33 +173,60 @@ export default function PoliceDashboard() {
             <div className="text-right">
               <div className="text-2xl font-bold text-emergency-danger">24/7</div>
               <div className="text-sm text-slate-500">Active Monitoring</div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="mt-2"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6">
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-emergency-danger">3</div>
+              <div className="text-2xl font-bold text-emergency-danger">
+                {policeIncidents.filter(i => i.status !== 'resolved').length}
+              </div>
               <div className="text-sm text-slate-600">Active Incidents</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-emergency-warning">1</div>
+              <div className="text-2xl font-bold text-emergency-warning">
+                {policeIncidents.filter(i => i.priority === 'critical').length}
+              </div>
               <div className="text-sm text-slate-600">Critical Priority</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-emergency-info">2</div>
+              <div className="text-2xl font-bold text-emergency-info">
+                {policeIncidents.filter(i => i.status === 'in-progress').length}
+              </div>
               <div className="text-sm text-slate-600">In Progress</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-emergency-resolved">12</div>
+              <div className="text-2xl font-bold text-emergency-resolved">
+                {incidents.filter(i => i.status === 'resolved' &&
+                  new Date(i.updatedAt).toDateString() === new Date().toDateString()).length}
+              </div>
               <div className="text-sm text-slate-600">Resolved Today</div>
             </CardContent>
           </Card>
@@ -107,41 +250,67 @@ export default function PoliceDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {incidents.map((incident) => (
-                <div key={incident.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(incident.status)}`}></div>
-                    <div>
-                      <div className="font-medium text-slate-900">{incident.type} Emergency</div>
-                      <div className="text-sm text-slate-600 flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {incident.location}
+            {loading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-slate-400" />
+                <p className="text-slate-600">Loading incidents...</p>
+              </div>
+            ) : policeIncidents.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <Shield className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                <p>No active incidents requiring police response</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {policeIncidents.slice(0, 5).map((incident) => (
+                  <div key={incident.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-3 h-3 rounded-full ${getStatusColor(incident.status)}`}></div>
+                      <div>
+                        <div className="font-medium text-slate-900">{incident.title}</div>
+                        <div className="text-sm text-slate-600 flex items-center">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {incident.location}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge className={`${getPriorityColor(incident.priority)} text-white`}>
-                      {incident.priority}
-                    </Badge>
-                    <div className="text-sm text-slate-500 flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {incident.time}
+                    <div className="flex items-center space-x-3">
+                      <Badge className={`${getPriorityColor(incident.priority)} text-white`}>
+                        {incident.priority}
+                      </Badge>
+                      <div className="text-sm text-slate-500 flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {new Date(incident.createdAt).toLocaleTimeString()}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleNavigateToIncident(incident)}
+                      >
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Navigate
+                      </Button>
+                      <Select onValueChange={(value) => handleUpdateStatus(incident.id, value)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder={incident.status} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="in-progress">In Progress</SelectItem>
+                          <SelectItem value="resolved">Resolved</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Navigate
-                    </Button>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="text-center">
               <div className="bg-emergency-danger/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <Users className="h-8 w-8 text-emergency-danger" />
@@ -150,7 +319,63 @@ export default function PoliceDashboard() {
               <CardDescription>Send requests to Fire Brigade, Ambulance, or Hospital</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="danger" onClick={() => navigate('/police/incidents')}>Request Help</Button>
+              <Dialog open={backupRequestOpen} onOpenChange={setBackupRequestOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" variant="danger">
+                    <Siren className="mr-2 h-4 w-4" />
+                    Request Backup
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Request Emergency Backup</DialogTitle>
+                    <DialogDescription>
+                      Select the type of backup needed and provide details
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Backup Type</label>
+                      <Select value={backupType} onValueChange={setBackupType}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select backup type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fire">Fire Brigade</SelectItem>
+                          <SelectItem value="ambulance">Ambulance Service</SelectItem>
+                          <SelectItem value="hospital">Hospital Support</SelectItem>
+                          <SelectItem value="police">Police Backup</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Reason for Backup</label>
+                      <Textarea
+                        placeholder="Describe the situation requiring backup..."
+                        value={backupReason}
+                        onChange={(e) => setBackupReason(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={handleRequestBackup}
+                        className="flex-1"
+                        variant="danger"
+                      >
+                        <Phone className="mr-2 h-4 w-4" />
+                        Send Request
+                      </Button>
+                      <Button
+                        onClick={() => setBackupRequestOpen(false)}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -176,7 +401,14 @@ export default function PoliceDashboard() {
               <CardDescription>Update incident status and dispatch resources</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success">Manage Status</Button>
+              <Button
+                className="w-full"
+                variant="success"
+                onClick={() => navigate('/police/incidents')}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Manage Status
+              </Button>
             </CardContent>
           </Card>
         </div>
