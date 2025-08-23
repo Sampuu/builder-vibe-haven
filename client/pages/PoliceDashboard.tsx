@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import BackupRequestDialog from '@/components/BackupRequestDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -319,63 +320,19 @@ export default function PoliceDashboard() {
               <CardDescription>Send requests to Fire Brigade, Ambulance, or Hospital</CardDescription>
             </CardHeader>
             <CardContent>
-              <Dialog open={backupRequestOpen} onOpenChange={setBackupRequestOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full" variant="danger">
-                    <Siren className="mr-2 h-4 w-4" />
-                    Request Backup
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Request Emergency Backup</DialogTitle>
-                    <DialogDescription>
-                      Select the type of backup needed and provide details
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Backup Type</label>
-                      <Select value={backupType} onValueChange={setBackupType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select backup type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fire">Fire Brigade</SelectItem>
-                          <SelectItem value="ambulance">Ambulance Service</SelectItem>
-                          <SelectItem value="hospital">Hospital Support</SelectItem>
-                          <SelectItem value="police">Police Backup</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Reason for Backup</label>
-                      <Textarea
-                        placeholder="Describe the situation requiring backup..."
-                        value={backupReason}
-                        onChange={(e) => setBackupReason(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={handleRequestBackup}
-                        className="flex-1"
-                        variant="danger"
-                      >
-                        <Phone className="mr-2 h-4 w-4" />
-                        Send Request
-                      </Button>
-                      <Button
-                        onClick={() => setBackupRequestOpen(false)}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button
+                className="w-full"
+                variant="danger"
+                onClick={() => setBackupRequestOpen(true)}
+              >
+                <Siren className="mr-2 h-4 w-4" />
+                Request Backup
+              </Button>
+
+              <BackupRequestDialog
+                open={backupRequestOpen}
+                onOpenChange={setBackupRequestOpen}
+              />
             </CardContent>
           </Card>
 

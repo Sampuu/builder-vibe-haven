@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useIncidents, useMissions, useInitializeData } from '@/hooks/use-data';
+import RealTimeDashboardStats from '@/components/RealTimeDashboardStats';
 import { useAuth } from '@/hooks/use-auth';
 import { Settings, Users, Activity, FileText, Shield, RefreshCw, AlertTriangle, Database, UserCheck } from 'lucide-react';
 

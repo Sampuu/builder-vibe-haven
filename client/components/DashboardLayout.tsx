@@ -74,6 +74,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
+              {/* Dashboard Status */}
+              <DashboardStatus />
+
               {/* Notifications */}
               <SimpleNotificationCenter />
 
