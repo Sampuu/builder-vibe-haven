@@ -54,6 +54,15 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --emergency-danger: 0 84.2% 60.2%;
+    --emergency-danger-foreground: 210 40% 98%;
+    --emergency-warning: 25 95% 53%;
+    --emergency-warning-foreground: 210 40% 98%;
+    --emergency-resolved: 142 76% 36%;
+    --emergency-resolved-foreground: 210 40% 98%;
+    --emergency-info: 217.2 91.2% 59.8%;
+    --emergency-info-foreground: 210 40% 98%;
   }
 
   .dark {
@@ -92,6 +101,14 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --emergency-danger: 0 62.8% 30.6%;
+    --emergency-danger-foreground: 210 40% 98%;
+    --emergency-warning: 25 95% 53%;
+    --emergency-warning-foreground: 210 40% 98%;
+    --emergency-resolved: 142 76% 36%;
+    --emergency-resolved-foreground: 210 40% 98%;
+    --emergency-info: 217.2 91.2% 59.8%;
+    --emergency-info-foreground: 210 40% 98%;
   }
 }
 
