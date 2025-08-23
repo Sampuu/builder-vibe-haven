@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, MapPin, Package } from 'lucide-react';
 
 export default function HospitalDashboard() {
+  const navigate = useNavigate();
   return (
     <DashboardLayout>
       <div className="space-y-6">
