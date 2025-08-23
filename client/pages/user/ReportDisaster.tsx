@@ -148,17 +148,30 @@ export default function ReportDisaster() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          // In real app, would reverse geocode to get address
+          const coordinates = { lat: latitude, lng: longitude };
           setFormData(prev => ({
             ...prev,
-            location: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+            coordinates,
+            location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
           }));
         },
         (error) => {
           console.error('Error getting location:', error);
+          setError('Unable to get your location. Please enter it manually.');
         }
       );
+    } else {
+      setError('Geolocation is not supported by this browser.');
     }
+  };
+
+  const handleMapClick = (location: { lat: number; lng: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      coordinates: location,
+      location: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
+    }));
+    setShowMap(false);
   };
 
   return (
