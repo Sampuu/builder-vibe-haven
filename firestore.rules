@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Admin can read all user profiles
+      allow read: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // Disaster requests
+    match /disaster_requests/{requestId} {
+      // Users can create disaster requests
+      allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Users can read their own requests
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        getUserRole(request.auth.uid) in ['admin', 'police', 'fire', 'ambulance', 'hospital']
+      );
+      // Emergency services and admin can update status
+      allow update: if request.auth != null && 
+        getUserRole(request.auth.uid) in ['admin', 'police', 'fire', 'ambulance', 'hospital'] &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'assignedTo', 'assignedRole', 'updatedAt']);
+      // Admin can delete
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // News alerts
+    match /news_alerts/{alertId} {
+      // Everyone can read active alerts
+      allow read: if request.auth != null && resource.data.isActive == true;
+      // Admin and emergency services can create/update alerts
+      allow create, update: if request.auth != null && 
+        getUserRole(request.auth.uid) in ['admin', 'police', 'fire', 'ambulance', 'hospital'];
+      // Admin can delete
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // Hospital supply requests
+    match /hospital_supplies/{supplyId} {
+      // Hospitals can create and read their own requests
+      allow create: if request.auth != null && getUserRole(request.auth.uid) == 'hospital';
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.hospitalId ||
+        getUserRole(request.auth.uid) in ['admin', 'hospital']
+      );
+      // Hospitals and admin can update
+      allow update: if request.auth != null && (
+        (request.auth.uid == resource.data.hospitalId && getUserRole(request.auth.uid) == 'hospital') ||
+        getUserRole(request.auth.uid) == 'admin'
+      );
+      // Admin can delete
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // Emergency incidents
+    match /emergency_incidents/{incidentId} {
+      // Emergency services can create and read incidents
+      allow create, read: if request.auth != null && 
+        getUserRole(request.auth.uid) in ['admin', 'police', 'fire', 'ambulance'];
+      // Emergency services can update their relevant incidents
+      allow update: if request.auth != null && 
+        getUserRole(request.auth.uid) in ['admin', 'police', 'fire', 'ambulance'];
+      // Admin can delete
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Users can update their own notifications (mark as read)
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      // System/Functions can create notifications
+      allow create: if true; // Cloud Functions need this
+    }
+
+    // Audit logs (read-only for users)
+    match /audit_logs/{logId} {
+      allow read: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+      allow create: if true; // Cloud Functions need this
+    }
+
+    // Helper function to get user role
+    function getUserRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    }
+  }
+}
