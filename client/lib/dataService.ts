@@ -74,9 +74,11 @@ export interface SupplyRequest extends BaseEntity {
   notes?: string;
 }
 
-// EventEmitter for real-time updates
+// EventEmitter for real-time updates with debouncing
 class EventEmitter {
   private events: { [key: string]: Function[] } = {};
+  private debounceTimeouts: { [key: string]: number } = {};
+  private debounceTime = 100; // 100ms debounce
 
   on(event: string, callback: Function) {
     if (!this.events[event]) {
@@ -92,7 +94,34 @@ class EventEmitter {
 
   emit(event: string, data: any) {
     if (!this.events[event]) return;
-    this.events[event].forEach(callback => callback(data));
+
+    // Debounce rapid events to prevent excessive re-renders
+    if (this.debounceTimeouts[event]) {
+      clearTimeout(this.debounceTimeouts[event]);
+    }
+
+    this.debounceTimeouts[event] = window.setTimeout(() => {
+      this.events[event].forEach(callback => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error(`Error in event callback for ${event}:`, error);
+        }
+      });
+      delete this.debounceTimeouts[event];
+    }, this.debounceTime);
+  }
+
+  // Immediate emit for critical events that shouldn't be debounced
+  emitImmediate(event: string, data: any) {
+    if (!this.events[event]) return;
+    this.events[event].forEach(callback => {
+      try {
+        callback(data);
+      } catch (error) {
+        console.error(`Error in immediate event callback for ${event}:`, error);
+      }
+    });
   }
 }
 
