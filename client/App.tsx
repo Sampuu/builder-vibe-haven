@@ -25,6 +25,31 @@ import AmbulanceDashboard from "./pages/AmbulanceDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
+// Admin Pages
+import ManageUsers from "./pages/admin/ManageUsers";
+import MissionControl from "./pages/admin/MissionControl";
+import AuditLogs from "./pages/admin/AuditLogs";
+import AllDashboards from "./pages/admin/AllDashboards";
+
+// User Pages
+import ReportDisaster from "./pages/user/ReportDisaster";
+import RequestHelp from "./pages/user/RequestHelp";
+import ViewMap from "./pages/user/ViewMap";
+import News from "./pages/user/News";
+
+// Police Pages
+import AllIncidents from "./pages/police/AllIncidents";
+import CommandMap from "./pages/police/CommandMap";
+
+// Fire Pages
+import FireIncidents from "./pages/fire/FireIncidents";
+
+// Ambulance Pages
+import MedicalIncidents from "./pages/ambulance/MedicalIncidents";
+
+// Hospital Pages
+import SupplyRequests from "./pages/hospital/SupplyRequests";
+
 const queryClient = new QueryClient();
 
 const App = () => (
