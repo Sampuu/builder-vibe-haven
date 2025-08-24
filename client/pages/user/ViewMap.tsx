@@ -62,6 +62,35 @@ export default function ViewMap() {
   const [showFilters, setShowFilters] = useState(false);
   const [mapCenter] = useState<Coordinates>({ lat: 37.7749, lon: -122.4194 }); // San Francisco center
 
+  const handleIncidentClick = (incident: IncidentMarker) => {
+    setSelectedIncident(incident.id);
+  };
+
+  const handleMapClick = (coordinates: Coordinates) => {
+    console.log('Map clicked at:', coordinates);
+    // Could be used for reporting new incidents
+  };
+
+  const getDistanceDisplay = (incident: IncidentMarker) => {
+    // Simple distance calculation (this could be enhanced with actual geolocation)
+    const distance = Math.sqrt(
+      Math.pow((incident.position.lat - mapCenter.lat) * 111, 2) +
+      Math.pow((incident.position.lon - mapCenter.lon) * 85, 2)
+    );
+    return `${distance.toFixed(1)} km`;
+  };
+
+  const getTimeAgo = (timestamp?: Date) => {
+    if (!timestamp) return 'Unknown time';
+    const minutes = Math.floor((Date.now() - timestamp.getTime()) / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
