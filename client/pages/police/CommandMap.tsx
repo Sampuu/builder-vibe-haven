@@ -259,14 +259,67 @@ export default function CommandMap() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="danger" size="sm" className="w-full">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => alert('Opening dispatch interface...')}
+                >
                   <Shield className="mr-2 h-4 w-4" />
-                  Dispatch Units
+                  Emergency Dispatch
                 </Button>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => alert('Opening route planning...')}
+                >
                   <Navigation className="mr-2 h-4 w-4" />
                   Route Planning
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate('/police/incidents')}
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  All Incidents
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Incidents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {policeIncidents.map((incident) => (
+                    <div
+                      key={incident.id}
+                      className={`p-2 border rounded cursor-pointer transition-colors ${
+                        selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                      }`}
+                      onClick={() => setSelectedIncident(incident.id)}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">{incident.id}</span>
+                        <Badge className={`text-xs ${
+                          incident.severity === 'critical' ? 'bg-red-600' :
+                          incident.severity === 'high' ? 'bg-emergency-danger' :
+                          'bg-emergency-warning'
+                        } text-white`}>
+                          {incident.severity}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-slate-600 mb-1">{incident.title}</div>
+                      <div className="text-xs text-slate-500">
+                        {Math.floor((Date.now() - (incident.timestamp?.getTime() || 0)) / 60000)} min ago
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
