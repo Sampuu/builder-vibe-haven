@@ -6,14 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Shield, 
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Shield,
   ArrowLeft,
   AlertTriangle,
   MapPin,
   Clock,
   Users,
-  Filter
+  Filter,
+  Navigation,
+  Phone,
+  CheckCircle
 } from 'lucide-react';
 
 const mockIncidents = [
@@ -26,6 +31,30 @@ export default function AllIncidents() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showBackupDialog, setShowBackupDialog] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [selectedIncident, setSelectedIncident] = useState<any>(null);
+
+  const handleRequestBackup = () => {
+    setShowBackupDialog(true);
+  };
+
+  const handleNavigateToIncident = (location: string) => {
+    const encodedLocation = encodeURIComponent(location);
+    window.open(`https://www.google.com/maps/search/${encodedLocation}`, '_blank');
+  };
+
+  const handleUpdateStatus = (incident: any) => {
+    setSelectedIncident(incident);
+    setShowStatusDialog(true);
+  };
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    // Simulate API call to update status
+    console.log(`Updating incident ${selectedIncident?.id} status to: ${newStatus}`);
+    setShowStatusDialog(false);
+    setSelectedIncident(null);
+  };
 
   const filteredIncidents = mockIncidents.filter(incident => {
     const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -68,10 +97,45 @@ export default function AllIncidents() {
               <p className="text-slate-600">Monitor and coordinate response for all emergency situations</p>
             </div>
           </div>
-          <Button variant="danger">
-            <Users className="mr-2 h-4 w-4" />
-            Request Backup
-          </Button>
+          <Dialog open={showBackupDialog} onOpenChange={setShowBackupDialog}>
+            <DialogTrigger asChild>
+              <Button variant="danger" onClick={handleRequestBackup}>
+                <Users className="mr-2 h-4 w-4" />
+                Request Backup
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Request Emergency Backup</DialogTitle>
+                <DialogDescription>
+                  Send backup requests to other emergency departments
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    This will send immediate backup requests to Fire Brigade, Ambulance,
+                    and Hospital services based on the emergency type.
+                  </AlertDescription>
+                </Alert>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" size="sm">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Police Backup
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Fire Brigade
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Phone className="mr-2 h-4 w-4" />
+                    Ambulance
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats */}
@@ -180,12 +244,22 @@ export default function AllIncidents() {
                       {incident.time}
                     </div>
                   </div>
-                  <div className="flex space-x-2 mt-3">
-                    <Button size="sm" variant="outline">
-                      <MapPin className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleNavigateToIncident(incident.location)}
+                      className="w-full sm:w-auto"
+                    >
+                      <Navigation className="mr-2 h-4 w-4" />
                       Navigate
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleUpdateStatus(incident)}
+                      className="w-full sm:w-auto"
+                    >
                       <AlertTriangle className="mr-2 h-4 w-4" />
                       Update Status
                     </Button>
@@ -196,6 +270,49 @@ export default function AllIncidents() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Status Update Dialog */}
+      <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Incident Status</DialogTitle>
+            <DialogDescription>
+              Update the status of: {selectedIncident?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStatusUpdate('pending')}
+                className="text-left"
+              >
+                <Clock className="mr-2 h-4 w-4 text-emergency-warning" />
+                Pending
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStatusUpdate('in-progress')}
+                className="text-left"
+              >
+                <AlertTriangle className="mr-2 h-4 w-4 text-emergency-info" />
+                In Progress
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStatusUpdate('resolved')}
+                className="text-left"
+              >
+                <CheckCircle className="mr-2 h-4 w-4 text-emergency-resolved" />
+                Resolved
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
