@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  MapPin, 
-  Navigation, 
-  Phone, 
+import SimpleTabs from './SimpleTabs';
+import {
+  MapPin,
+  Navigation,
+  Phone,
   Clock,
   AlertTriangle,
   Search,
@@ -196,196 +196,206 @@ export default function EmergencyServices({
         </CardHeader>
 
         <CardContent className="flex-1 overflow-hidden">
-          <Tabs defaultValue="services" className="h-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="services">Emergency Services ({filteredEntities.length})</TabsTrigger>
-              <TabsTrigger value="incidents">Active Incidents ({sortedIncidents.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="services" className="h-full overflow-y-auto space-y-3">
-              {filteredEntities.map((entity) => (
-                <Card 
-                  key={entity.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedEntity?.id === entity.id ? 'ring-2 ring-emergency-info bg-emergency-info/5' : ''
-                  }`}
-                  onClick={() => handleEntityClick(entity)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="p-2 rounded-full text-white"
-                          style={{ backgroundColor: getEntityTypeColor(entity.type) }}
-                        >
-                          {getEntityIcon(entity.type)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900">{entity.name}</h3>
-                          <p className="text-sm text-slate-600 capitalize">{entity.type}</p>
-                        </div>
-                      </div>
-                      <Badge 
-                        className={`${
-                          entity.status === 'active' ? 'bg-green-500' :
-                          entity.status === 'busy' ? 'bg-yellow-500' : 'bg-red-500'
-                        } text-white`}
+          <SimpleTabs
+            defaultTab="services"
+            className="h-full"
+            items={[
+              {
+                id: 'services',
+                label: `Emergency Services (${filteredEntities.length})`,
+                content: (
+                  <div className="h-full overflow-y-auto space-y-3">
+                    {filteredEntities.map((entity) => (
+                      <Card
+                        key={entity.id}
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          selectedEntity?.id === entity.id ? 'ring-2 ring-emergency-info bg-emergency-info/5' : ''
+                        }`}
+                        onClick={() => handleEntityClick(entity)}
                       >
-                        {entity.status}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2 text-sm text-slate-600 mb-3">
-                      <p className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-2" />
-                        {entity.address}
-                      </p>
-                      <p className="flex items-center">
-                        <Phone className="h-3 w-3 mr-2" />
-                        {entity.phone}
-                      </p>
-                      {userLocation && (
-                        <p className="text-blue-600 font-medium">
-                          {formatDistance(entity.distance)} away
-                        </p>
-                      )}
-                    </div>
-
-                    {entity.specialties && (
-                      <div className="mb-3">
-                        <p className="text-xs font-medium text-slate-700 mb-1">Specialties:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {entity.specialties.map((specialty, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {specialty}
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className="p-2 rounded-full text-white"
+                                style={{ backgroundColor: getEntityTypeColor(entity.type) }}
+                              >
+                                {getEntityIcon(entity.type)}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-slate-900">{entity.name}</h3>
+                                <p className="text-sm text-slate-600 capitalize">{entity.type}</p>
+                              </div>
+                            </div>
+                            <Badge
+                              className={`${
+                                entity.status === 'active' ? 'bg-green-500' :
+                                entity.status === 'busy' ? 'bg-yellow-500' : 'bg-red-500'
+                              } text-white`}
+                            >
+                              {entity.status}
                             </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                          </div>
 
-                    <div className="flex space-x-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(`tel:${entity.phone}`, '_self');
-                        }}
-                        className="flex-1"
+                          <div className="space-y-2 text-sm text-slate-600 mb-3">
+                            <p className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-2" />
+                              {entity.address}
+                            </p>
+                            <p className="flex items-center">
+                              <Phone className="h-3 w-3 mr-2" />
+                              {entity.phone}
+                            </p>
+                            {userLocation && (
+                              <p className="text-blue-600 font-medium">
+                                {formatDistance(entity.distance)} away
+                              </p>
+                            )}
+                          </div>
+
+                          {entity.specialties && (
+                            <div className="mb-3">
+                              <p className="text-xs font-medium text-slate-700 mb-1">Specialties:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {entity.specialties.map((specialty, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {specialty}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(`tel:${entity.phone}`, '_self');
+                              }}
+                              className="flex-1"
+                            >
+                              <Phone className="h-3 w-3 mr-1" />
+                              Call
+                            </Button>
+                            {userLocation && (
+                              <Button
+                                size="sm"
+                                variant="info"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const url = getDirectionsUrl(userLocation, entity.coordinates);
+                                  window.open(url, '_blank');
+                                }}
+                                className="flex-1"
+                              >
+                                <Navigation className="h-3 w-3 mr-1" />
+                                Directions
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )
+              },
+              {
+                id: 'incidents',
+                label: `Active Incidents (${sortedIncidents.length})`,
+                content: (
+                  <div className="h-full overflow-y-auto space-y-3">
+                    {sortedIncidents.map((incident) => (
+                      <Card
+                        key={incident.id}
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          selectedIncident?.id === incident.id ? 'ring-2 ring-emergency-danger bg-emergency-danger/5' : ''
+                        }`}
+                        onClick={() => handleIncidentClick(incident)}
                       >
-                        <Phone className="h-3 w-3 mr-1" />
-                        Call
-                      </Button>
-                      {userLocation && (
-                        <Button 
-                          size="sm" 
-                          variant="info"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const url = getDirectionsUrl(userLocation, entity.coordinates);
-                            window.open(url, '_blank');
-                          }}
-                          className="flex-1"
-                        >
-                          <Navigation className="h-3 w-3 mr-1" />
-                          Directions
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-
-            <TabsContent value="incidents" className="h-full overflow-y-auto space-y-3">
-              {sortedIncidents.map((incident) => (
-                <Card 
-                  key={incident.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedIncident?.id === incident.id ? 'ring-2 ring-emergency-danger bg-emergency-danger/5' : ''
-                  }`}
-                  onClick={() => handleIncidentClick(incident)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="p-2 rounded-full text-white"
-                          style={{ backgroundColor: getIncidentTypeColor(incident.type) }}
-                        >
-                          <AlertTriangle className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-slate-900">{incident.title}</h3>
-                          <p className="text-sm text-slate-600 capitalize">{incident.type}</p>
-                        </div>
-                      </div>
-                      <Badge 
-                        style={{ backgroundColor: getSeverityColor(incident.severity) }}
-                        className="text-white"
-                      >
-                        {incident.severity}
-                      </Badge>
-                    </div>
-
-                    <p className="text-sm text-slate-600 mb-3">{incident.description}</p>
-
-                    <div className="space-y-2 text-sm text-slate-600 mb-3">
-                      <p className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-2" />
-                        {incident.address}
-                      </p>
-                      <p className="flex items-center">
-                        <Clock className="h-3 w-3 mr-2" />
-                        Reported {new Date(incident.reportedAt).toLocaleString()}
-                      </p>
-                      {userLocation && (
-                        <p className="text-blue-600 font-medium">
-                          {formatDistance(incident.distance)} away
-                        </p>
-                      )}
-                    </div>
-
-                    {incident.respondingUnits && incident.respondingUnits.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs font-medium text-slate-700 mb-1">Responding Units:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {incident.respondingUnits.map((unit, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {unit}
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div
+                                className="p-2 rounded-full text-white"
+                                style={{ backgroundColor: getIncidentTypeColor(incident.type) }}
+                              >
+                                <AlertTriangle className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-slate-900">{incident.title}</h3>
+                                <p className="text-sm text-slate-600 capitalize">{incident.type}</p>
+                              </div>
+                            </div>
+                            <Badge
+                              style={{ backgroundColor: getSeverityColor(incident.severity) }}
+                              className="text-white"
+                            >
+                              {incident.severity}
                             </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                          </div>
 
-                    {incident.estimatedResolution && (
-                      <p className="text-xs text-green-600 mb-3">
-                        Estimated resolution: {incident.estimatedResolution}
-                      </p>
-                    )}
+                          <p className="text-sm text-slate-600 mb-3">{incident.description}</p>
 
-                    {userLocation && (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const url = getDirectionsUrl(userLocation, incident.coordinates);
-                          window.open(url, '_blank');
-                        }}
-                        className="w-full"
-                      >
-                        <Navigation className="h-3 w-3 mr-1" />
-                        Get Directions
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-          </Tabs>
+                          <div className="space-y-2 text-sm text-slate-600 mb-3">
+                            <p className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-2" />
+                              {incident.address}
+                            </p>
+                            <p className="flex items-center">
+                              <Clock className="h-3 w-3 mr-2" />
+                              Reported {new Date(incident.reportedAt).toLocaleString()}
+                            </p>
+                            {userLocation && (
+                              <p className="text-blue-600 font-medium">
+                                {formatDistance(incident.distance)} away
+                              </p>
+                            )}
+                          </div>
+
+                          {incident.respondingUnits && incident.respondingUnits.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-xs font-medium text-slate-700 mb-1">Responding Units:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {incident.respondingUnits.map((unit, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {unit}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {incident.estimatedResolution && (
+                            <p className="text-xs text-green-600 mb-3">
+                              Estimated resolution: {incident.estimatedResolution}
+                            </p>
+                          )}
+
+                          {userLocation && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const url = getDirectionsUrl(userLocation, incident.coordinates);
+                                window.open(url, '_blank');
+                              }}
+                              className="w-full"
+                            >
+                              <Navigation className="h-3 w-3 mr-1" />
+                              Get Directions
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )
+              }
+            ]}
+          />
         </CardContent>
       </Card>
     </div>
