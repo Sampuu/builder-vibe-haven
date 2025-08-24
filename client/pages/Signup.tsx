@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -17,10 +17,12 @@ export default function Signup() {
     confirmPassword: '',
     role: 'user' as UserRole,
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { signup, user } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -51,18 +53,25 @@ export default function Signup() {
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
+    const success = await signup(formData.email, formData.password, formData.name, formData.role);
     
     if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${formData.role}`);
+      // Redirect to appropriate dashboard based on role after a short delay
+      setTimeout(() => {
+        navigate(`/dashboard/${formData.role}`);
+      }, 100);
     } else {
       setError('Failed to create account. Please try again.');
     }
     
     setIsSubmitting(false);
   };
+
+  // Redirect if already logged in
+  if (user) {
+    navigate(`/dashboard/${user.role}`);
+    return null;
+  }
 
   const roleOptions = [
     { value: 'user', label: 'User', description: 'Report disasters & request help' },
@@ -151,26 +160,56 @@ export default function Signup() {
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="Create a password"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Create a password (min 6 characters)"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  placeholder="Confirm your password"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    placeholder="Confirm your password"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {(formData.role === 'police' || formData.role === 'admin') && (
@@ -181,6 +220,13 @@ export default function Signup() {
                   </AlertDescription>
                 </Alert>
               )}
+
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Account will be created using Firebase Authentication for secure access.
+                </AlertDescription>
+              </Alert>
 
               <Button 
                 type="submit" 
