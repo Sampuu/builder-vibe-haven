@@ -1,9 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Shield, Users, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { getRoleDashboardPath } from "@/lib/navigation-utils";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Redirect authenticated users to their dashboard
+      const dashboardPath = getRoleDashboardPath(user.role);
+      navigate(dashboardPath);
+    }
+  }, [user, isLoading, navigate]);
 
   const handleSignUp = () => {
     navigate("/signup");
