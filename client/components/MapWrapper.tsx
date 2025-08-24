@@ -1,16 +1,30 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Map, Loader } from 'lucide-react';
+import { IncidentMarker } from './EmergencyMap';
+import { Coordinates } from '@/lib/openroute';
 
-// Lazy load the EmergencyMap component
-const EmergencyMap = React.lazy(() => import('./EmergencyMap'));
+// Lazy load the EmergencyMap component with error handling
+const EmergencyMap = React.lazy(() =>
+  import('./EmergencyMap').catch(error => {
+    console.error('Failed to load EmergencyMap component:', error);
+    // Return a fallback component
+    return {
+      default: () => (
+        <div className="p-4 text-center text-red-600">
+          Map component failed to load. Please refresh the page.
+        </div>
+      )
+    };
+  })
+);
 
 interface MapWrapperProps {
-  incidents?: any[];
+  incidents?: IncidentMarker[];
   showRouting?: boolean;
-  onIncidentClick?: (incident: any) => void;
-  onMapClick?: (coordinates: any) => void;
-  center?: any;
+  onIncidentClick?: (incident: IncidentMarker) => void;
+  onMapClick?: (coordinates: Coordinates) => void;
+  center?: Coordinates;
   zoom?: number;
   height?: string;
   className?: string;
