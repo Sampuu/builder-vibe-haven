@@ -133,7 +133,7 @@ export default function UserDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <EmergencyMap
+            <DynamicEmergencyMap
               height="300px"
               showUserLocation={true}
               showEntities={true}
