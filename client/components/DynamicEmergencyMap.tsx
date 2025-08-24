@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Map, AlertTriangle } from 'lucide-react';
+import SimpleMapFallback from './SimpleMapFallback';
 import type { EmergencyEntity, Incident } from '@/lib/emergency-data';
 
 // Dynamically import the EmergencyMap component to avoid SSR issues
@@ -29,20 +30,40 @@ const MapLoading = ({ height }: { height: string }) => (
   </div>
 );
 
-// Error fallback component
-const MapError = ({ height, onRetry }: { height: string; onRetry: () => void }) => (
+// Error fallback component with emergency data
+const MapError = ({
+  height,
+  onRetry,
+  onEntityClick,
+  onIncidentClick
+}: {
+  height: string;
+  onRetry: () => void;
+  onEntityClick?: (entity: EmergencyEntity) => void;
+  onIncidentClick?: (incident: Incident) => void;
+}) => (
   <div className="relative" style={{ height }}>
-    <div className="absolute inset-0 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-      <div className="text-center text-slate-500">
-        <AlertTriangle className="h-12 w-12 mx-auto mb-2 text-amber-500" />
-        <p className="font-medium text-slate-700">Map Unavailable</p>
-        <p className="text-sm mb-3">Unable to load interactive map</p>
-        <button 
-          onClick={onRetry}
-          className="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded text-sm transition-colors"
-        >
-          Try Again
-        </button>
+    <div className="absolute inset-0 bg-white rounded-lg border border-slate-200">
+      <div className="p-4 border-b border-slate-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-amber-600">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm font-medium">Interactive map unavailable</span>
+          </div>
+          <button
+            onClick={onRetry}
+            className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+      <div className="h-full">
+        <SimpleMapFallback
+          height={`calc(${height} - 60px)`}
+          onEntityClick={onEntityClick}
+          onIncidentClick={onIncidentClick}
+        />
       </div>
     </div>
   </div>
@@ -95,7 +116,14 @@ export default function DynamicEmergencyMap(props: DynamicEmergencyMapProps) {
 
   return (
     <MapErrorBoundary
-      fallback={<MapError height={props.height || '400px'} onRetry={handleRetry} />}
+      fallback={
+        <MapError
+          height={props.height || '400px'}
+          onRetry={handleRetry}
+          onEntityClick={props.onEntityClick}
+          onIncidentClick={props.onIncidentClick}
+        />
+      }
     >
       <Suspense fallback={<MapLoading height={props.height || '400px'} />}>
         <EmergencyMap key={mapKey} {...props} />
