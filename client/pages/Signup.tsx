@@ -51,8 +51,8 @@ export default function Signup() {
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
+    // Create the account using Firebase
+    const success = await signup(formData.email, formData.password, formData.name, formData.role);
     
     if (success) {
       // Redirect to appropriate dashboard based on role
