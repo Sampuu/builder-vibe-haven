@@ -1,8 +1,10 @@
 import { ReactNode, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { 
   AlertTriangle, 
   LogOut, 
@@ -39,6 +41,7 @@ const roleColors = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [notificationCount, setNotificationCount] = useState(3);
 
   if (!user) return null;
@@ -55,11 +58,59 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setNotificationCount(0);
   };
 
+  const handleNotificationItemClick = (newsId: string) => {
+    navigate(`/news/${newsId}`);
+    setNotificationCount(Math.max(0, notificationCount - 1));
+  };
+
+  // Enhanced notifications with news article links
   const mockNotifications = [
-    { id: 1, message: 'New emergency report filed', time: '5 min ago' },
-    { id: 2, message: 'System backup completed', time: '1 hour ago' },
-    { id: 3, message: 'User permissions updated', time: '2 hours ago' }
+    {
+      id: 1,
+      title: 'Critical: Major Fire at Downtown Plaza',
+      message: 'Fire outbreak requires immediate evacuation - Emergency response active',
+      time: '15 min ago',
+      newsId: '1',
+      priority: 'critical',
+      type: 'emergency'
+    },
+    {
+      id: 2,
+      title: 'Highway 101 Multi-Vehicle Accident',
+      message: 'Medical teams responding to accident with injuries - Traffic delays expected',
+      time: '1 hour ago',
+      newsId: '2',
+      priority: 'high',
+      type: 'incident'
+    },
+    {
+      id: 3,
+      title: 'Storm Warning: Emergency Supplies Deployed',
+      message: 'Severe weather alert - Emergency supplies available at community centers',
+      time: '3 hours ago',
+      newsId: '3',
+      priority: 'medium',
+      type: 'weather'
+    }
   ];
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'critical': return 'bg-emergency-danger';
+      case 'high': return 'bg-emergency-warning';
+      case 'medium': return 'bg-emergency-info';
+      default: return 'bg-slate-500';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'emergency': return '🚨';
+      case 'incident': return '⚠️';
+      case 'weather': return '🌧️';
+      default: return 'ℹ️';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -100,15 +151,42 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80">
-                  <div className="p-2 border-b">
-                    <h3 className="font-semibold text-sm">Notifications</h3>
+                <DropdownMenuContent align="end" className="w-96">
+                  <div className="p-3 border-b">
+                    <h3 className="font-semibold text-sm">Emergency Notifications</h3>
+                    <p className="text-xs text-slate-500">Click to view full details</p>
                   </div>
                   {mockNotifications.map((notification) => (
-                    <DropdownMenuItem key={notification.id} className="p-3 cursor-pointer">
-                      <div className="w-full">
-                        <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-slate-500 mt-1">{notification.time}</p>
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className="p-3 cursor-pointer hover:bg-slate-50 border-b last:border-b-0"
+                      onClick={() => handleNotificationItemClick(notification.newsId)}
+                    >
+                      <div className="w-full space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-2 flex-1">
+                            <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-900 truncate">
+                                {notification.title}
+                              </p>
+                              <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                                {notification.message}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            className={`${getPriorityColor(notification.priority)} text-white text-xs ml-2 flex-shrink-0`}
+                          >
+                            {notification.priority}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-slate-500">{notification.time}</p>
+                          <span className="text-xs text-emergency-info hover:underline">
+                            Click to view details →
+                          </span>
+                        </div>
                       </div>
                     </DropdownMenuItem>
                   ))}
