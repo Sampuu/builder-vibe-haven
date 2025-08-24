@@ -119,34 +119,16 @@ export default function ViewMap() {
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Map Area */}
           <div className="lg:col-span-3">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative bg-slate-100 h-96 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Interactive Emergency Map</p>
-                    <p className="text-sm">Map integration with incident markers will be implemented here</p>
-                    <p className="text-sm mt-2">• Red markers: Fire emergencies</p>
-                    <p className="text-sm">• Orange markers: Accidents</p>
-                    <p className="text-sm">• Blue markers: Medical emergencies</p>
-                    <p className="text-sm">• Green zones: Safe areas</p>
-                  </div>
-                  
-                  {/* Map Controls */}
-                  <div className="absolute top-4 right-4 flex flex-col space-y-2">
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <ZoomOut className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <Layers className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <EmergencyMap
+              incidents={mockIncidents}
+              showRouting={true}
+              onIncidentClick={handleIncidentClick}
+              onMapClick={handleMapClick}
+              center={mapCenter}
+              zoom={12}
+              height="500px"
+              className="w-full"
+            />
           </div>
 
           {/* Incident List */}
