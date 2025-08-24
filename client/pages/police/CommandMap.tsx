@@ -161,18 +161,16 @@ export default function CommandMap() {
 
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
-            <MapErrorBoundary>
-              <EmergencyMap
-                incidents={allMarkers}
-                showRouting={true}
-                onIncidentClick={handleMarkerClick}
-                onMapClick={handleMapClick}
-                center={mapCenter}
-                zoom={12}
-                height="600px"
-                className="w-full"
-              />
-            </MapErrorBoundary>
+            <MapWrapper
+              incidents={allMarkers}
+              showRouting={true}
+              onIncidentClick={handleMarkerClick}
+              onMapClick={handleMapClick}
+              center={mapCenter}
+              zoom={12}
+              height="600px"
+              className="w-full"
+            />
           </div>
 
           <div className="space-y-6">
