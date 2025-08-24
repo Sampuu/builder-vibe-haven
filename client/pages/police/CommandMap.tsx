@@ -182,30 +182,72 @@ export default function CommandMap() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {activeUnits.map((unit) => (
-                    <div key={unit.id} className="p-3 border rounded-lg">
+                  {policeUnits.map((unit) => (
+                    <div
+                      key={unit.id}
+                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        selectedUnit === `unit-${unit.id}` ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                      }`}
+                      onClick={() => setSelectedUnit(`unit-${unit.id}`)}
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{unit.id}</span>
-                        <Badge className={`text-xs ${
-                          unit.status === 'responding' ? 'bg-emergency-danger' :
-                          unit.status === 'patrolling' ? 'bg-emergency-warning' : 'bg-emergency-resolved'
-                        } text-white`}>
+                        <div>
+                          <span className="font-medium">{unit.id}</span>
+                          <div className="text-xs text-slate-500">{unit.officer}</div>
+                        </div>
+                        <Badge className={`text-xs ${getStatusColor(unit.status)} text-white`}>
                           {unit.status}
                         </Badge>
                       </div>
-                      <div className="text-sm text-slate-600 flex items-center">
+
+                      <div className="text-sm text-slate-600 flex items-center mb-2">
                         <MapPin className="h-3 w-3 mr-1" />
-                        {unit.location}
+                        {unit.position.lat.toFixed(4)}, {unit.position.lon.toFixed(4)}
                       </div>
+
                       {unit.incident && (
-                        <div className="text-xs text-slate-500 mt-1">
-                          Responding to: {unit.incident}
+                        <div className="text-xs text-slate-700 mb-2 p-2 bg-slate-50 rounded">
+                          <div className="flex items-center">
+                            <AlertTriangle className="h-3 w-3 mr-1 text-emergency-danger" />
+                            <span className="font-medium">Active Incident</span>
+                          </div>
+                          <div>{unit.incident}</div>
+                          {unit.eta && (
+                            <div className="flex items-center mt-1 text-slate-500">
+                              <Clock className="h-3 w-3 mr-1" />
+                              ETA: {unit.eta}
+                            </div>
+                          )}
                         </div>
                       )}
-                      <Button size="sm" variant="outline" className="w-full mt-2">
-                        <Radio className="mr-2 h-4 w-4" />
-                        Contact Unit
-                      </Button>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            contactUnit(unit.id);
+                          }}
+                        >
+                          <Radio className="mr-1 h-3 w-3" />
+                          Contact
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // This would show dispatch options
+                            alert(`Dispatch options for ${unit.id}`);
+                          }}
+                        >
+                          <Car className="mr-1 h-3 w-3" />
+                          Deploy
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
