@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   ArrowLeft,
   Save,
   UserCheck,
   UserX,
   Shield
 } from 'lucide-react';
-import { UserRole } from '@/hooks/use-auth';
+import { UserRole, useAuth } from '@/hooks/use-auth';
+import { collection, getDocs, doc, deleteDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface User {
   id: string;
@@ -30,56 +32,8 @@ interface User {
   role: UserRole;
   status: 'active' | 'inactive';
   createdAt: string;
-  lastLogin: string;
+  lastLoginAt?: string;
 }
-
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@emergency.gov',
-    role: 'police',
-    status: 'active',
-    createdAt: '2024-01-15',
-    lastLogin: '2 hours ago'
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@fire.gov',
-    role: 'fire',
-    status: 'active',
-    createdAt: '2024-01-10',
-    lastLogin: '1 day ago'
-  },
-  {
-    id: '3',
-    name: 'Mike Davis',
-    email: 'mike.davis@ambulance.gov',
-    role: 'ambulance',
-    status: 'active',
-    createdAt: '2024-01-08',
-    lastLogin: '3 hours ago'
-  },
-  {
-    id: '4',
-    name: 'Emily Wilson',
-    email: 'emily.wilson@hospital.gov',
-    role: 'hospital',
-    status: 'inactive',
-    createdAt: '2024-01-05',
-    lastLogin: '1 week ago'
-  },
-  {
-    id: '5',
-    name: 'Tom Brown',
-    email: 'tom.brown@citizen.com',
-    role: 'user',
-    status: 'active',
-    createdAt: '2024-01-20',
-    lastLogin: '30 minutes ago'
-  }
-];
 
 const roleOptions = [
   { value: 'user', label: 'User', description: 'Report disasters & request help' },
@@ -92,7 +46,9 @@ const roleOptions = [
 
 export default function ManageUsers() {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const { signup, checkIfAdmin } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -102,10 +58,45 @@ export default function ManageUsers() {
     name: '',
     email: '',
     role: 'user' as UserRole,
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive',
+    password: ''
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Load users from Firestore
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersList: User[] = [];
+
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        usersList.push({
+          id: doc.id,
+          name: userData.name || '',
+          email: userData.email || '',
+          role: userData.role || 'user',
+          status: userData.status || 'active',
+          createdAt: userData.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown',
+          lastLoginAt: userData.lastLoginAt?.toDate?.()?.toLocaleDateString() || 'Never',
+        });
+      });
+
+      setUsers(usersList);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      setError('Failed to load users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load users on component mount
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,28 +105,42 @@ export default function ManageUsers() {
     return matchesSearch && matchesRole;
   });
 
-  const handleAddUser = () => {
-    if (!formData.name || !formData.email) {
+  const handleAddUser = async () => {
+    if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all required fields');
       return;
     }
 
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      status: formData.status,
-      createdAt: new Date().toISOString().split('T')[0],
-      lastLogin: 'Never'
-    };
+    try {
+      // Create user account using Firebase Auth
+      const success = await signup(formData.email, formData.password, formData.name, formData.role);
 
-    setUsers([...users, newUser]);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
-    setIsAddDialogOpen(false);
-    setSuccess('User added successfully');
-    setError('');
-    setTimeout(() => setSuccess(''), 3000);
+      if (success) {
+        // If user is admin, add to admins collection
+        if (formData.role === 'admin') {
+          const userSnapshot = await getDocs(collection(db, 'users'));
+          const newUserId = userSnapshot.docs.find(doc => doc.data().email === formData.email)?.id;
+          if (newUserId) {
+            await setDoc(doc(db, 'admins', newUserId), {
+              createdAt: new Date(),
+              createdBy: 'admin'
+            });
+          }
+        }
+
+        setFormData({ name: '', email: '', role: 'user', status: 'active', password: '' });
+        setIsAddDialogOpen(false);
+        setSuccess('User added successfully');
+        setError('');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      } else {
+        setError('Failed to create user account');
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+      setError('Failed to add user');
+    }
   };
 
   const handleEditUser = (user: User) => {
@@ -144,49 +149,95 @@ export default function ManageUsers() {
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status
+      status: user.status,
+      password: ''
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!formData.name || !formData.email || !editingUser) {
       setError('Please fill in all required fields');
       return;
     }
 
-    const updatedUsers = users.map(user => 
-      user.id === editingUser.id 
-        ? { ...user, ...formData }
-        : user
-    );
+    try {
+      // Update user data in Firestore
+      await updateDoc(doc(db, 'users', editingUser.id), {
+        name: formData.name,
+        role: formData.role,
+        status: formData.status,
+        updatedAt: new Date()
+      });
 
-    setUsers(updatedUsers);
-    setIsEditDialogOpen(false);
-    setEditingUser(null);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
-    setSuccess('User updated successfully');
-    setError('');
-    setTimeout(() => setSuccess(''), 3000);
-  };
+      // Handle admin role changes
+      const wasAdmin = editingUser.role === 'admin';
+      const isNowAdmin = formData.role === 'admin';
 
-  const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(user => user.id !== userId));
-      setSuccess('User deleted successfully');
+      if (!wasAdmin && isNowAdmin) {
+        // Add to admins collection
+        await setDoc(doc(db, 'admins', editingUser.id), {
+          createdAt: new Date(),
+          createdBy: 'admin'
+        });
+      } else if (wasAdmin && !isNowAdmin) {
+        // Remove from admins collection
+        await deleteDoc(doc(db, 'admins', editingUser.id));
+      }
+
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+      setFormData({ name: '', email: '', role: 'user', status: 'active', password: '' });
+      setSuccess('User updated successfully');
+      setError('');
       setTimeout(() => setSuccess(''), 3000);
+      await loadUsers(); // Reload users list
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setError('Failed to update user');
     }
   };
 
-  const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(user => 
-      user.id === userId 
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-        : user
-    );
-    setUsers(updatedUsers);
-    setSuccess('User status updated');
-    setTimeout(() => setSuccess(''), 3000);
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        // Remove from users collection
+        await deleteDoc(doc(db, 'users', userId));
+
+        // Remove from admins collection if they were an admin
+        const user = users.find(u => u.id === userId);
+        if (user?.role === 'admin') {
+          await deleteDoc(doc(db, 'admins', userId));
+        }
+
+        setSuccess('User deleted successfully');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        setError('Failed to delete user');
+      }
+    }
+  };
+
+  const toggleUserStatus = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        const newStatus = user.status === 'active' ? 'inactive' : 'active';
+        await updateDoc(doc(db, 'users', userId), {
+          status: newStatus,
+          updatedAt: new Date()
+        });
+
+        setSuccess('User status updated');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      setError('Failed to update user status');
+    }
   };
 
   const getRoleColor = (role: UserRole) => {
@@ -253,6 +304,17 @@ export default function ManageUsers() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="Enter email address"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Enter password (minimum 6 characters)"
+                    minLength={6}
                   />
                 </div>
                 <div className="space-y-2">
@@ -353,73 +415,85 @@ export default function ManageUsers() {
             <CardDescription>Manage all system users and their access levels</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left p-4 font-medium text-slate-700">User</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Role</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Status</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Created</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Last Login</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="p-4">
-                        <div>
-                          <div className="font-medium text-slate-900">{user.name}</div>
-                          <div className="text-sm text-slate-500">{user.email}</div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <Badge className={`${getRoleColor(user.role)} text-white`}>
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleUserStatus(user.id)}
-                          className={user.status === 'active' ? 'text-emergency-resolved' : 'text-slate-500'}
-                        >
-                          {user.status === 'active' ? (
-                            <UserCheck className="h-4 w-4 mr-1" />
-                          ) : (
-                            <UserX className="h-4 w-4 mr-1" />
-                          )}
-                          {user.status}
-                        </Button>
-                      </td>
-                      <td className="p-4 text-sm text-slate-600">{user.createdAt}</td>
-                      <td className="p-4 text-sm text-slate-600">{user.lastLogin}</td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-emergency-danger hover:text-emergency-danger"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
+            {loading ? (
+              <div className="text-center p-8">Loading users...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left p-4 font-medium text-slate-700">User</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Role</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Status</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Created</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Last Login</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center p-8 text-slate-500">
+                          No users found
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="p-4">
+                            <div>
+                              <div className="font-medium text-slate-900">{user.name}</div>
+                              <div className="text-sm text-slate-500">{user.email}</div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Badge className={`${getRoleColor(user.role)} text-white`}>
+                              {user.role}
+                            </Badge>
+                          </td>
+                          <td className="p-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleUserStatus(user.id)}
+                              className={user.status === 'active' ? 'text-emergency-resolved' : 'text-slate-500'}
+                            >
+                              {user.status === 'active' ? (
+                                <UserCheck className="h-4 w-4 mr-1" />
+                              ) : (
+                                <UserX className="h-4 w-4 mr-1" />
+                              )}
+                              {user.status}
+                            </Button>
+                          </td>
+                          <td className="p-4 text-sm text-slate-600">{user.createdAt}</td>
+                          <td className="p-4 text-sm text-slate-600">{user.lastLoginAt || 'Never'}</td>
+                          <td className="p-4">
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="text-emergency-danger hover:text-emergency-danger"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
