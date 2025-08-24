@@ -160,22 +160,16 @@ export default function CommandMap() {
 
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative bg-slate-100 h-96 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Police Command Map</p>
-                    <p className="text-sm">Real-time unit tracking and incident mapping</p>
-                    <div className="mt-4 space-y-1 text-sm">
-                      <p>• Blue markers: Police units</p>
-                      <p>• Red markers: Active incidents</p>
-                      <p>• Green routes: Navigation paths</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <EmergencyMap
+              incidents={allMarkers}
+              showRouting={true}
+              onIncidentClick={handleMarkerClick}
+              onMapClick={handleMapClick}
+              center={mapCenter}
+              zoom={12}
+              height="600px"
+              className="w-full"
+            />
           </div>
 
           <div className="space-y-6">
