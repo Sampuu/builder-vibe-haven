@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import EmergencyMap, { IncidentMarker } from '@/components/EmergencyMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import {
+  Map,
   ArrowLeft,
   MapPin,
   AlertTriangle,
   Filter,
-  ZoomIn,
-  ZoomOut,
-  Layers
+  Navigation,
+  Phone
 } from 'lucide-react';
+import { Coordinates } from '@/lib/openroute';
 
 const mockIncidents = [
   { id: 1, type: 'fire', location: 'Downtown Plaza', severity: 'high', distance: '0.8 miles' },
