@@ -7,7 +7,20 @@ import { getRoleDashboardPath } from "@/lib/navigation-utils";
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+
+  // Use try-catch to handle potential auth context issues
+  let user = null;
+  let isLoading = true;
+
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    isLoading = authContext.isLoading;
+  } catch (error) {
+    console.warn('Auth context not available:', error);
+    // If auth context is not available, treat as logged out
+    isLoading = false;
+  }
 
   useEffect(() => {
     if (!isLoading && user) {
