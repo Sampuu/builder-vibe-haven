@@ -106,7 +106,21 @@ export default function ReportDisaster() {
         timestamp: new Date().toISOString(),
       };
 
-      console.log('Disaster report submitted:', report);
+      // Submit to API endpoint
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(report),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      const result = await response.json();
+      console.log('Report submitted successfully:', result);
       setShowSuccess(true);
       
       // Reset form
@@ -426,9 +440,11 @@ export default function ReportDisaster() {
                     <div className="font-medium text-emergency-danger">Emergency Services</div>
                     <div className="text-sm text-slate-600">Police, Fire, Medical</div>
                   </div>
-                  <Button variant="danger" size="sm">
-                    <Phone className="mr-2 h-4 w-4" />
-                    911
+                  <Button variant="danger" size="sm" asChild>
+                    <a href="tel:911">
+                      <Phone className="mr-2 h-4 w-4" />
+                      911
+                    </a>
                   </Button>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
@@ -436,9 +452,11 @@ export default function ReportDisaster() {
                     <div className="font-medium text-slate-700">Non-Emergency Police</div>
                     <div className="text-sm text-slate-600">For non-urgent situations</div>
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Phone className="mr-2 h-4 w-4" />
-                    311
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="tel:311">
+                      <Phone className="mr-2 h-4 w-4" />
+                      311
+                    </a>
                   </Button>
                 </div>
               </CardContent>
