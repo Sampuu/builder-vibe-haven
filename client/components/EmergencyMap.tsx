@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import ORSRoute from './ORSRoute';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import ORSRoute from "./ORSRoute";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   Navigation,
   MapPin,
@@ -16,8 +16,8 @@ import {
   X,
   Clock,
   Gauge,
-  Loader
-} from 'lucide-react';
+  Loader,
+} from "lucide-react";
 import {
   geocodeAddress,
   getRoute,
@@ -25,15 +25,18 @@ import {
   Coordinates,
   RouteData,
   INCIDENT_TYPES,
-  IncidentType
-} from '@/lib/openroute';
+  IncidentType,
+} from "@/lib/openroute";
 
 // Fix for default Leaflet marker icons in Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
 export interface IncidentMarker {
@@ -42,7 +45,7 @@ export interface IncidentMarker {
   position: Coordinates;
   title: string;
   description?: string;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
+  severity?: "low" | "medium" | "high" | "critical";
   timestamp?: Date;
 }
 
@@ -100,19 +103,23 @@ const RouteDisplay: React.FC<RouteDisplayProps> = ({ routeData, onClear }) => {
   );
 };
 
-const RouteLayer: React.FC<{ routeData: RouteData | null }> = ({ routeData }) => {
+const RouteLayer: React.FC<{ routeData: RouteData | null }> = ({
+  routeData,
+}) => {
   const map = useMap();
 
   useEffect(() => {
     if (!routeData) return;
 
     const route = routeData.features[0];
-    const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]] as [number, number]);
-    
+    const coordinates = route.geometry.coordinates.map(
+      (coord) => [coord[1], coord[0]] as [number, number],
+    );
+
     const routeLine = L.polyline(coordinates, {
-      color: '#2563eb',
+      color: "#2563eb",
       weight: 5,
-      opacity: 0.8
+      opacity: 0.8,
     }).addTo(map);
 
     // Fit map to route bounds
@@ -129,7 +136,7 @@ const RouteLayer: React.FC<{ routeData: RouteData | null }> = ({ routeData }) =>
 
 const createCustomIcon = (type: IncidentType) => {
   const { color } = INCIDENT_TYPES[type];
-  
+
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
@@ -139,9 +146,9 @@ const createCustomIcon = (type: IncidentType) => {
       border: 2px solid white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     "></div>`,
-    className: 'custom-marker',
+    className: "custom-marker",
     iconSize: [20, 20],
-    iconAnchor: [10, 10]
+    iconAnchor: [10, 10],
   });
 };
 
@@ -153,37 +160,42 @@ export default function EmergencyMap({
   onMapClick,
   center = { lat: 20, lon: 0 },
   zoom = 2,
-  height = '400px',
-  className = ''
+  height = "400px",
+  className = "",
 }: EmergencyMapProps) {
-  const [startAddress, setStartAddress] = useState('');
-  const [endAddress, setEndAddress] = useState('');
+  const [startAddress, setStartAddress] = useState("");
+  const [endAddress, setEndAddress] = useState("");
   const [routeData, setRouteData] = useState<RouteData | null>(null);
-  const [markers, setMarkers] = useState<{ start?: Coordinates; end?: Coordinates }>({});
+  const [markers, setMarkers] = useState<{
+    start?: Coordinates;
+    end?: Coordinates;
+  }>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [clickPosition, setClickPosition] = useState<Coordinates | null>(null);
 
   const handleCalculateRoute = async () => {
     if (!startAddress || !endAddress) {
-      setError('Please enter both start and destination addresses');
+      setError("Please enter both start and destination addresses");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const startCoords = await geocodeAddress(startAddress);
       const endCoords = await geocodeAddress(endAddress);
-      
+
       setMarkers({ start: startCoords, end: endCoords });
-      
+
       const route = await getRoute(startCoords, endCoords);
       setRouteData(route);
     } catch (error) {
-      console.error('Route calculation error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to calculate route');
+      console.error("Route calculation error:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to calculate route",
+      );
     } finally {
       setLoading(false);
     }
@@ -192,17 +204,17 @@ export default function EmergencyMap({
   const handleClearRoute = () => {
     setRouteData(null);
     setMarkers({});
-    setStartAddress('');
-    setEndAddress('');
-    setError('');
+    setStartAddress("");
+    setEndAddress("");
+    setError("");
   };
 
   const handleMapClick = async (e: L.LeafletMouseEvent) => {
     const { lat, lng } = e.latlng;
     const coordinates = { lat, lon: lng };
-    
+
     setClickPosition(coordinates);
-    
+
     if (onMapClick) {
       onMapClick(coordinates);
     }
@@ -217,18 +229,23 @@ export default function EmergencyMap({
           setEndAddress(address);
         }
       } catch (error) {
-        console.error('Reverse geocoding failed:', error);
+        console.error("Reverse geocoding failed:", error);
       }
     }
   };
 
   const getSeverityColor = (severity?: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-600';
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-orange-500';
-      case 'low': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case "critical":
+        return "bg-red-600";
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-orange-500";
+      case "low":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -263,28 +280,28 @@ export default function EmergencyMap({
                   placeholder="Enter destination"
                 />
               </div>
-              <Button 
-                onClick={handleCalculateRoute} 
+              <Button
+                onClick={handleCalculateRoute}
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Calculating...' : 'Calculate Route'}
+                {loading ? "Calculating..." : "Calculate Route"}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleClearRoute}
                 className="w-full"
               >
                 Clear Route
               </Button>
             </div>
-            
+
             {error && (
               <Alert variant="destructive" className="mt-2">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <p className="text-sm text-gray-600 mt-2">
               💡 Tip: Click on the map to auto-fill addresses
             </p>
@@ -297,53 +314,55 @@ export default function EmergencyMap({
         <MapContainer
           center={[center.lat, center.lon]}
           zoom={zoom}
-          style={{ height, width: '100%' }}
+          style={{ height, width: "100%" }}
           className="rounded-lg border"
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          
+
           {/* Route Layer */}
           <RouteLayer routeData={routeData} />
-          
+
           {/* Route Markers */}
           {markers.start && (
-            <Marker 
+            <Marker
               position={[markers.start.lat, markers.start.lon]}
               icon={L.divIcon({
                 html: '<div style="background-color: #22c55e; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                className: 'custom-marker',
+                className: "custom-marker",
                 iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconAnchor: [10, 10],
               })}
             >
               <Popup>
                 <div>
                   <strong>Start Location</strong>
                   <br />
-                  {startAddress || `${markers.start.lat.toFixed(6)}, ${markers.start.lon.toFixed(6)}`}
+                  {startAddress ||
+                    `${markers.start.lat.toFixed(6)}, ${markers.start.lon.toFixed(6)}`}
                 </div>
               </Popup>
             </Marker>
           )}
-          
+
           {markers.end && (
-            <Marker 
+            <Marker
               position={[markers.end.lat, markers.end.lon]}
               icon={L.divIcon({
                 html: '<div style="background-color: #ef4444; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                className: 'custom-marker',
+                className: "custom-marker",
                 iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconAnchor: [10, 10],
               })}
             >
               <Popup>
                 <div>
                   <strong>Destination</strong>
                   <br />
-                  {endAddress || `${markers.end.lat.toFixed(6)}, ${markers.end.lon.toFixed(6)}`}
+                  {endAddress ||
+                    `${markers.end.lat.toFixed(6)}, ${markers.end.lon.toFixed(6)}`}
                 </div>
               </Popup>
             </Marker>
@@ -356,7 +375,7 @@ export default function EmergencyMap({
               position={[incident.position.lat, incident.position.lon]}
               icon={createCustomIcon(incident.type)}
               eventHandlers={{
-                click: () => onIncidentClick?.(incident)
+                click: () => onIncidentClick?.(incident),
               }}
             >
               <Popup>
@@ -364,7 +383,9 @@ export default function EmergencyMap({
                   <div className="flex items-center justify-between mb-2">
                     <strong>{incident.title}</strong>
                     {incident.severity && (
-                      <Badge className={`text-xs text-white ${getSeverityColor(incident.severity)}`}>
+                      <Badge
+                        className={`text-xs text-white ${getSeverityColor(incident.severity)}`}
+                      >
                         {incident.severity}
                       </Badge>
                     )}
@@ -389,13 +410,13 @@ export default function EmergencyMap({
 
           {/* Click Position Marker */}
           {clickPosition && !markers.start && !markers.end && (
-            <Marker 
+            <Marker
               position={[clickPosition.lat, clickPosition.lon]}
               icon={L.divIcon({
                 html: '<div style="background-color: #3b82f6; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                className: 'custom-marker',
+                className: "custom-marker",
                 iconSize: [15, 15],
-                iconAnchor: [7, 7]
+                iconAnchor: [7, 7],
               })}
             >
               <Popup>
@@ -407,7 +428,7 @@ export default function EmergencyMap({
               </Popup>
             </Marker>
           )}
-          
+
           {/* Map Click Handler */}
           <MapClickHandler onClick={handleMapClick} />
         </MapContainer>
@@ -420,13 +441,15 @@ export default function EmergencyMap({
 }
 
 // Helper component to handle map clicks
-const MapClickHandler: React.FC<{ onClick: (e: L.LeafletMouseEvent) => void }> = ({ onClick }) => {
+const MapClickHandler: React.FC<{
+  onClick: (e: L.LeafletMouseEvent) => void;
+}> = ({ onClick }) => {
   const map = useMap();
 
   useEffect(() => {
-    map.on('click', onClick);
+    map.on("click", onClick);
     return () => {
-      map.off('click', onClick);
+      map.off("click", onClick);
     };
   }, [map, onClick]);
 

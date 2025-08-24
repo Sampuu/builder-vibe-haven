@@ -1,22 +1,22 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Map, Loader } from 'lucide-react';
-import { IncidentMarker } from './EmergencyMap';
-import { Coordinates } from '@/lib/openroute';
+import React, { useState, useEffect, Suspense } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Map, Loader } from "lucide-react";
+import { IncidentMarker } from "./EmergencyMap";
+import { Coordinates } from "@/lib/openroute";
 
 // Lazy load the EmergencyMap component with error handling
 const EmergencyMap = React.lazy(() =>
-  import('./EmergencyMap').catch(error => {
-    console.error('Failed to load EmergencyMap component:', error);
+  import("./EmergencyMap").catch((error) => {
+    console.error("Failed to load EmergencyMap component:", error);
     // Return a fallback component
     return {
       default: () => (
         <div className="p-4 text-center text-red-600">
           Map component failed to load. Please refresh the page.
         </div>
-      )
+      ),
     };
-  })
+  }),
 );
 
 interface MapWrapperProps {
@@ -39,8 +39,12 @@ const MapLoadingFallback = () => (
           <Map className="h-6 w-6 text-slate-400" />
         </div>
         <div className="text-center">
-          <p className="text-lg font-medium text-slate-700">Loading Interactive Map...</p>
-          <p className="text-sm text-slate-500">Initializing emergency mapping system</p>
+          <p className="text-lg font-medium text-slate-700">
+            Loading Interactive Map...
+          </p>
+          <p className="text-sm text-slate-500">
+            Initializing emergency mapping system
+          </p>
         </div>
       </div>
     </CardContent>
@@ -58,27 +62,29 @@ const MapErrorFallback = ({ onRetry }: { onRetry: () => void }) => (
     <CardContent>
       <div className="bg-slate-100 p-6 rounded-lg border-2 border-dashed border-slate-300 text-center">
         <Map className="h-16 w-16 mx-auto mb-4 opacity-50 text-slate-500" />
-        <p className="text-lg font-medium text-slate-700 mb-2">Emergency Map Temporarily Unavailable</p>
+        <p className="text-lg font-medium text-slate-700 mb-2">
+          Emergency Map Temporarily Unavailable
+        </p>
         <p className="text-sm text-slate-600 mb-4">
-          The interactive map service is experiencing technical difficulties. 
+          The interactive map service is experiencing technical difficulties.
           Emergency services remain fully operational.
         </p>
-        <button 
+        <button
           onClick={onRetry}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
         >
           Try Loading Map Again
         </button>
       </div>
-      
+
       {/* Emergency Contacts Always Available */}
       <div className="mt-4 bg-red-50 p-4 rounded-lg border border-red-200">
         <h3 className="font-medium text-red-800 mb-2">Emergency Contacts</h3>
         <div className="space-y-1 text-sm">
           <div className="flex justify-between items-center">
             <span>Emergency Services:</span>
-            <button 
-              onClick={() => window.open('tel:911')}
+            <button
+              onClick={() => window.open("tel:911")}
               className="text-red-600 font-medium hover:underline"
             >
               Call 911
@@ -86,8 +92,8 @@ const MapErrorFallback = ({ onRetry }: { onRetry: () => void }) => (
           </div>
           <div className="flex justify-between items-center">
             <span>Poison Control:</span>
-            <button 
-              onClick={() => window.open('tel:1-800-222-1222')}
+            <button
+              onClick={() => window.open("tel:1-800-222-1222")}
               className="text-blue-600 font-medium hover:underline"
             >
               1-800-222-1222
@@ -105,7 +111,7 @@ export default function MapWrapper(props: MapWrapperProps) {
 
   const handleRetry = () => {
     setHasError(false);
-    setRetryKey(prev => prev + 1);
+    setRetryKey((prev) => prev + 1);
   };
 
   useEffect(() => {
@@ -143,7 +149,7 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    console.error('Map component error:', error, errorInfo);
+    console.error("Map component error:", error, errorInfo);
     this.props.onError();
   }
 

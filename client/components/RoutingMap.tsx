@@ -1,32 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import ORSRoute from './ORSRoute';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Navigation, 
-  MapPin, 
-  Route, 
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import ORSRoute from "./ORSRoute";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Navigation,
+  MapPin,
+  Route,
   AlertTriangle,
   X,
   Clock,
   Gauge,
-  Loader
-} from 'lucide-react';
-import { geocodeAddress, reverseGeocode, OPENROUTE_API_KEY } from '@/lib/openroute';
-import 'leaflet/dist/leaflet.css';
+  Loader,
+} from "lucide-react";
+import {
+  geocodeAddress,
+  reverseGeocode,
+  OPENROUTE_API_KEY,
+} from "@/lib/openroute";
+import "leaflet/dist/leaflet.css";
 
 // Fix for default Leaflet marker icons in Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
 interface RoutingMapProps {
@@ -41,22 +48,29 @@ interface RoutingMapProps {
 }
 
 export default function RoutingMap({
-  center = [27.7172, 85.3240], // Default to Kathmandu, Nepal (from user's example)
+  center = [27.7172, 85.324], // Default to Kathmandu, Nepal (from user's example)
   zoom = 13,
-  height = '500px',
+  height = "500px",
   showControls = true,
   startCoords,
   endCoords,
   onRouteCalculated,
-  className = ''
+  className = "",
 }: RoutingMapProps) {
-  const [startAddress, setStartAddress] = useState('');
-  const [endAddress, setEndAddress] = useState('');
-  const [startPosition, setStartPosition] = useState<[number, number] | null>(startCoords || null);
-  const [endPosition, setEndPosition] = useState<[number, number] | null>(endCoords || null);
-  const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
+  const [startAddress, setStartAddress] = useState("");
+  const [endAddress, setEndAddress] = useState("");
+  const [startPosition, setStartPosition] = useState<[number, number] | null>(
+    startCoords || null,
+  );
+  const [endPosition, setEndPosition] = useState<[number, number] | null>(
+    endCoords || null,
+  );
+  const [routeInfo, setRouteInfo] = useState<{
+    distance: number;
+    duration: number;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Update positions when props change
   useEffect(() => {
@@ -67,18 +81,18 @@ export default function RoutingMap({
   const handleGeocode = async (address: string, isStart: boolean) => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       const coords = await geocodeAddress(address);
       const position: [number, number] = [coords.lat, coords.lon];
-      
+
       if (isStart) {
         setStartPosition(position);
       } else {
         setEndPosition(position);
       }
     } catch (error) {
-      console.error('Geocoding failed:', error);
+      console.error("Geocoding failed:", error);
       setError(`Failed to find location: ${address}`);
     } finally {
       setLoading(false);
@@ -87,25 +101,27 @@ export default function RoutingMap({
 
   const handleCalculateRoute = async () => {
     if (!startAddress || !endAddress) {
-      setError('Please enter both start and destination addresses');
+      setError("Please enter both start and destination addresses");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Geocode both addresses
       const [startCoords, endCoords] = await Promise.all([
         geocodeAddress(startAddress),
-        geocodeAddress(endAddress)
+        geocodeAddress(endAddress),
       ]);
 
       setStartPosition([startCoords.lat, startCoords.lon]);
       setEndPosition([endCoords.lat, endCoords.lon]);
     } catch (error) {
-      console.error('Route calculation failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to calculate route');
+      console.error("Route calculation failed:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to calculate route",
+      );
     } finally {
       setLoading(false);
     }
@@ -117,7 +133,7 @@ export default function RoutingMap({
 
     try {
       const address = await reverseGeocode(lat, lng);
-      
+
       if (!startPosition) {
         setStartPosition(position);
         setStartAddress(address);
@@ -129,11 +145,11 @@ export default function RoutingMap({
         setStartPosition(position);
         setEndPosition(null);
         setStartAddress(address);
-        setEndAddress('');
+        setEndAddress("");
         setRouteInfo(null);
       }
     } catch (error) {
-      console.error('Reverse geocoding failed:', error);
+      console.error("Reverse geocoding failed:", error);
     }
   };
 
@@ -152,20 +168,20 @@ export default function RoutingMap({
   const clearRoute = () => {
     setStartPosition(null);
     setEndPosition(null);
-    setStartAddress('');
-    setEndAddress('');
+    setStartAddress("");
+    setEndAddress("");
     setRouteInfo(null);
-    setError('');
+    setError("");
   };
 
   const MapClickHandler = () => {
     const map = L.useMap();
-    
+
     useEffect(() => {
       const onClick = (e: L.LeafletMouseEvent) => handleMapClick(e);
-      map.on('click', onClick);
+      map.on("click", onClick);
       return () => {
-        map.off('click', onClick);
+        map.off("click", onClick);
       };
     }, [map]);
 
@@ -192,7 +208,9 @@ export default function RoutingMap({
                   value={startAddress}
                   onChange={(e) => setStartAddress(e.target.value)}
                   placeholder="Enter start location"
-                  onKeyPress={(e) => e.key === 'Enter' && handleGeocode(startAddress, true)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && handleGeocode(startAddress, true)
+                  }
                 />
               </div>
               <div>
@@ -202,11 +220,13 @@ export default function RoutingMap({
                   value={endAddress}
                   onChange={(e) => setEndAddress(e.target.value)}
                   placeholder="Enter destination"
-                  onKeyPress={(e) => e.key === 'Enter' && handleGeocode(endAddress, false)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && handleGeocode(endAddress, false)
+                  }
                 />
               </div>
-              <Button 
-                onClick={handleCalculateRoute} 
+              <Button
+                onClick={handleCalculateRoute}
                 disabled={loading}
                 className="w-full"
               >
@@ -222,23 +242,19 @@ export default function RoutingMap({
                   </>
                 )}
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={clearRoute}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={clearRoute} className="w-full">
                 <X className="mr-2 h-4 w-4" />
                 Clear Route
               </Button>
             </div>
-            
+
             {error && (
               <Alert variant="destructive" className="mt-2">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <p className="text-sm text-gray-600 mt-2">
               💡 Tip: Click on the map to set start and destination points
             </p>
@@ -271,57 +287,59 @@ export default function RoutingMap({
       )}
 
       {/* Map Container */}
-      <div style={{ height, width: '100%' }}>
+      <div style={{ height, width: "100%" }}>
         <MapContainer
           center={center}
           zoom={zoom}
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: "100%", width: "100%" }}
           className="rounded-lg border"
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
+
           <MapClickHandler />
-          
+
           {/* Start Marker */}
           {startPosition && (
-            <Marker 
+            <Marker
               position={startPosition}
               icon={L.divIcon({
                 html: '<div style="background-color: #22c55e; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                className: 'custom-marker',
+                className: "custom-marker",
                 iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconAnchor: [10, 10],
               })}
             >
               <Popup>
                 <div>
                   <strong>Start Location</strong>
                   <br />
-                  {startAddress || `${startPosition[0].toFixed(6)}, ${startPosition[1].toFixed(6)}`}
+                  {startAddress ||
+                    `${startPosition[0].toFixed(6)}, ${startPosition[1].toFixed(6)}`}
                 </div>
               </Popup>
             </Marker>
           )}
-          
+
           {/* End Marker */}
           {endPosition && (
-            <Marker 
+            <Marker
               position={endPosition}
               icon={L.divIcon({
                 html: '<div style="background-color: #ef4444; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                className: 'custom-marker',
+                className: "custom-marker",
                 iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconAnchor: [10, 10],
               })}
             >
               <Popup>
                 <div>
                   <strong>Destination</strong>
                   <br />
-                  {endAddress || `${endPosition[0].toFixed(6)}, ${endPosition[1].toFixed(6)}`}
+                  {endAddress ||
+                    `${endPosition[0].toFixed(6)}, ${endPosition[1].toFixed(6)}`}
                 </div>
               </Popup>
             </Marker>

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { useMap } from 'react-leaflet';
-import L from 'leaflet';
-import { OPENROUTE_API_KEY } from '@/lib/openroute';
+import React, { useEffect, useRef } from "react";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
+import { OPENROUTE_API_KEY } from "@/lib/openroute";
 
 interface ORSRouteProps {
   start: [number, number];
@@ -14,15 +14,15 @@ interface ORSRouteProps {
   routeOpacity?: number;
 }
 
-const ORSRoute: React.FC<ORSRouteProps> = ({ 
-  start, 
-  end, 
+const ORSRoute: React.FC<ORSRouteProps> = ({
+  start,
+  end,
   apiKey = OPENROUTE_API_KEY,
   onRouteCalculated,
   onError,
-  routeColor = '#2563eb',
+  routeColor = "#2563eb",
   routeWeight = 5,
-  routeOpacity = 0.8
+  routeOpacity = 0.8,
 }) => {
   const map = useMap();
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
@@ -37,29 +37,35 @@ const ORSRoute: React.FC<ORSRouteProps> = ({
       try {
         // Request body for OpenRouteService
         const body = {
-          coordinates: [[start[1], start[0]], [end[1], end[0]]], // [lon, lat] format
-          preference: 'fastest',
-          format: 'geojson',
-          instructions: true
+          coordinates: [
+            [start[1], start[0]],
+            [end[1], end[0]],
+          ], // [lon, lat] format
+          preference: "fastest",
+          format: "geojson",
+          instructions: true,
         };
 
-        const response = await fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
-          method: 'POST',
-          headers: {
-            'Authorization': apiKey,
-            'Content-Type': 'application/json'
+        const response = await fetch(
+          "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+          {
+            method: "POST",
+            headers: {
+              Authorization: apiKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
           },
-          body: JSON.stringify(body)
-        });
+        );
 
         if (!response.ok) {
           throw new Error(`Route calculation failed: ${response.statusText}`);
         }
 
         const geojson = await response.json();
-        
+
         if (!geojson.features || geojson.features.length === 0) {
-          throw new Error('No route found between the specified points');
+          throw new Error("No route found between the specified points");
         }
 
         const feature = geojson.features[0];
@@ -71,10 +77,10 @@ const ORSRoute: React.FC<ORSRouteProps> = ({
             color: routeColor,
             weight: routeWeight,
             opacity: routeOpacity,
-            dashArray: '0', // Solid line
-            lineCap: 'round',
-            lineJoin: 'round'
-          }
+            dashArray: "0", // Solid line
+            lineCap: "round",
+            lineJoin: "round",
+          },
         });
 
         // Add route to map
@@ -83,9 +89,9 @@ const ORSRoute: React.FC<ORSRouteProps> = ({
 
         // Fit map to route bounds with padding
         const bounds = routeLayer.getBounds();
-        map.fitBounds(bounds, { 
+        map.fitBounds(bounds, {
           padding: [20, 20],
-          maxZoom: 16 // Prevent zooming too close
+          maxZoom: 16, // Prevent zooming too close
         });
 
         // Extract route information
@@ -98,15 +104,15 @@ const ORSRoute: React.FC<ORSRouteProps> = ({
           onRouteCalculated(distance, duration);
         }
 
-        console.log('Route calculated successfully:', {
+        console.log("Route calculated successfully:", {
           distance: `${distance.toFixed(2)} km`,
-          duration: `${Math.round(duration)} minutes`
+          duration: `${Math.round(duration)} minutes`,
         });
-
       } catch (error) {
-        console.error('Route calculation error:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to calculate route';
-        
+        console.error("Route calculation error:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to calculate route";
+
         if (onError) {
           onError(errorMessage);
         }
@@ -125,7 +131,17 @@ const ORSRoute: React.FC<ORSRouteProps> = ({
         routeLayerRef.current = null;
       }
     };
-  }, [start, end, apiKey, map, onRouteCalculated, onError, routeColor, routeWeight, routeOpacity]);
+  }, [
+    start,
+    end,
+    apiKey,
+    map,
+    onRouteCalculated,
+    onError,
+    routeColor,
+    routeWeight,
+    routeOpacity,
+  ]);
 
   return null; // This component doesn't render anything directly
 };

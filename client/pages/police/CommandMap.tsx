@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { IncidentMarker } from '@/components/EmergencyMap';
-import MapWrapper from '@/components/MapWrapper';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { IncidentMarker } from "@/components/EmergencyMap";
+import MapWrapper from "@/components/MapWrapper";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Map,
   ArrowLeft,
@@ -15,86 +15,88 @@ import {
   Navigation,
   AlertTriangle,
   Car,
-  Clock
-} from 'lucide-react';
-import { Coordinates } from '@/lib/openroute';
+  Clock,
+} from "lucide-react";
+import { Coordinates } from "@/lib/openroute";
 
 // Mock police units with coordinates
 const policeUnits = [
   {
-    id: 'Unit 12',
-    status: 'responding',
+    id: "Unit 12",
+    status: "responding",
     position: { lat: 37.7849, lon: -122.4094 },
-    incident: 'Traffic Accident',
-    officer: 'Officer Johnson',
-    eta: '3 min'
+    incident: "Traffic Accident",
+    officer: "Officer Johnson",
+    eta: "3 min",
   },
   {
-    id: 'Unit 8',
-    status: 'patrolling',
+    id: "Unit 8",
+    status: "patrolling",
     position: { lat: 37.7649, lon: -122.4194 },
     incident: null,
-    officer: 'Officer Smith',
-    eta: null
+    officer: "Officer Smith",
+    eta: null,
   },
   {
-    id: 'Unit 15',
-    status: 'available',
+    id: "Unit 15",
+    status: "available",
     position: { lat: 37.7549, lon: -122.4094 },
     incident: null,
-    officer: 'Officer Davis',
-    eta: null
+    officer: "Officer Davis",
+    eta: null,
   },
   {
-    id: 'Unit 23',
-    status: 'responding',
+    id: "Unit 23",
+    status: "responding",
     position: { lat: 37.7749, lon: -122.4294 },
-    incident: 'Domestic Disturbance',
-    officer: 'Officer Wilson',
-    eta: '7 min'
-  }
+    incident: "Domestic Disturbance",
+    officer: "Officer Wilson",
+    eta: "7 min",
+  },
 ];
 
 // Mock incidents for police
 const policeIncidents: IncidentMarker[] = [
   {
-    id: 'INC-001',
-    type: 'police',
+    id: "INC-001",
+    type: "police",
     position: { lat: 37.7849, lon: -122.4094 },
-    title: 'Traffic Accident - Highway 101',
-    description: 'Multi-vehicle collision, Unit 12 responding',
-    severity: 'medium',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000)
+    title: "Traffic Accident - Highway 101",
+    description: "Multi-vehicle collision, Unit 12 responding",
+    severity: "medium",
+    timestamp: new Date(Date.now() - 15 * 60 * 1000),
   },
   {
-    id: 'INC-002',
-    type: 'police',
+    id: "INC-002",
+    type: "police",
     position: { lat: 37.7749, lon: -122.4294 },
-    title: 'Domestic Disturbance - Oak Street',
-    description: 'Noise complaint escalated, Unit 23 en route',
-    severity: 'high',
-    timestamp: new Date(Date.now() - 8 * 60 * 1000)
+    title: "Domestic Disturbance - Oak Street",
+    description: "Noise complaint escalated, Unit 23 en route",
+    severity: "high",
+    timestamp: new Date(Date.now() - 8 * 60 * 1000),
   },
   {
-    id: 'INC-003',
-    type: 'fire',
+    id: "INC-003",
+    type: "fire",
     position: { lat: 37.7649, lon: -122.4394 },
-    title: 'Structure Fire - Main Street',
-    description: 'Commercial building fire, police support requested',
-    severity: 'critical',
-    timestamp: new Date(Date.now() - 25 * 60 * 1000)
-  }
+    title: "Structure Fire - Main Street",
+    description: "Commercial building fire, police support requested",
+    severity: "critical",
+    timestamp: new Date(Date.now() - 25 * 60 * 1000),
+  },
 ];
 
 // Create unit markers as incidents for display
-const unitMarkers: IncidentMarker[] = policeUnits.map(unit => ({
+const unitMarkers: IncidentMarker[] = policeUnits.map((unit) => ({
   id: `unit-${unit.id}`,
-  type: 'unit',
+  type: "unit",
   position: unit.position,
   title: `${unit.id} - ${unit.officer}`,
-  description: unit.incident ? `Responding to: ${unit.incident}` : `Status: ${unit.status}`,
-  severity: unit.status === 'responding' ? 'high' : 'low',
-  timestamp: new Date()
+  description: unit.incident
+    ? `Responding to: ${unit.incident}`
+    : `Status: ${unit.status}`,
+  severity: unit.status === "responding" ? "high" : "low",
+  timestamp: new Date(),
 }));
 
 export default function CommandMap() {
@@ -107,7 +109,7 @@ export default function CommandMap() {
   const allMarkers = [...policeIncidents, ...unitMarkers];
 
   const handleMarkerClick = (marker: IncidentMarker) => {
-    if (marker.id.startsWith('unit-')) {
+    if (marker.id.startsWith("unit-")) {
       setSelectedUnit(marker.id);
       setSelectedIncident(null);
     } else {
@@ -117,7 +119,7 @@ export default function CommandMap() {
   };
 
   const handleMapClick = (coordinates: Coordinates) => {
-    console.log('Command map clicked at:', coordinates);
+    console.log("Command map clicked at:", coordinates);
     // Could be used for deploying units to specific locations
   };
 
@@ -135,10 +137,14 @@ export default function CommandMap() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'responding': return 'bg-emergency-danger';
-      case 'patrolling': return 'bg-emergency-warning';
-      case 'available': return 'bg-emergency-resolved';
-      default: return 'bg-slate-500';
+      case "responding":
+        return "bg-emergency-danger";
+      case "patrolling":
+        return "bg-emergency-warning";
+      case "available":
+        return "bg-emergency-resolved";
+      default:
+        return "bg-slate-500";
     }
   };
 
@@ -146,7 +152,7 @@ export default function CommandMap() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/police')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/police")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Police Dashboard
           </Button>
@@ -155,7 +161,9 @@ export default function CommandMap() {
               <Map className="mr-3 h-8 w-8 text-emergency-info" />
               Police Command Map
             </h1>
-            <p className="text-slate-600">Real-time tracking of units and incidents</p>
+            <p className="text-slate-600">
+              Real-time tracking of units and incidents
+            </p>
           </div>
         </div>
 
@@ -187,23 +195,30 @@ export default function CommandMap() {
                     <div
                       key={unit.id}
                       className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedUnit === `unit-${unit.id}` ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                        selectedUnit === `unit-${unit.id}`
+                          ? "border-emergency-info bg-emergency-info/5"
+                          : "border-slate-200 hover:bg-slate-50"
                       }`}
                       onClick={() => setSelectedUnit(`unit-${unit.id}`)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <span className="font-medium">{unit.id}</span>
-                          <div className="text-xs text-slate-500">{unit.officer}</div>
+                          <div className="text-xs text-slate-500">
+                            {unit.officer}
+                          </div>
                         </div>
-                        <Badge className={`text-xs ${getStatusColor(unit.status)} text-white`}>
+                        <Badge
+                          className={`text-xs ${getStatusColor(unit.status)} text-white`}
+                        >
                           {unit.status}
                         </Badge>
                       </div>
 
                       <div className="text-sm text-slate-600 flex items-center mb-2">
                         <MapPin className="h-3 w-3 mr-1" />
-                        {unit.position.lat.toFixed(4)}, {unit.position.lon.toFixed(4)}
+                        {unit.position.lat.toFixed(4)},{" "}
+                        {unit.position.lon.toFixed(4)}
                       </div>
 
                       {unit.incident && (
@@ -264,7 +279,7 @@ export default function CommandMap() {
                   variant="danger"
                   size="sm"
                   className="w-full"
-                  onClick={() => alert('Opening dispatch interface...')}
+                  onClick={() => alert("Opening dispatch interface...")}
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   Emergency Dispatch
@@ -273,7 +288,7 @@ export default function CommandMap() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => alert('Opening route planning...')}
+                  onClick={() => alert("Opening route planning...")}
                 >
                   <Navigation className="mr-2 h-4 w-4" />
                   Route Planning
@@ -282,7 +297,7 @@ export default function CommandMap() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate('/police/incidents')}
+                  onClick={() => navigate("/police/incidents")}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   All Incidents
@@ -300,23 +315,37 @@ export default function CommandMap() {
                     <div
                       key={incident.id}
                       className={`p-2 border rounded cursor-pointer transition-colors ${
-                        selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                        selectedIncident === incident.id
+                          ? "border-emergency-info bg-emergency-info/5"
+                          : "border-slate-200 hover:bg-slate-50"
                       }`}
                       onClick={() => setSelectedIncident(incident.id)}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{incident.id}</span>
-                        <Badge className={`text-xs ${
-                          incident.severity === 'critical' ? 'bg-red-600' :
-                          incident.severity === 'high' ? 'bg-emergency-danger' :
-                          'bg-emergency-warning'
-                        } text-white`}>
+                        <span className="text-sm font-medium">
+                          {incident.id}
+                        </span>
+                        <Badge
+                          className={`text-xs ${
+                            incident.severity === "critical"
+                              ? "bg-red-600"
+                              : incident.severity === "high"
+                                ? "bg-emergency-danger"
+                                : "bg-emergency-warning"
+                          } text-white`}
+                        >
                           {incident.severity}
                         </Badge>
                       </div>
-                      <div className="text-xs text-slate-600 mb-1">{incident.title}</div>
+                      <div className="text-xs text-slate-600 mb-1">
+                        {incident.title}
+                      </div>
                       <div className="text-xs text-slate-500">
-                        {Math.floor((Date.now() - (incident.timestamp?.getTime() || 0)) / 60000)} min ago
+                        {Math.floor(
+                          (Date.now() - (incident.timestamp?.getTime() || 0)) /
+                            60000,
+                        )}{" "}
+                        min ago
                       </div>
                     </div>
                   ))}
