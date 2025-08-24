@@ -141,7 +141,7 @@ export default function ViewMap() {
           <div className="lg:col-span-3">
             <Card>
               <CardContent className="p-0">
-                <EmergencyMap
+                <DynamicEmergencyMap
                   height="500px"
                   showUserLocation={true}
                   showEntities={filterType === 'all' || filterType === 'entities'}
