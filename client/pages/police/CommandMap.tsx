@@ -105,6 +105,42 @@ export default function CommandMap() {
   // Combine incidents and units for map display
   const allMarkers = [...policeIncidents, ...unitMarkers];
 
+  const handleMarkerClick = (marker: IncidentMarker) => {
+    if (marker.id.startsWith('unit-')) {
+      setSelectedUnit(marker.id);
+      setSelectedIncident(null);
+    } else {
+      setSelectedIncident(marker.id);
+      setSelectedUnit(null);
+    }
+  };
+
+  const handleMapClick = (coordinates: Coordinates) => {
+    console.log('Command map clicked at:', coordinates);
+    // Could be used for deploying units to specific locations
+  };
+
+  const dispatchUnit = (unitId: string, incidentId: string) => {
+    console.log(`Dispatching ${unitId} to ${incidentId}`);
+    // This would integrate with the backend dispatch system
+    alert(`${unitId} has been dispatched to incident ${incidentId}`);
+  };
+
+  const contactUnit = (unitId: string) => {
+    console.log(`Contacting ${unitId}`);
+    // This would open communication channel
+    alert(`Opening communication with ${unitId}`);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'responding': return 'bg-emergency-danger';
+      case 'patrolling': return 'bg-emergency-warning';
+      case 'available': return 'bg-emergency-resolved';
+      default: return 'bg-slate-500';
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
