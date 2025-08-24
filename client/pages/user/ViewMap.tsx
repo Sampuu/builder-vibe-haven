@@ -120,16 +120,18 @@ export default function ViewMap() {
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Map Area */}
           <div className="lg:col-span-3">
-            <EmergencyMap
-              incidents={mockIncidents}
-              showRouting={true}
-              onIncidentClick={handleIncidentClick}
-              onMapClick={handleMapClick}
-              center={mapCenter}
-              zoom={12}
-              height="500px"
-              className="w-full"
-            />
+            <MapErrorBoundary>
+              <EmergencyMap
+                incidents={mockIncidents}
+                showRouting={true}
+                onIncidentClick={handleIncidentClick}
+                onMapClick={handleMapClick}
+                center={mapCenter}
+                zoom={12}
+                height="500px"
+                className="w-full"
+              />
+            </MapErrorBoundary>
           </div>
 
           {/* Incident List */}
