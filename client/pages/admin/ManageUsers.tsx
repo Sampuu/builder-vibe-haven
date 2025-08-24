@@ -307,6 +307,17 @@ export default function ManageUsers() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Enter password (minimum 6 characters)"
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}>
                     <SelectTrigger>
