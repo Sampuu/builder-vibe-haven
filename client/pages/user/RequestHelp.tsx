@@ -8,12 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Phone, 
+import LocationBasedEmergency from '@/components/LocationBasedEmergency';
+import {
+  Phone,
   ArrowLeft,
   Heart,
   Package,
-  Truck,
   CheckCircle,
   Clock
 } from 'lucide-react';
@@ -78,7 +78,7 @@ export default function RequestHelp() {
         <Alert className="border-emergency-danger bg-emergency-danger/5">
           <Heart className="h-4 w-4" />
           <AlertDescription className="text-emergency-danger font-medium">
-            For life-threatening emergencies, call 911 immediately.
+            For life-threatening emergencies, call your local emergency number immediately.
           </AlertDescription>
         </Alert>
 
@@ -203,34 +203,7 @@ export default function RequestHelp() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Truck className="mr-2 h-5 w-5 text-emergency-warning" />
-                  Emergency Contacts
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Emergency Services</span>
-                  <Button size="sm" variant="danger" asChild>
-                    <a href="tel:911">
-                      <Phone className="mr-1 h-3 w-3" />
-                      911
-                    </a>
-                  </Button>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Poison Control</span>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href="tel:18002221222">
-                      <Phone className="mr-1 h-3 w-3" />
-                      1-800-222-1222
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <LocationBasedEmergency autoDetect={true} />
           </div>
         </div>
       </div>
