@@ -105,28 +105,42 @@ export default function ManageUsers() {
     return matchesSearch && matchesRole;
   });
 
-  const handleAddUser = () => {
-    if (!formData.name || !formData.email) {
+  const handleAddUser = async () => {
+    if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all required fields');
       return;
     }
 
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      status: formData.status,
-      createdAt: new Date().toISOString().split('T')[0],
-      lastLogin: 'Never'
-    };
+    try {
+      // Create user account using Firebase Auth
+      const success = await signup(formData.email, formData.password, formData.name, formData.role);
 
-    setUsers([...users, newUser]);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
-    setIsAddDialogOpen(false);
-    setSuccess('User added successfully');
-    setError('');
-    setTimeout(() => setSuccess(''), 3000);
+      if (success) {
+        // If user is admin, add to admins collection
+        if (formData.role === 'admin') {
+          const userSnapshot = await getDocs(collection(db, 'users'));
+          const newUserId = userSnapshot.docs.find(doc => doc.data().email === formData.email)?.id;
+          if (newUserId) {
+            await setDoc(doc(db, 'admins', newUserId), {
+              createdAt: new Date(),
+              createdBy: 'admin'
+            });
+          }
+        }
+
+        setFormData({ name: '', email: '', role: 'user', status: 'active', password: '' });
+        setIsAddDialogOpen(false);
+        setSuccess('User added successfully');
+        setError('');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      } else {
+        setError('Failed to create user account');
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+      setError('Failed to add user');
+    }
   };
 
   const handleEditUser = (user: User) => {
