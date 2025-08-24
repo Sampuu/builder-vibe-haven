@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   ArrowLeft,
   Save,
   UserCheck,
   UserX,
   Shield
 } from 'lucide-react';
-import { UserRole } from '@/hooks/use-auth';
+import { UserRole, useAuth } from '@/hooks/use-auth';
+import { collection, getDocs, doc, deleteDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface User {
   id: string;
