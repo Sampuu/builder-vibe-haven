@@ -16,16 +16,51 @@ import {
 } from 'lucide-react';
 import { Coordinates } from '@/lib/openroute';
 
-const mockIncidents = [
-  { id: 1, type: 'fire', location: 'Downtown Plaza', severity: 'high', distance: '0.8 miles' },
-  { id: 2, type: 'accident', location: 'Highway 101', severity: 'medium', distance: '2.1 miles' },
-  { id: 3, type: 'medical', location: 'Oak Street', severity: 'high', distance: '1.5 miles' },
+// Mock incident data with actual coordinates
+const mockIncidents: IncidentMarker[] = [
+  {
+    id: '1',
+    type: 'fire',
+    position: { lat: 37.7749, lon: -122.4194 }, // San Francisco
+    title: 'Building Fire - Downtown Plaza',
+    description: 'Multi-story commercial building fire with potential structural damage',
+    severity: 'high',
+    timestamp: new Date(Date.now() - 30 * 60 * 1000) // 30 minutes ago
+  },
+  {
+    id: '2',
+    type: 'accident',
+    position: { lat: 37.7849, lon: -122.4094 }, // Near San Francisco
+    title: 'Multi-Vehicle Accident - Highway 101',
+    description: '3-car collision blocking two lanes, emergency responders on scene',
+    severity: 'medium',
+    timestamp: new Date(Date.now() - 15 * 60 * 1000) // 15 minutes ago
+  },
+  {
+    id: '3',
+    type: 'medical',
+    position: { lat: 37.7649, lon: -122.4294 }, // Near San Francisco
+    title: 'Medical Emergency - Oak Street',
+    description: 'Cardiac arrest reported, ambulance dispatched',
+    severity: 'high',
+    timestamp: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+  },
+  {
+    id: '4',
+    type: 'safe',
+    position: { lat: 37.7549, lon: -122.4394 }, // Near San Francisco
+    title: 'Evacuation Center - City Hall',
+    description: 'Designated safe zone with medical and food assistance',
+    severity: 'low',
+    timestamp: new Date(Date.now() - 60 * 60 * 1000) // 1 hour ago
+  }
 ];
 
 export default function ViewMap() {
   const navigate = useNavigate();
-  const [selectedIncident, setSelectedIncident] = useState<number | null>(null);
+  const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [mapCenter] = useState<Coordinates>({ lat: 37.7749, lon: -122.4194 }); // San Francisco center
 
   return (
     <DashboardLayout>
