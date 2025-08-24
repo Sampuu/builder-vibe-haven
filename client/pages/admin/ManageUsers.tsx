@@ -32,56 +32,8 @@ interface User {
   role: UserRole;
   status: 'active' | 'inactive';
   createdAt: string;
-  lastLogin: string;
+  lastLoginAt?: string;
 }
-
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@emergency.gov',
-    role: 'police',
-    status: 'active',
-    createdAt: '2024-01-15',
-    lastLogin: '2 hours ago'
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@fire.gov',
-    role: 'fire',
-    status: 'active',
-    createdAt: '2024-01-10',
-    lastLogin: '1 day ago'
-  },
-  {
-    id: '3',
-    name: 'Mike Davis',
-    email: 'mike.davis@ambulance.gov',
-    role: 'ambulance',
-    status: 'active',
-    createdAt: '2024-01-08',
-    lastLogin: '3 hours ago'
-  },
-  {
-    id: '4',
-    name: 'Emily Wilson',
-    email: 'emily.wilson@hospital.gov',
-    role: 'hospital',
-    status: 'inactive',
-    createdAt: '2024-01-05',
-    lastLogin: '1 week ago'
-  },
-  {
-    id: '5',
-    name: 'Tom Brown',
-    email: 'tom.brown@citizen.com',
-    role: 'user',
-    status: 'active',
-    createdAt: '2024-01-20',
-    lastLogin: '30 minutes ago'
-  }
-];
 
 const roleOptions = [
   { value: 'user', label: 'User', description: 'Report disasters & request help' },
