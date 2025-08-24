@@ -3,17 +3,34 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Shield,
   AlertTriangle,
   MapPin,
   Users,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Navigation,
+  ExternalLink
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function PoliceDashboard() {
   const navigate = useNavigate();
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+
+  const handleNavigateToLocation = (location: string) => {
+    // In real app, this would open maps app or navigation system
+    const encodedLocation = encodeURIComponent(location);
+    // Open Google Maps in new tab
+    window.open(`https://www.google.com/maps/search/${encodedLocation}`, '_blank');
+  };
+
+  const handleManageStatus = () => {
+    setShowStatusDialog(true);
+  };
   // Mock data for incidents
   const incidents = [
     { id: 1, type: 'Fire', location: 'Downtown Plaza', status: 'pending', priority: 'high', time: '2 mins ago' },
@@ -128,8 +145,12 @@ export default function PoliceDashboard() {
                       <Clock className="h-4 w-4 mr-1" />
                       {incident.time}
                     </div>
-                    <Button variant="outline" size="sm">
-                      <MapPin className="mr-2 h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleNavigateToLocation(incident.location)}
+                    >
+                      <Navigation className="mr-2 h-4 w-4" />
                       Navigate
                     </Button>
                   </div>
@@ -176,7 +197,41 @@ export default function PoliceDashboard() {
               <CardDescription>Update incident status and dispatch resources</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success">Manage Status</Button>
+              <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" variant="success" onClick={handleManageStatus}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Manage Status
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Status Management Center</DialogTitle>
+                    <DialogDescription>
+                      Coordinate emergency response and update incident status
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Alert>
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        This feature allows you to update incident statuses, coordinate with other departments,
+                        and manage resource allocation.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" size="sm" onClick={() => navigate('/police/incidents')}>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        All Incidents
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/police/map')}>
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Command Map
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

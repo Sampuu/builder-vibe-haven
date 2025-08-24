@@ -9,11 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  AlertTriangle, 
+import LocationBasedEmergency from '@/components/LocationBasedEmergency';
+import {
+  AlertTriangle,
   ArrowLeft,
   MapPin,
-  Phone,
   Clock,
   CheckCircle,
   Upload,
@@ -106,7 +106,21 @@ export default function ReportDisaster() {
         timestamp: new Date().toISOString(),
       };
 
-      console.log('Disaster report submitted:', report);
+      // Submit to API endpoint
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(report),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      const result = await response.json();
+      console.log('Report submitted successfully:', result);
       setShowSuccess(true);
       
       // Reset form
@@ -183,7 +197,7 @@ export default function ReportDisaster() {
         <Alert className="border-emergency-danger bg-emergency-danger/5">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-emergency-danger font-medium">
-            <strong>FOR LIFE-THREATENING EMERGENCIES:</strong> Call 911 immediately before filling out this form.
+            <strong>FOR LIFE-THREATENING EMERGENCIES:</strong> Call your local emergency number immediately before filling out this form.
           </AlertDescription>
         </Alert>
 
@@ -392,7 +406,7 @@ export default function ReportDisaster() {
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-emergency-danger rounded-full mt-2"></div>
                   <div className="text-sm">
-                    <strong>Life-threatening emergencies:</strong> Call 911 immediately
+                    <strong>Life-threatening emergencies:</strong> Call your local emergency number immediately
                   </div>
                 </div>
                 <div className="flex items-start space-x-2">
@@ -416,33 +430,7 @@ export default function ReportDisaster() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Emergency Contacts</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-emergency-danger/5 rounded-lg">
-                  <div>
-                    <div className="font-medium text-emergency-danger">Emergency Services</div>
-                    <div className="text-sm text-slate-600">Police, Fire, Medical</div>
-                  </div>
-                  <Button variant="danger" size="sm">
-                    <Phone className="mr-2 h-4 w-4" />
-                    911
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-slate-700">Non-Emergency Police</div>
-                    <div className="text-sm text-slate-600">For non-urgent situations</div>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Phone className="mr-2 h-4 w-4" />
-                    311
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <LocationBasedEmergency autoDetect={true} />
           </div>
         </div>
 

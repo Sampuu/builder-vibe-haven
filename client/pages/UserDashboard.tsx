@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import EmergencyNumberDemo from '@/components/EmergencyNumberDemo';
 import {
   AlertTriangle,
   MapPin,
@@ -119,6 +120,9 @@ export default function UserDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Emergency Numbers Demo */}
+        <EmergencyNumberDemo />
 
         {/* Recent Incidents Map Placeholder */}
         <Card>

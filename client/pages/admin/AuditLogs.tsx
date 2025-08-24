@@ -127,6 +127,8 @@ export default function AuditLogs() {
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,33 +140,70 @@ export default function AuditLogs() {
     return matchesSearch && matchesCategory && matchesSeverity && matchesDate;
   });
 
-  const handleExportLogs = () => {
-    const csvContent = [
-      ['Timestamp', 'User', 'Role', 'Action', 'Category', 'Details', 'Severity', 'IP Address'].join(','),
-      ...filteredLogs.map(log => [
-        log.timestamp,
-        log.user,
-        log.userRole,
-        log.action,
-        log.category,
-        `"${log.details}"`,
-        log.severity,
-        log.ipAddress
-      ].join(','))
-    ].join('\n');
+  const handleExportLogs = async () => {
+    setIsExporting(true);
+    try {
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+      const csvContent = [
+        ['Timestamp', 'User', 'Role', 'Action', 'Category', 'Details', 'Severity', 'IP Address'].join(','),
+        ...filteredLogs.map(log => [
+          log.timestamp,
+          log.user,
+          log.userRole,
+          log.action,
+          log.category,
+          `"${log.details}"`,
+          log.severity,
+          log.ipAddress
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleRefreshLogs = () => {
-    // In real app, this would fetch fresh data from server
-    console.log('Refreshing audit logs...');
+  const handleRefreshLogs = async () => {
+    setIsRefreshing(true);
+    try {
+      // Simulate API call to fetch fresh data
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // In real app, this would fetch from server:
+      // const response = await fetch('/api/audit-logs');
+      // const freshLogs = await response.json();
+
+      // For demo, we'll add a new mock log entry
+      const newLog: AuditLog = {
+        id: `refresh-${Date.now()}`,
+        timestamp: new Date().toLocaleString(),
+        user: 'system',
+        userRole: 'system',
+        action: 'Logs Refreshed',
+        category: 'system',
+        details: 'Audit logs manually refreshed by admin',
+        ipAddress: '127.0.0.1',
+        userAgent: 'Web Browser',
+        severity: 'low'
+      };
+
+      setLogs(prevLogs => [newLog, ...prevLogs]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const getSeverityColor = (severity: string) => {
@@ -203,11 +242,16 @@ export default function AuditLogs() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard/admin')}>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard/admin')}
+              className="w-full sm:w-auto justify-start"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Admin Dashboard
+              <span className="hidden sm:inline">Back to Admin Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-slate-900 flex items-center">
@@ -217,14 +261,24 @@ export default function AuditLogs() {
               <p className="text-slate-600">Monitor all system activities and security events</p>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleRefreshLogs}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button
+              variant="outline"
+              onClick={handleRefreshLogs}
+              disabled={isRefreshing}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
             </Button>
-            <Button variant="default" onClick={handleExportLogs}>
+            <Button
+              variant="default"
+              onClick={handleExportLogs}
+              disabled={isExporting}
+              className="w-full sm:w-auto"
+            >
               <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              {isExporting ? 'Exporting...' : 'Export CSV'}
             </Button>
           </div>
         </div>
@@ -269,7 +323,7 @@ export default function AuditLogs() {
             <CardTitle>Filters & Search</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="search">Search Logs</Label>
                 <Input
