@@ -1,77 +1,109 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft, UserPlus } from "lucide-react";
+import { useAuth, UserRole } from "@/hooks/use-auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Signup() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<UserRole>("user");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     if (!email || !password || !confirmPassword || !displayName || !role) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       setIsSubmitting(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setIsSubmitting(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError("Password must be at least 6 characters long");
       setIsSubmitting(false);
       return;
     }
 
     const success = await signUp(email, password, { displayName, role });
-    
+
     if (success) {
       // Redirect to home after successful signup
-      navigate('/');
+      navigate("/");
     } else {
-      setError('Failed to create account. Please try again.');
+      setError("Failed to create account. Please try again.");
     }
-    
+
     setIsSubmitting(false);
   };
 
   const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
+    {
+      value: "user",
+      label: "User",
+      description: "Report disasters & request help",
+    },
+    {
+      value: "police",
+      label: "Police",
+      description: "Monitor & coordinate response",
+    },
+    {
+      value: "fire",
+      label: "Fire Brigade",
+      description: "Handle fire emergencies",
+    },
+    {
+      value: "ambulance",
+      label: "Ambulance",
+      description: "Medical emergency response",
+    },
+    {
+      value: "hospital",
+      label: "Hospital",
+      description: "Medical supplies & dispatch",
+    },
+    { value: "admin", label: "Admin", description: "Full system access" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
           className="mb-6 p-2 hover:bg-white/60"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -85,7 +117,9 @@ export default function Signup() {
                 <UserPlus className="h-8 w-8 text-emergency-info" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Create Account</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Create Account
+            </CardTitle>
             <CardDescription className="text-slate-600">
               Join the emergency response system
             </CardDescription>
@@ -121,10 +155,13 @@ export default function Signup() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                <Select
+                  value={role}
+                  onValueChange={(value) => setRole(value as UserRole)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
@@ -133,7 +170,9 @@ export default function Signup() {
                       <SelectItem key={option.value} value={option.value}>
                         <div>
                           <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
+                          <div className="text-xs text-slate-500">
+                            {option.description}
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -165,31 +204,36 @@ export default function Signup() {
                 />
               </div>
 
-              {(role === 'police' || role === 'admin' || role === 'fire' || role === 'ambulance' || role === 'hospital') && (
+              {(role === "police" ||
+                role === "admin" ||
+                role === "fire" ||
+                role === "ambulance" ||
+                role === "hospital") && (
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Emergency service roles require verification. Your account will be reviewed before activation.
+                    Emergency service roles require verification. Your account
+                    will be reviewed before activation.
                   </AlertDescription>
                 </Alert>
               )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 variant="default"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                {isSubmitting ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Already have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/login')}
+                Already have an account?{" "}
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/login")}
                   className="p-0 h-auto text-emergency-info hover:text-emergency-info/80"
                 >
                   Sign in here

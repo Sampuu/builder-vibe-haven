@@ -1,8 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
-import authService from '../lib/auth-service';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { User as FirebaseUser } from "firebase/auth";
+import authService from "../lib/auth-service";
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface User {
   id: string;
@@ -16,7 +28,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signUp: (email: string, password: string, userData: { displayName?: string; role: UserRole }) => Promise<boolean>;
+  signUp: (
+    email: string,
+    password: string,
+    userData: { displayName?: string; role: UserRole },
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
   isLoading: boolean;
@@ -27,7 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -42,37 +58,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        // Get additional user data from Firestore
-        const userData = await authService.getUserData(firebaseUser.uid);
-        if (userData.success) {
-          const user: User = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            name: userData.data.displayName || firebaseUser.email?.split('@')[0] || '',
-            role: userData.data.role || 'user',
-            displayName: userData.data.displayName,
-            photoURL: userData.data.photoURL,
-          };
-          setUser(user);
+    const unsubscribe = authService.onAuthStateChanged(
+      async (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          // Get additional user data from Firestore
+          const userData = await authService.getUserData(firebaseUser.uid);
+          if (userData.success) {
+            const user: User = {
+              id: firebaseUser.uid,
+              email: firebaseUser.email || "",
+              name:
+                userData.data.displayName ||
+                firebaseUser.email?.split("@")[0] ||
+                "",
+              role: userData.data.role || "user",
+              displayName: userData.data.displayName,
+              photoURL: userData.data.photoURL,
+            };
+            setUser(user);
+          } else {
+            // If no user data in Firestore, create a basic user object
+            const user: User = {
+              id: firebaseUser.uid,
+              email: firebaseUser.email || "",
+              name: firebaseUser.email?.split("@")[0] || "",
+              role: "user",
+              displayName: firebaseUser.displayName || "",
+              photoURL: firebaseUser.photoURL || "",
+            };
+            setUser(user);
+          }
         } else {
-          // If no user data in Firestore, create a basic user object
-          const user: User = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            name: firebaseUser.email?.split('@')[0] || '',
-            role: 'user',
-            displayName: firebaseUser.displayName || '',
-            photoURL: firebaseUser.photoURL || '',
-          };
-          setUser(user);
+          setUser(null);
         }
-      } else {
-        setUser(null);
-      }
-      setIsLoading(false);
-    });
+        setIsLoading(false);
+      },
+    );
 
     return () => unsubscribe();
   }, []);
@@ -87,17 +108,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (result.success) {
         return true;
       } else {
-        console.error('Login failed:', result.error);
+        console.error("Login failed:", result.error);
         return false;
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
       setIsLoading(false);
       return false;
     }
   };
 
-  const signUp = async (email: string, password: string, userData: { displayName?: string; role: UserRole }): Promise<boolean> => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userData: { displayName?: string; role: UserRole },
+  ): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -107,11 +132,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (result.success) {
         return true;
       } else {
-        console.error('Sign up failed:', result.error);
+        console.error("Sign up failed:", result.error);
         return false;
       }
     } catch (error) {
-      console.error('Sign up failed:', error);
+      console.error("Sign up failed:", error);
       setIsLoading(false);
       return false;
     }
@@ -121,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.signOutUser();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -130,7 +155,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authService.resetPassword(email);
       return result.success;
     } catch (error) {
-      console.error('Password reset failed:', error);
+      console.error("Password reset failed:", error);
       return false;
     }
   };

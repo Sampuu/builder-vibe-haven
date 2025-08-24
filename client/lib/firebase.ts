@@ -1,7 +1,7 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { firebaseConfig } from './firebase-config';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { firebaseConfig } from "./firebase-config";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -14,9 +14,12 @@ export const db = getFirestore(app);
 
 // Validate Firebase initialization
 if (!app) {
-  throw new Error('Firebase failed to initialize');
+  throw new Error("Firebase failed to initialize");
 }
 
-console.log('Firebase initialized successfully for project:', firebaseConfig.projectId);
+console.log(
+  "Firebase initialized successfully for project:",
+  firebaseConfig.projectId,
+);
 
 export default app;
