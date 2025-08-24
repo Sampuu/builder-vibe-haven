@@ -213,11 +213,21 @@ export default function RequestHelp() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Emergency Services</span>
-                  <Button size="sm" variant="danger">911</Button>
+                  <Button size="sm" variant="danger" asChild>
+                    <a href="tel:911">
+                      <Phone className="mr-1 h-3 w-3" />
+                      911
+                    </a>
+                  </Button>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Poison Control</span>
-                  <Button size="sm" variant="outline">1-800-222-1222</Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="tel:18002221222">
+                      <Phone className="mr-1 h-3 w-3" />
+                      1-800-222-1222
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
