@@ -141,7 +141,7 @@ export default function ViewMap() {
               <CardContent>
                 <div className="space-y-3">
                   {mockIncidents.map((incident) => (
-                    <div 
+                    <div
                       key={incident.id}
                       className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                         selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
@@ -152,23 +152,37 @@ export default function ViewMap() {
                         <div className="flex items-center space-x-2">
                           <AlertTriangle className={`h-4 w-4 ${
                             incident.type === 'fire' ? 'text-emergency-danger' :
-                            incident.type === 'accident' ? 'text-emergency-warning' : 'text-emergency-info'
+                            incident.type === 'accident' ? 'text-emergency-warning' :
+                            incident.type === 'medical' ? 'text-emergency-info' :
+                            'text-emergency-resolved'
                           }`} />
                           <span className="text-sm font-medium capitalize">{incident.type}</span>
                         </div>
                         <Badge className={`text-xs ${
-                          incident.severity === 'high' ? 'bg-emergency-danger' : 
-                          incident.severity === 'medium' ? 'bg-emergency-warning' : 'bg-emergency-info'
+                          incident.severity === 'high' ? 'bg-emergency-danger' :
+                          incident.severity === 'medium' ? 'bg-emergency-warning' :
+                          incident.severity === 'critical' ? 'bg-red-600' :
+                          'bg-emergency-info'
                         } text-white`}>
                           {incident.severity}
                         </Badge>
                       </div>
-                      <div className="text-sm text-slate-600 flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {incident.location}
+                      <div className="text-sm text-slate-700 font-medium mb-1">
+                        {incident.title}
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {incident.distance} away
+                      {incident.description && (
+                        <div className="text-xs text-slate-600 mb-2">
+                          {incident.description}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <div className="flex items-center">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {getDistanceDisplay(incident)} away
+                        </div>
+                        <div>
+                          {getTimeAgo(incident.timestamp)}
+                        </div>
                       </div>
                     </div>
                   ))}
