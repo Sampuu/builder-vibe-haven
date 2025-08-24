@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Pages
 import Index from "./pages/Index";
