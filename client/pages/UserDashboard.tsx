@@ -1,34 +1,40 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import DynamicEmergencyMap from '@/components/DynamicEmergencyMap';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import DynamicEmergencyMap from "@/components/DynamicEmergencyMap";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertTriangle,
   MapPin,
   Phone,
   Plus,
   Newspaper,
-  Map
-} from 'lucide-react';
+  Map,
+} from "lucide-react";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
 
   const handleReportDisaster = () => {
-    navigate('/user/report');
+    navigate("/user/report");
   };
 
   const handleRequestHelp = () => {
-    navigate('/user/help');
+    navigate("/user/help");
   };
 
   const handleViewMap = () => {
-    navigate('/user/map');
+    navigate("/user/map");
   };
 
   const handleNews = () => {
-    navigate('/user/news');
+    navigate("/user/news");
   };
 
   return (
@@ -36,21 +42,29 @@ export default function UserDashboard() {
       <div className="space-y-6">
         {/* Welcome Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome to Your Dashboard</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            Welcome to Your Dashboard
+          </h2>
           <p className="text-slate-600">
-            Report emergencies, request help, and stay informed about incidents in your area.
+            Report emergencies, request help, and stay informed about incidents
+            in your area.
           </p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Report Disaster */}
-          <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={handleReportDisaster}>
+          <Card
+            className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+            onClick={handleReportDisaster}
+          >
             <CardHeader className="text-center pb-3">
               <div className="bg-emergency-danger/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <AlertTriangle className="h-8 w-8 text-emergency-danger" />
               </div>
-              <CardTitle className="text-lg text-slate-900">Report Disaster</CardTitle>
+              <CardTitle className="text-lg text-slate-900">
+                Report Disaster
+              </CardTitle>
               <CardDescription>
                 Report fires, accidents, or medical emergencies
               </CardDescription>
@@ -64,12 +78,17 @@ export default function UserDashboard() {
           </Card>
 
           {/* Request Help */}
-          <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={handleRequestHelp}>
+          <Card
+            className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+            onClick={handleRequestHelp}
+          >
             <CardHeader className="text-center pb-3">
               <div className="bg-emergency-resolved/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <Phone className="h-8 w-8 text-emergency-resolved" />
               </div>
-              <CardTitle className="text-lg text-slate-900">Request Help</CardTitle>
+              <CardTitle className="text-lg text-slate-900">
+                Request Help
+              </CardTitle>
               <CardDescription>
                 Request medical help or supplies
               </CardDescription>
@@ -83,15 +102,16 @@ export default function UserDashboard() {
           </Card>
 
           {/* View Map */}
-          <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={handleViewMap}>
+          <Card
+            className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+            onClick={handleViewMap}
+          >
             <CardHeader className="text-center pb-3">
               <div className="bg-emergency-info/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <Map className="h-8 w-8 text-emergency-info" />
               </div>
               <CardTitle className="text-lg text-slate-900">View Map</CardTitle>
-              <CardDescription>
-                See danger zones and incidents
-              </CardDescription>
+              <CardDescription>See danger zones and incidents</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" variant="info">
@@ -102,15 +122,18 @@ export default function UserDashboard() {
           </Card>
 
           {/* Disaster News */}
-          <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer" onClick={handleNews}>
+          <Card
+            className="hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+            onClick={handleNews}
+          >
             <CardHeader className="text-center pb-3">
               <div className="bg-emergency-warning/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <Newspaper className="h-8 w-8 text-emergency-warning" />
               </div>
-              <CardTitle className="text-lg text-slate-900">Disaster News</CardTitle>
-              <CardDescription>
-                Read and post disaster updates
-              </CardDescription>
+              <CardTitle className="text-lg text-slate-900">
+                Disaster News
+              </CardTitle>
+              <CardDescription>Read and post disaster updates</CardDescription>
             </CardHeader>
             <CardContent>
               <Button className="w-full" variant="warning">
@@ -140,11 +163,11 @@ export default function UserDashboard() {
               showIncidents={true}
               onEntityClick={(entity) => {
                 // Handle entity click - could open details or navigate
-                console.log('Entity clicked:', entity);
+                console.log("Entity clicked:", entity);
               }}
               onIncidentClick={(incident) => {
                 // Handle incident click
-                console.log('Incident clicked:', incident);
+                console.log("Incident clicked:", incident);
               }}
             />
           </CardContent>
@@ -159,19 +182,27 @@ export default function UserDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-emergency-danger rounded-full"></div>
-                <span className="text-sm font-medium text-slate-700">Critical Emergency</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Critical Emergency
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-emergency-warning rounded-full"></div>
-                <span className="text-sm font-medium text-slate-700">Warning Alert</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Warning Alert
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-emergency-resolved rounded-full"></div>
-                <span className="text-sm font-medium text-slate-700">Resolved/Safe</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Resolved/Safe
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-emergency-info rounded-full"></div>
-                <span className="text-sm font-medium text-slate-700">Information</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Information
+                </span>
               </div>
             </div>
           </CardContent>

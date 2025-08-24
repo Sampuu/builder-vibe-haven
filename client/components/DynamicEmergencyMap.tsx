@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Map } from 'lucide-react';
-import EmergencyServices from './EmergencyServices';
-import type { EmergencyEntity, Incident } from '@/lib/emergency-data';
+import React, { useState, useEffect } from "react";
+import { Map } from "lucide-react";
+import EmergencyServices from "./EmergencyServices";
+import type { EmergencyEntity, Incident } from "@/lib/emergency-data";
 
 interface DynamicEmergencyMapProps {
   height?: string;
@@ -36,7 +36,7 @@ export default function DynamicEmergencyMap(props: DynamicEmergencyMapProps) {
 
   // Don't render anything on the server
   if (!isClient) {
-    return <ServicesLoading height={props.height || '400px'} />;
+    return <ServicesLoading height={props.height || "400px"} />;
   }
 
   return (

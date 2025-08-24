@@ -17,7 +17,7 @@ export interface LocationResult {
 // Default location (San Francisco) if geolocation fails
 export const DEFAULT_LOCATION: LocationCoordinates = {
   lat: 37.7749,
-  lng: -122.4194
+  lng: -122.4194,
 };
 
 /**
@@ -30,8 +30,8 @@ export const getCurrentLocation = (): Promise<LocationResult> => {
         success: false,
         error: {
           code: 0,
-          message: 'Geolocation is not supported by this browser'
-        }
+          message: "Geolocation is not supported by this browser",
+        },
       });
       return;
     }
@@ -42,8 +42,8 @@ export const getCurrentLocation = (): Promise<LocationResult> => {
           success: true,
           coordinates: {
             lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
+            lng: position.coords.longitude,
+          },
         });
       },
       (error) => {
@@ -51,15 +51,15 @@ export const getCurrentLocation = (): Promise<LocationResult> => {
           success: false,
           error: {
             code: error.code,
-            message: getGeolocationErrorMessage(error.code)
-          }
+            message: getGeolocationErrorMessage(error.code),
+          },
         });
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 600000 // Cache for 10 minutes
-      }
+        maximumAge: 600000, // Cache for 10 minutes
+      },
     );
   });
 };
@@ -69,12 +69,12 @@ export const getCurrentLocation = (): Promise<LocationResult> => {
  */
 export const watchLocation = (
   onSuccess: (coordinates: LocationCoordinates) => void,
-  onError: (error: GeolocationError) => void
+  onError: (error: GeolocationError) => void,
 ): number | null => {
   if (!navigator.geolocation) {
     onError({
       code: 0,
-      message: 'Geolocation is not supported by this browser'
+      message: "Geolocation is not supported by this browser",
     });
     return null;
   }
@@ -83,20 +83,20 @@ export const watchLocation = (
     (position) => {
       onSuccess({
         lat: position.coords.latitude,
-        lng: position.coords.longitude
+        lng: position.coords.longitude,
       });
     },
     (error) => {
       onError({
         code: error.code,
-        message: getGeolocationErrorMessage(error.code)
+        message: getGeolocationErrorMessage(error.code),
       });
     },
     {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 60000 // Cache for 1 minute for real-time tracking
-    }
+      maximumAge: 60000, // Cache for 1 minute for real-time tracking
+    },
   );
 };
 
@@ -112,17 +112,19 @@ export const clearLocationWatch = (watchId: number): void => {
  */
 export const calculateDistance = (
   point1: LocationCoordinates,
-  point2: LocationCoordinates
+  point2: LocationCoordinates,
 ): number => {
   const R = 6371; // Earth's radius in kilometers
   const dLat = toRad(point2.lat - point1.lat);
   const dLng = toRad(point2.lng - point1.lng);
-  
-  const a = 
+
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(point1.lat)) * Math.cos(toRad(point2.lat)) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  
+    Math.cos(toRad(point1.lat)) *
+      Math.cos(toRad(point2.lat)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -146,17 +148,18 @@ export const formatDistance = (distanceKm: number): string => {
 export const getDirectionsUrl = (
   from: LocationCoordinates,
   to: LocationCoordinates,
-  mode: 'driving' | 'walking' | 'transit' = 'driving'
+  mode: "driving" | "walking" | "transit" = "driving",
 ): string => {
-  const modeParam = mode === 'driving' ? 'driving' : mode === 'walking' ? 'walking' : 'transit';
-  return `https://www.google.com/maps/dir/${from.lat},${from.lng}/${to.lat},${to.lng}/@${to.lat},${to.lng},15z/data=!3m1!4b1!4m2!4m1!3e${mode === 'driving' ? '0' : mode === 'walking' ? '2' : '3'}`;
+  const modeParam =
+    mode === "driving" ? "driving" : mode === "walking" ? "walking" : "transit";
+  return `https://www.google.com/maps/dir/${from.lat},${from.lng}/${to.lat},${to.lng}/@${to.lat},${to.lng},15z/data=!3m1!4b1!4m2!4m1!3e${mode === "driving" ? "0" : mode === "walking" ? "2" : "3"}`;
 };
 
 /**
  * Convert degrees to radians
  */
 const toRad = (value: number): number => {
-  return value * Math.PI / 180;
+  return (value * Math.PI) / 180;
 };
 
 /**
@@ -165,12 +168,12 @@ const toRad = (value: number): number => {
 const getGeolocationErrorMessage = (code: number): string => {
   switch (code) {
     case 1:
-      return 'Location access denied by user';
+      return "Location access denied by user";
     case 2:
-      return 'Location information unavailable';
+      return "Location information unavailable";
     case 3:
-      return 'Location request timed out';
+      return "Location request timed out";
     default:
-      return 'An unknown error occurred while retrieving location';
+      return "An unknown error occurred while retrieving location";
   }
 };

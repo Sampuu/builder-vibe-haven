@@ -1,5 +1,5 @@
-import { useState, ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { useState, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface TabItem {
   id: string;
@@ -13,17 +13,21 @@ interface SimpleTabsProps {
   className?: string;
 }
 
-export default function SimpleTabs({ items, defaultTab, className }: SimpleTabsProps) {
+export default function SimpleTabs({
+  items,
+  defaultTab,
+  className,
+}: SimpleTabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab || items[0]?.id);
 
   if (!items || items.length === 0) {
     return null;
   }
 
-  const activeItem = items.find(item => item.id === activeTab) || items[0];
+  const activeItem = items.find((item) => item.id === activeTab) || items[0];
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn("w-full", className)}>
       {/* Tab Headers */}
       <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
         {items.map((item) => (
@@ -35,7 +39,7 @@ export default function SimpleTabs({ items, defaultTab, className }: SimpleTabsP
               activeTab === item.id
                 ? "bg-background text-foreground shadow-sm"
                 : "hover:bg-muted-foreground/10",
-              "flex-1"
+              "flex-1",
             )}
           >
             {item.label}

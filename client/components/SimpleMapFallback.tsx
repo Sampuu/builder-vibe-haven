@@ -1,8 +1,8 @@
-import { MapPin, Navigation, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { emergencyEntities, currentIncidents } from '@/lib/emergency-data';
+import { MapPin, Navigation, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { emergencyEntities, currentIncidents } from "@/lib/emergency-data";
 
 interface SimpleMapFallbackProps {
   height?: string;
@@ -10,13 +10,16 @@ interface SimpleMapFallbackProps {
   onIncidentClick?: (incident: any) => void;
 }
 
-export default function SimpleMapFallback({ 
-  height = '400px',
+export default function SimpleMapFallback({
+  height = "400px",
   onEntityClick,
-  onIncidentClick 
+  onIncidentClick,
 }: SimpleMapFallbackProps) {
   return (
-    <div style={{ height }} className="bg-slate-50 rounded-lg border border-slate-200 p-4 overflow-y-auto">
+    <div
+      style={{ height }}
+      className="bg-slate-50 rounded-lg border border-slate-200 p-4 overflow-y-auto"
+    >
       <div className="text-center mb-6">
         <MapPin className="h-12 w-12 mx-auto mb-2 text-slate-400" />
         <h3 className="font-semibold text-slate-700 mb-1">Map Not Available</h3>
@@ -34,8 +37,8 @@ export default function SimpleMapFallback({
           </h4>
           <div className="grid gap-2">
             {emergencyEntities.slice(0, 6).map((entity) => (
-              <Card 
-                key={entity.id} 
+              <Card
+                key={entity.id}
                 className="cursor-pointer hover:bg-slate-50"
                 onClick={() => onEntityClick?.(entity)}
               >
@@ -44,19 +47,26 @@ export default function SimpleMapFallback({
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-lg">
-                          {entity.type === 'hospital' ? '🏥' : 
-                           entity.type === 'police' ? '🚔' : 
-                           entity.type === 'fire' ? '🚒' : '🚑'}
+                          {entity.type === "hospital"
+                            ? "🏥"
+                            : entity.type === "police"
+                              ? "🚔"
+                              : entity.type === "fire"
+                                ? "🚒"
+                                : "🚑"}
                         </span>
                         <h5 className="font-medium text-sm">{entity.name}</h5>
                       </div>
                       <p className="text-xs text-slate-600">{entity.address}</p>
                     </div>
                     <div className="flex space-x-1">
-                      <Badge 
+                      <Badge
                         className={`text-xs ${
-                          entity.status === 'active' ? 'bg-green-500' :
-                          entity.status === 'busy' ? 'bg-yellow-500' : 'bg-red-500'
+                          entity.status === "active"
+                            ? "bg-green-500"
+                            : entity.status === "busy"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         } text-white`}
                       >
                         {entity.status}
@@ -64,24 +74,27 @@ export default function SimpleMapFallback({
                     </div>
                   </div>
                   <div className="flex space-x-2 mt-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`tel:${entity.phone}`, '_self');
+                        window.open(`tel:${entity.phone}`, "_self");
                       }}
                       className="flex-1 text-xs h-7"
                     >
                       <Phone className="h-3 w-3 mr-1" />
                       Call
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`https://www.google.com/maps/search/${encodeURIComponent(entity.address)}`, '_blank');
+                        window.open(
+                          `https://www.google.com/maps/search/${encodeURIComponent(entity.address)}`,
+                          "_blank",
+                        );
                       }}
                       className="flex-1 text-xs h-7"
                     >
@@ -103,7 +116,7 @@ export default function SimpleMapFallback({
           </h4>
           <div className="grid gap-2">
             {currentIncidents.slice(0, 4).map((incident) => (
-              <Card 
+              <Card
                 key={incident.id}
                 className="cursor-pointer hover:bg-slate-50"
                 onClick={() => onIncidentClick?.(incident)}
@@ -112,27 +125,39 @@ export default function SimpleMapFallback({
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex items-center space-x-2">
                       <span className="text-lg">
-                        {incident.type === 'fire' ? '🔥' : 
-                         incident.type === 'medical' ? '🚨' : 
-                         incident.type === 'accident' ? '🚗' : 
-                         incident.type === 'crime' ? '⚠️' : '❗'}
+                        {incident.type === "fire"
+                          ? "🔥"
+                          : incident.type === "medical"
+                            ? "🚨"
+                            : incident.type === "accident"
+                              ? "🚗"
+                              : incident.type === "crime"
+                                ? "⚠️"
+                                : "❗"}
                       </span>
                       <h5 className="font-medium text-sm">{incident.title}</h5>
                     </div>
-                    <Badge 
+                    <Badge
                       className={`text-xs ${
-                        incident.severity === 'critical' ? 'bg-red-600' :
-                        incident.severity === 'high' ? 'bg-red-500' :
-                        incident.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                        incident.severity === "critical"
+                          ? "bg-red-600"
+                          : incident.severity === "high"
+                            ? "bg-red-500"
+                            : incident.severity === "medium"
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
                       } text-white`}
                     >
                       {incident.severity}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-600 mb-2">{incident.description}</p>
+                  <p className="text-xs text-slate-600 mb-2">
+                    {incident.description}
+                  </p>
                   <p className="text-xs text-slate-500">{incident.address}</p>
                   <p className="text-xs text-slate-400">
-                    Reported: {new Date(incident.reportedAt).toLocaleTimeString()}
+                    Reported:{" "}
+                    {new Date(incident.reportedAt).toLocaleTimeString()}
                   </p>
                 </CardContent>
               </Card>
