@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getRoleDashboardPath } from '@/lib/navigation-utils';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -36,9 +37,10 @@ export default function Login() {
     const success = await login(email, password);
 
     if (success) {
-      // The auth provider will automatically redirect based on user role
-      // For now, let's navigate to a general dashboard
-      navigate('/');
+      // Wait a moment for user data to be loaded, then redirect
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } else {
       setError('Invalid credentials. Please check your email and password.');
     }
