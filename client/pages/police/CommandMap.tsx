@@ -1,16 +1,22 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import EmergencyMap, { IncidentMarker } from '@/components/EmergencyMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import {
+  Map,
   ArrowLeft,
   MapPin,
   Shield,
   Radio,
-  Navigation
+  Navigation,
+  AlertTriangle,
+  Car,
+  Clock
 } from 'lucide-react';
+import { Coordinates } from '@/lib/openroute';
 
 const activeUnits = [
   { id: 'Unit 12', status: 'responding', location: 'Highway 101', incident: 'Traffic Accident' },
