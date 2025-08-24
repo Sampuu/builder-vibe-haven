@@ -1,25 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import EmergencyMap from '@/components/EmergencyMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import {
+  Map,
   ArrowLeft,
   MapPin,
   AlertTriangle,
   Filter,
-  ZoomIn,
-  ZoomOut,
-  Layers
+  Phone,
+  Navigation,
+  Clock,
+  Crosshair
 } from 'lucide-react';
-
-const mockIncidents = [
-  { id: 1, type: 'fire', location: 'Downtown Plaza', severity: 'high', distance: '0.8 miles' },
-  { id: 2, type: 'accident', location: 'Highway 101', severity: 'medium', distance: '2.1 miles' },
-  { id: 3, type: 'medical', location: 'Oak Street', severity: 'high', distance: '1.5 miles' },
-];
+import {
+  currentIncidents,
+  emergencyEntities,
+  EmergencyEntity,
+  Incident,
+  getSeverityColor,
+  getIncidentTypeColor,
+  getEntityTypeColor
+} from '@/lib/emergency-data';
+import {
+  getCurrentLocation,
+  LocationCoordinates,
+  calculateDistance,
+  formatDistance
+} from '@/lib/geolocation';
 
 export default function ViewMap() {
   const navigate = useNavigate();
