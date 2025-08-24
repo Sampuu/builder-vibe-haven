@@ -37,6 +37,9 @@ import RequestHelp from "./pages/user/RequestHelp";
 import ViewMap from "./pages/user/ViewMap";
 import News from "./pages/user/News";
 
+// Shared Pages
+import NewsDetail from "./pages/NewsDetail";
+
 // Police Pages
 import AllIncidents from "./pages/police/AllIncidents";
 import CommandMap from "./pages/police/CommandMap";
@@ -179,6 +182,16 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="user">
                   <News />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* News Detail Page - Accessible to all authenticated users */}
+            <Route
+              path="/news/:id"
+              element={
+                <ProtectedRoute requiredRole={['user', 'police', 'fire', 'ambulance', 'hospital', 'admin']}>
+                  <NewsDetail />
                 </ProtectedRoute>
               }
             />
