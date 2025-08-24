@@ -415,73 +415,85 @@ export default function ManageUsers() {
             <CardDescription>Manage all system users and their access levels</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left p-4 font-medium text-slate-700">User</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Role</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Status</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Created</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Last Login</th>
-                    <th className="text-left p-4 font-medium text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="p-4">
-                        <div>
-                          <div className="font-medium text-slate-900">{user.name}</div>
-                          <div className="text-sm text-slate-500">{user.email}</div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <Badge className={`${getRoleColor(user.role)} text-white`}>
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleUserStatus(user.id)}
-                          className={user.status === 'active' ? 'text-emergency-resolved' : 'text-slate-500'}
-                        >
-                          {user.status === 'active' ? (
-                            <UserCheck className="h-4 w-4 mr-1" />
-                          ) : (
-                            <UserX className="h-4 w-4 mr-1" />
-                          )}
-                          {user.status}
-                        </Button>
-                      </td>
-                      <td className="p-4 text-sm text-slate-600">{user.createdAt}</td>
-                      <td className="p-4 text-sm text-slate-600">{user.lastLogin}</td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-emergency-danger hover:text-emergency-danger"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
+            {loading ? (
+              <div className="text-center p-8">Loading users...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left p-4 font-medium text-slate-700">User</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Role</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Status</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Created</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Last Login</th>
+                      <th className="text-left p-4 font-medium text-slate-700">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center p-8 text-slate-500">
+                          No users found
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="p-4">
+                            <div>
+                              <div className="font-medium text-slate-900">{user.name}</div>
+                              <div className="text-sm text-slate-500">{user.email}</div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Badge className={`${getRoleColor(user.role)} text-white`}>
+                              {user.role}
+                            </Badge>
+                          </td>
+                          <td className="p-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleUserStatus(user.id)}
+                              className={user.status === 'active' ? 'text-emergency-resolved' : 'text-slate-500'}
+                            >
+                              {user.status === 'active' ? (
+                                <UserCheck className="h-4 w-4 mr-1" />
+                              ) : (
+                                <UserX className="h-4 w-4 mr-1" />
+                              )}
+                              {user.status}
+                            </Button>
+                          </td>
+                          <td className="p-4 text-sm text-slate-600">{user.createdAt}</td>
+                          <td className="p-4 text-sm text-slate-600">{user.lastLoginAt || 'Never'}</td>
+                          <td className="p-4">
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="text-emergency-danger hover:text-emergency-danger"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
