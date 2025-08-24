@@ -46,7 +46,9 @@ const roleOptions = [
 
 export default function ManageUsers() {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const { signup, checkIfAdmin } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -56,10 +58,45 @@ export default function ManageUsers() {
     name: '',
     email: '',
     role: 'user' as UserRole,
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'inactive',
+    password: ''
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Load users from Firestore
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersList: User[] = [];
+
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        usersList.push({
+          id: doc.id,
+          name: userData.name || '',
+          email: userData.email || '',
+          role: userData.role || 'user',
+          status: userData.status || 'active',
+          createdAt: userData.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown',
+          lastLoginAt: userData.lastLoginAt?.toDate?.()?.toLocaleDateString() || 'Never',
+        });
+      });
+
+      setUsers(usersList);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      setError('Failed to load users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load users on component mount
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
