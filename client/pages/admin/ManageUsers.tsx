@@ -149,49 +149,95 @@ export default function ManageUsers() {
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status
+      status: user.status,
+      password: ''
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!formData.name || !formData.email || !editingUser) {
       setError('Please fill in all required fields');
       return;
     }
 
-    const updatedUsers = users.map(user => 
-      user.id === editingUser.id 
-        ? { ...user, ...formData }
-        : user
-    );
+    try {
+      // Update user data in Firestore
+      await updateDoc(doc(db, 'users', editingUser.id), {
+        name: formData.name,
+        role: formData.role,
+        status: formData.status,
+        updatedAt: new Date()
+      });
 
-    setUsers(updatedUsers);
-    setIsEditDialogOpen(false);
-    setEditingUser(null);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
-    setSuccess('User updated successfully');
-    setError('');
-    setTimeout(() => setSuccess(''), 3000);
-  };
+      // Handle admin role changes
+      const wasAdmin = editingUser.role === 'admin';
+      const isNowAdmin = formData.role === 'admin';
 
-  const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(user => user.id !== userId));
-      setSuccess('User deleted successfully');
+      if (!wasAdmin && isNowAdmin) {
+        // Add to admins collection
+        await setDoc(doc(db, 'admins', editingUser.id), {
+          createdAt: new Date(),
+          createdBy: 'admin'
+        });
+      } else if (wasAdmin && !isNowAdmin) {
+        // Remove from admins collection
+        await deleteDoc(doc(db, 'admins', editingUser.id));
+      }
+
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+      setFormData({ name: '', email: '', role: 'user', status: 'active', password: '' });
+      setSuccess('User updated successfully');
+      setError('');
       setTimeout(() => setSuccess(''), 3000);
+      await loadUsers(); // Reload users list
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setError('Failed to update user');
     }
   };
 
-  const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(user => 
-      user.id === userId 
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-        : user
-    );
-    setUsers(updatedUsers);
-    setSuccess('User status updated');
-    setTimeout(() => setSuccess(''), 3000);
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        // Remove from users collection
+        await deleteDoc(doc(db, 'users', userId));
+
+        // Remove from admins collection if they were an admin
+        const user = users.find(u => u.id === userId);
+        if (user?.role === 'admin') {
+          await deleteDoc(doc(db, 'admins', userId));
+        }
+
+        setSuccess('User deleted successfully');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        setError('Failed to delete user');
+      }
+    }
+  };
+
+  const toggleUserStatus = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        const newStatus = user.status === 'active' ? 'inactive' : 'active';
+        await updateDoc(doc(db, 'users', userId), {
+          status: newStatus,
+          updatedAt: new Date()
+        });
+
+        setSuccess('User status updated');
+        setTimeout(() => setSuccess(''), 3000);
+        await loadUsers(); // Reload users list
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      setError('Failed to update user status');
+    }
   };
 
   const getRoleColor = (role: UserRole) => {
