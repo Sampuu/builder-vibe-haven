@@ -1,18 +1,20 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  AlertTriangle, 
-  LogOut, 
-  Shield, 
-  Flame, 
-  Truck, 
-  Building2, 
-  User, 
+import { ReactNode, useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  AlertTriangle,
+  LogOut,
+  Shield,
+  Flame,
+  Truck,
+  Building2,
+  User,
   Settings,
-  Bell
-} from 'lucide-react';
+  Bell,
+  Crown,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -28,24 +30,56 @@ const roleIcons = {
 };
 
 const roleColors = {
-  user: 'text-emergency-info',
-  police: 'text-emergency-danger',
-  fire: 'text-emergency-warning',
-  ambulance: 'text-emergency-resolved',
-  hospital: 'text-emergency-info',
-  admin: 'text-slate-700',
+  user: "text-emergency-info",
+  police: "text-emergency-danger",
+  fire: "text-emergency-warning",
+  ambulance: "text-emergency-resolved",
+  hospital: "text-emergency-info",
+  admin: "text-slate-700",
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, logout } = useAuth();
-  
+  const { user, logout, checkIfAdmin, firebaseUser } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const navigate = useNavigate();
+
   if (!user) return null;
+
+  // Check if user is admin when component mounts or user changes
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (firebaseUser) {
+        setIsCheckingAdmin(true);
+        try {
+          const adminStatus = await checkIfAdmin(firebaseUser.uid);
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+          setIsAdmin(false);
+        }
+        setIsCheckingAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [firebaseUser, checkIfAdmin]);
 
   const RoleIcon = roleIcons[user.role];
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force redirect even if logout fails
+      window.location.href = "/";
+    }
+  };
+
+  const goToAdminPanel = () => {
+    navigate("/admin/dashboards");
   };
 
   return (
@@ -73,6 +107,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
+              {/* Admin Panel Access - Show for admin role or verified admin users */}
+              {(user.role === "admin" || isAdmin) && !isCheckingAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToAdminPanel}
+                  className="bg-emergency-warning/10 hover:bg-emergency-warning/20 border-emergency-warning/30"
+                >
+                  <Crown className="h-4 w-4 mr-2 text-emergency-warning" />
+                  Admin Panel
+                </Button>
+              )}
+
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
@@ -82,11 +129,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{user.name}</p>
-                  <p className="text-xs text-slate-500 capitalize flex items-center">
-                    <RoleIcon className={`h-3 w-3 mr-1 ${roleColors[user.role]}`} />
+                  <div className="flex items-center justify-end space-x-1">
+                    <p className="text-sm font-medium text-slate-900">
+                      {user.name}
+                    </p>
+                    {(user.role === "admin" || isAdmin) && (
+                      <Crown
+                        className="h-3 w-3 text-emergency-warning"
+                        title="Admin User"
+                      />
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 capitalize flex items-center justify-end">
+                    <RoleIcon
+                      className={`h-3 w-3 mr-1 ${roleColors[user.role]}`}
+                    />
                     {user.role}
                   </p>
+                  <p className="text-xs text-slate-400">{user.email}</p>
                 </div>
                 <Avatar>
                   <AvatarFallback className="bg-emergency-info/10 text-emergency-info font-semibold">
@@ -109,6 +169,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {/* Firebase Auth Status Indicator (for development) */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border text-xs">
+          <p className="font-medium text-slate-700">Firebase Auth Status:</p>
+          <p className="text-slate-500">
+            User ID: {firebaseUser?.uid || "Not logged in"}
+          </p>
+          <p className="text-slate-500">
+            Admin: {isCheckingAdmin ? "Checking..." : isAdmin ? "Yes" : "No"}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
