@@ -190,7 +190,16 @@ const App = () => (
             <Route
               path="/news/:id"
               element={
-                <ProtectedRoute allowedRoles={['user', 'police', 'fire', 'ambulance', 'hospital', 'admin']}>
+                <ProtectedRoute
+                  allowedRoles={[
+                    "user",
+                    "police",
+                    "fire",
+                    "ambulance",
+                    "hospital",
+                    "admin",
+                  ]}
+                >
                   <NewsDetail />
                 </ProtectedRoute>
               }
