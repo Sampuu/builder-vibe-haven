@@ -2,10 +2,40 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, MapPin, Heart } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Truck, MapPin, Heart, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function AmbulanceDashboard() {
   const navigate = useNavigate();
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState('ready');
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    setIsUpdatingStatus(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setCurrentStatus(newStatus);
+      setShowStatusDialog(false);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const getStatusColor = () => {
+    switch (currentStatus) {
+      case 'ready': return 'text-emergency-resolved';
+      case 'dispatched': return 'text-emergency-warning';
+      case 'picked_up': return 'text-emergency-info';
+      case 'at_hospital': return 'text-emergency-danger';
+      default: return 'text-slate-600';
+    }
+  };
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -49,11 +79,49 @@ export default function AmbulanceDashboard() {
               <div className="bg-emergency-warning/10 p-4 rounded-full w-fit mx-auto mb-3">
                 <Truck className="h-8 w-8 text-emergency-warning" />
               </div>
-              <CardTitle>Update Status</CardTitle>
-              <CardDescription>Dispatched / Picked Up / At Hospital</CardDescription>
+              <CardTitle>Current Status</CardTitle>
+              <CardDescription>
+                <span className={`font-medium capitalize ${getStatusColor()}`}>
+                  {currentStatus.replace('_', ' ')}
+                </span>
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning">Update Status</Button>
+              <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" variant="warning" disabled={isUpdatingStatus}>
+                    {isUpdatingStatus ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      'Update Status'
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Update Ambulance Status</DialogTitle>
+                    <DialogDescription>
+                      Select your current operational status
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Select onValueChange={handleStatusUpdate}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select new status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ready">Ready - Available for dispatch</SelectItem>
+                        <SelectItem value="dispatched">Dispatched - En route to patient</SelectItem>
+                        <SelectItem value="picked_up">Picked Up - Patient in ambulance</SelectItem>
+                        <SelectItem value="at_hospital">At Hospital - Delivering patient</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
@@ -62,7 +130,8 @@ export default function AmbulanceDashboard() {
           <CardContent className="p-12 text-center text-slate-500">
             <Truck className="h-16 w-16 mx-auto mb-4 opacity-30" />
             <p className="text-lg font-medium mb-2">Ambulance Dashboard</p>
-            <p>Medical emergency response management will be implemented here</p>
+            <p>Current Status: <span className={`font-semibold capitalize ${getStatusColor()}`}>{currentStatus.replace('_', ' ')}</span></p>
+            <p className="mt-2">Medical emergency response management and patient tracking</p>
           </CardContent>
         </Card>
       </div>
