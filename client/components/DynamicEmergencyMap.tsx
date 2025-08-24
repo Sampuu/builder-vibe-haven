@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Map, AlertTriangle } from 'lucide-react';
 import type { EmergencyEntity, Incident } from '@/lib/emergency-data';
