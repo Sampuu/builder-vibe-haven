@@ -221,24 +221,73 @@ export default function ViewMap() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button 
-                  variant="danger" 
-                  size="sm" 
-                  className="w-full" 
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="w-full"
                   onClick={() => navigate('/user/report')}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Report Emergency
                 </Button>
-                <Button 
-                  variant="success" 
-                  size="sm" 
+                <Button
+                  variant="success"
+                  size="sm"
                   className="w-full"
                   onClick={() => navigate('/user/help')}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   Request Help
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => window.open('tel:911')}
+                >
+                  <Phone className="mr-2 h-4 w-4" />
+                  Call 911
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Emergency Contacts</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between">
+                    <span>Emergency Services:</span>
+                    <Button variant="link" className="p-0 h-auto text-emergency-danger" onClick={() => window.open('tel:911')}>
+                      911
+                    </Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Fire Department:</span>
+                    <Button variant="link" className="p-0 h-auto text-emergency-danger" onClick={() => window.open('tel:911')}>
+                      911
+                    </Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Police:</span>
+                    <Button variant="link" className="p-0 h-auto text-emergency-danger" onClick={() => window.open('tel:911')}>
+                      911
+                    </Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Medical Emergency:</span>
+                    <Button variant="link" className="p-0 h-auto text-emergency-danger" onClick={() => window.open('tel:911')}>
+                      911
+                    </Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Poison Control:</span>
+                    <Button variant="link" className="p-0 h-auto text-emergency-info" onClick={() => window.open('tel:1-800-222-1222')}>
+                      1-800-222-1222
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
