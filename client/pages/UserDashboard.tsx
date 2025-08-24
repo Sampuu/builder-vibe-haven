@@ -120,7 +120,7 @@ export default function UserDashboard() {
           </Card>
         </div>
 
-        {/* Recent Incidents Map Placeholder */}
+        {/* Recent Incidents Map */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -128,17 +128,24 @@ export default function UserDashboard() {
               Incidents Near You
             </CardTitle>
             <CardDescription>
-              Interactive map showing reported incidents and danger zones
+              Interactive map showing reported incidents and emergency services
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="bg-slate-100 rounded-lg h-64 flex items-center justify-center border-2 border-dashed border-slate-300">
-              <div className="text-center text-slate-500">
-                <Map className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p className="font-medium">Interactive Map</p>
-                <p className="text-sm">Map integration will be implemented here</p>
-              </div>
-            </div>
+          <CardContent className="p-0">
+            <EmergencyMap
+              height="300px"
+              showUserLocation={true}
+              showEntities={true}
+              showIncidents={true}
+              onEntityClick={(entity) => {
+                // Handle entity click - could open details or navigate
+                console.log('Entity clicked:', entity);
+              }}
+              onIncidentClick={(incident) => {
+                // Handle incident click
+                console.log('Incident clicked:', incident);
+              }}
+            />
           </CardContent>
         </Card>
 
