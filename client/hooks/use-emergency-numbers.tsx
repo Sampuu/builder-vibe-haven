@@ -126,6 +126,13 @@ const EMERGENCY_NUMBERS_DB: Record<string, EmergencyNumbers> = {
     general: '112',
     countryName: 'India'
   },
+  'NP': {
+    police: '100',
+    fire: '101',
+    medical: '102',
+    general: '100',
+    countryName: 'Nepal'
+  },
   'SG': {
     police: '999',
     fire: '995',
