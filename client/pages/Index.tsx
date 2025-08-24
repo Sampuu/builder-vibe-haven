@@ -7,20 +7,7 @@ import { getRoleDashboardPath } from "@/lib/navigation-utils";
 
 export default function Index() {
   const navigate = useNavigate();
-
-  // Use try-catch to handle potential auth context issues
-  let user = null;
-  let isLoading = true;
-
-  try {
-    const authContext = useAuth();
-    user = authContext.user;
-    isLoading = authContext.isLoading;
-  } catch (error) {
-    console.warn('Auth context not available:', error);
-    // If auth context is not available, treat as logged out
-    isLoading = false;
-  }
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -29,6 +16,18 @@ export default function Index() {
       navigate(dashboardPath);
     }
   }, [user, isLoading, navigate]);
+
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emergency-danger mx-auto"></div>
+          <p className="mt-4 text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSignUp = () => {
     navigate("/signup");
