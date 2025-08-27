@@ -8,7 +8,7 @@ import {
   createStatusListener,
   createHighPriorityListener,
   createAllReportsListener
-} from '@/lib/mock-reports';
+} from '@/lib/firebase-reports-realtime';
 
 /**
  * Hook to listen to reports for a specific problem type

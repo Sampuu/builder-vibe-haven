@@ -5,7 +5,7 @@ import {
   signOutUser,
   onAuthStateChange,
   updateUserProfile
-} from '@/lib/mock-auth';
+} from '@/lib/firebase-auth-realtime';
 import { 
   User, 
   UserRole, 
