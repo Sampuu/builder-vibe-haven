@@ -1,11 +1,13 @@
 // Shared types for the emergency response system
 
+export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   phone?: string;
-  role: 'user' | 'admin' | 'responder';
+  role: UserRole;
   createdAt: string;
   updatedAt: string;
 }

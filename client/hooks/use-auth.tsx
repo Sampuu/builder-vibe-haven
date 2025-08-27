@@ -1,19 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+import { firebaseAuth } from '@/lib/firebase-auth';
+import type { User, UserRole } from '@shared/types';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
+  hasRole: (requiredRole: UserRole | UserRole[]) => boolean;
+  isAdmin: () => boolean;
+  isEmergencyResponder: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,58 +30,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on app load
-    const storedUser = localStorage.getItem('disaster-auth-user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('disaster-auth-user');
-      }
-    }
-    setIsLoading(false);
+    // Listen for authentication state changes
+    const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
+      setUser(user);
+      setIsLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
+  const logout = async (): Promise<void> => {
     setIsLoading(true);
-    
-    // Simulate API call - in real app this would be a server request
     try {
-      // Simple validation for demo purposes
-      if (email && password.length >= 6) {
-        const user: User = {
-          id: `${role}-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
-          role,
-        };
-        
-        setUser(user);
-        localStorage.setItem('disaster-auth-user', JSON.stringify(user));
-        setIsLoading(false);
-        return true;
-      }
-      setIsLoading(false);
-      return false;
+      await firebaseAuth.logout();
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Logout error:', error);
+    } finally {
       setIsLoading(false);
-      return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('disaster-auth-user');
+  const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
+    return firebaseAuth.hasRole(user, requiredRole);
+  };
+
+  const isAdmin = (): boolean => {
+    return firebaseAuth.isAdmin(user);
+  };
+
+  const isEmergencyResponder = (): boolean => {
+    return firebaseAuth.isEmergencyResponder(user);
   };
 
   const value: AuthContextType = {
     user,
-    login,
     logout,
     isLoading,
+    hasRole,
+    isAdmin,
+    isEmergencyResponder,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// Export types for components
+export type { User, UserRole };
