@@ -2,16 +2,16 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth-firebase';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  AlertTriangle, 
-  LogOut, 
-  Shield, 
-  Flame, 
-  Truck, 
-  Building2, 
-  User, 
-  Settings,
-  Bell
+import NotificationBell from '@/components/NotificationBell';
+import {
+  AlertTriangle,
+  LogOut,
+  Shield,
+  Flame,
+  Truck,
+  Building2,
+  User,
+  Settings
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -73,11 +73,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
-              {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-emergency-danger rounded-full"></div>
-              </Button>
+              {/* Real-time Notifications */}
+              <NotificationBell />
 
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
