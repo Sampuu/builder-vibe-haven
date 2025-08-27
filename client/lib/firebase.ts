@@ -22,11 +22,15 @@ export const db = getFirestore(app);
 // Initialize Auth
 export const auth = getAuth(app);
 
+// Initialize Storage
+export const storage = getStorage(app);
+
 // Connect to emulators in development if not already connected
 if (import.meta.env.DEV && !import.meta.env.VITE_FIREBASE_USE_PRODUCTION) {
   try {
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectAuthEmulator(auth, 'http://localhost:9099');
+    connectStorageEmulator(storage, 'localhost', 9199);
   } catch (error) {
     // Emulators already connected
     console.log('Firebase emulators already connected or not available');
