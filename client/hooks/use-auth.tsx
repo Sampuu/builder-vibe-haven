@@ -42,7 +42,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (mounted && isLoading) {
-        console.warn('Firebase auth initialization timeout');
+        console.warn("Firebase auth initialization timeout");
         setIsLoading(false);
       }
     }, 10000); // 10 second timeout
