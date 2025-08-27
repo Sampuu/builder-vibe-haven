@@ -21,7 +21,7 @@ import {
   AlertTriangle,
   ArrowLeft
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth-simple';
+import { useAuth } from '@/hooks/use-auth-firebase';
 import { UserProfileUpdateRequest } from '@shared/api';
 
 export default function Profile() {
