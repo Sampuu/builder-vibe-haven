@@ -62,9 +62,33 @@ const createUserProfile = async (
 
 // Firebase Authentication Service
 export const firebaseAuth = {
-  // Sign up new user
+  // Check network connectivity
+  async checkNetworkConnectivity(): Promise<boolean> {
+    try {
+      // Try to make a simple request to check connectivity
+      const response = await fetch('https://www.google.com/favicon.ico', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-cache'
+      });
+      return true;
+    } catch {
+      return navigator.onLine;
+    }
+  },
+
+  // Sign up new user with enhanced error handling
   async signup(data: SignupData): Promise<DatabaseResponse<User>> {
     try {
+      // Check network connectivity first
+      const isOnline = await this.checkNetworkConnectivity();
+      if (!isOnline) {
+        return {
+          success: false,
+          error: "No internet connection. Please check your network and try again."
+        };
+      }
+
       // Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -98,9 +122,18 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
+      console.error('Signup error details:', {
+        code: error.code,
+        message: error.message,
+        customData: error.customData
+      });
+
       let errorMessage = "Failed to create account";
 
       switch (error.code) {
+        case "auth/network-request-failed":
+          errorMessage = "Network connection failed. Please check your internet connection and try again.";
+          break;
         case "auth/email-already-in-use":
           errorMessage = "An account with this email already exists";
           break;
@@ -110,17 +143,46 @@ export const firebaseAuth = {
         case "auth/invalid-email":
           errorMessage = "Invalid email address";
           break;
+        case "auth/operation-not-allowed":
+          errorMessage = "Email/password accounts are not enabled. Please contact support.";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "Too many failed attempts. Please try again later.";
+          break;
+        case "auth/user-disabled":
+          errorMessage = "This account has been disabled. Please contact support.";
+          break;
+        case "auth/configuration-not-found":
+        case "auth/invalid-api-key":
+          errorMessage = "Authentication service is not properly configured. Please contact support.";
+          break;
         default:
-          errorMessage = error.message || errorMessage;
+          // For unknown errors, provide more helpful message
+          if (error.message?.includes('network')) {
+            errorMessage = "Network error occurred. Please check your connection and try again.";
+          } else if (error.message?.includes('CORS')) {
+            errorMessage = "Authentication service configuration error. Please contact support.";
+          } else {
+            errorMessage = error.message || "An unexpected error occurred. Please try again.";
+          }
       }
 
       return { success: false, error: errorMessage };
     }
   },
 
-  // Sign in existing user
+  // Sign in existing user with enhanced error handling
   async login(data: LoginData): Promise<DatabaseResponse<User>> {
     try {
+      // Check network connectivity first
+      const isOnline = await this.checkNetworkConnectivity();
+      if (!isOnline) {
+        return {
+          success: false,
+          error: "No internet connection. Please check your network and try again."
+        };
+      }
+
       const userCredential = await signInWithEmailAndPassword(
         auth,
         data.email,
@@ -137,24 +199,39 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
+      console.error('Login error details:', {
+        code: error.code,
+        message: error.message
+      });
+
       let errorMessage = "Failed to login";
 
       switch (error.code) {
+        case "auth/network-request-failed":
+          errorMessage = "Network connection failed. Please check your internet connection and try again.";
+          break;
         case "auth/user-not-found":
           errorMessage = "No account found with this email";
           break;
         case "auth/wrong-password":
-          errorMessage = "Incorrect password";
+        case "auth/invalid-credential":
+          errorMessage = "Incorrect email or password";
           break;
         case "auth/invalid-email":
           errorMessage = "Invalid email address";
           break;
+        case "auth/user-disabled":
+          errorMessage = "This account has been disabled. Please contact support.";
+          break;
         case "auth/too-many-requests":
-          errorMessage =
-            "Too many failed login attempts. Please try again later";
+          errorMessage = "Too many failed login attempts. Please try again later";
           break;
         default:
-          errorMessage = error.message || errorMessage;
+          if (error.message?.includes('network')) {
+            errorMessage = "Network error occurred. Please check your connection and try again.";
+          } else {
+            errorMessage = error.message || "An unexpected error occurred. Please try again.";
+          }
       }
 
       return { success: false, error: errorMessage };
@@ -167,7 +244,17 @@ export const firebaseAuth = {
       await signOut(auth);
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message };
+      console.error('Logout error:', error);
+
+      let errorMessage = "Failed to sign out";
+
+      if (error.code === "auth/network-request-failed") {
+        errorMessage = "Network error during sign out. You may already be signed out.";
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+
+      return { success: false, error: errorMessage };
     }
   },
 
