@@ -11,6 +11,7 @@ import {
   Map
 } from 'lucide-react';
 import FirebaseTest from '@/components/FirebaseTest';
+import FirebaseAuthTest from '@/components/FirebaseAuthTest';
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -172,6 +173,9 @@ export default function UserDashboard() {
 
         {/* Firebase Integration Test */}
         <FirebaseTest />
+
+        {/* Firebase Authentication Test */}
+        <FirebaseAuthTest />
       </div>
     </DashboardLayout>
   );
