@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Unsubscribe } from 'firebase/firestore';
 import { 
   AnyReport, 
   ReportProblemType 
