@@ -21,25 +21,39 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setLocalError('');
+    setRequiresVerification(false);
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
-      setError('Please fill in all fields');
+    if (!email || !password) {
+      setLocalError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
-    } else {
-      setError('Invalid credentials. Please try again.');
+    try {
+      const response = await login(email, password);
+
+      if (response.success && response.user) {
+        if (response.requiresEmailVerification) {
+          setRequiresVerification(true);
+        } else if (response.user.status === 'pending') {
+          setLocalError('Your account is pending approval. Please wait for an administrator to approve your account.');
+        } else if (response.user.status === 'suspended') {
+          setLocalError('Your account has been suspended. Please contact an administrator.');
+        } else if (response.user.status === 'active') {
+          // Redirect to appropriate dashboard based on role
+          navigate(`/dashboard/${response.user.role}`);
+        }
+      } else {
+        setLocalError(response.error || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLocalError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const roleOptions = [
