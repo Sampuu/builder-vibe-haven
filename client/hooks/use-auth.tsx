@@ -16,9 +16,12 @@ import {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (data: UserRegistrationRequest) => Promise<AuthResponse>;
+  logout: () => Promise<void>;
+  updateProfile: (updates: UserProfileUpdateRequest) => Promise<void>;
   isLoading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
