@@ -20,7 +20,7 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth-firebase';
-import { saveReport, mapLegacyTypeToProbleType, createGeneralUserReport } from '@/lib/firebase-reports';
+import { saveReport, mapLegacyTypeToProbleType, createGeneralUserReport } from '@/lib/mock-reports';
 import { ReportProblemType } from '@shared/api';
 
 interface LegacyDisasterReport {
