@@ -26,48 +26,58 @@ import { User, UserRole } from '@shared/api';
 const mockUsers: User[] = [
   {
     id: '1',
-    name: 'John Smith',
+    displayName: 'John Smith',
     email: 'john.smith@emergency.gov',
     role: 'police',
     status: 'active',
+    permissions: [],
     createdAt: '2024-01-15',
-    lastLogin: '2 hours ago'
+    updatedAt: '2024-01-15',
+    lastLoginAt: '2 hours ago'
   },
   {
     id: '2',
-    name: 'Sarah Johnson',
+    displayName: 'Sarah Johnson',
     email: 'sarah.johnson@fire.gov',
     role: 'fire',
     status: 'active',
+    permissions: [],
     createdAt: '2024-01-10',
-    lastLogin: '1 day ago'
+    updatedAt: '2024-01-10',
+    lastLoginAt: '1 day ago'
   },
   {
     id: '3',
-    name: 'Mike Davis',
+    displayName: 'Mike Davis',
     email: 'mike.davis@ambulance.gov',
     role: 'ambulance',
     status: 'active',
+    permissions: [],
     createdAt: '2024-01-08',
-    lastLogin: '3 hours ago'
+    updatedAt: '2024-01-08',
+    lastLoginAt: '3 hours ago'
   },
   {
     id: '4',
-    name: 'Emily Wilson',
+    displayName: 'Emily Wilson',
     email: 'emily.wilson@hospital.gov',
     role: 'hospital',
     status: 'inactive',
+    permissions: [],
     createdAt: '2024-01-05',
-    lastLogin: '1 week ago'
+    updatedAt: '2024-01-05',
+    lastLoginAt: '1 week ago'
   },
   {
     id: '5',
-    name: 'Tom Brown',
+    displayName: 'Tom Brown',
     email: 'tom.brown@citizen.com',
     role: 'user',
     status: 'active',
+    permissions: [],
     createdAt: '2024-01-20',
-    lastLogin: '30 minutes ago'
+    updatedAt: '2024-01-20',
+    lastLoginAt: '30 minutes ago'
   }
 ];
 
