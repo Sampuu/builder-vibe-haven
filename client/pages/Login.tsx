@@ -30,13 +30,13 @@ export default function Login() {
       return;
     }
 
-    const success = await login(email, password, role);
-    
-    if (success) {
+    const result = await login(email, password, role);
+
+    if (result.success) {
       // Redirect to appropriate dashboard based on role
       navigate(`/dashboard/${role}`);
     } else {
-      setError('Invalid credentials. Please try again.');
+      setError(result.error || 'Invalid credentials. Please try again.');
     }
     
     setIsSubmitting(false);
