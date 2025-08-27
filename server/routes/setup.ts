@@ -5,11 +5,11 @@ export const handleDatabaseSetup: RequestHandler = async (req, res) => {
   try {
     // Check if user_profiles table exists and create it if not
     const { data, error } = await supabase
-      .from('user_profiles')
-      .select('id')
+      .from("user_profiles")
+      .select("id")
       .limit(1);
 
-    if (error && error.code === 'PGRST116') {
+    if (error && error.code === "PGRST116") {
       // Table doesn't exist, provide setup instructions
       return res.status(200).json({
         message: "Database setup required",
@@ -57,27 +57,28 @@ CREATE TRIGGER update_user_profiles_updated_at
 BEFORE UPDATE ON user_profiles 
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
           `,
-          step4: "After running the SQL, try the authentication endpoints again"
-        }
+          step4:
+            "After running the SQL, try the authentication endpoints again",
+        },
       });
     } else if (error) {
-      console.error('Database check error:', error);
+      console.error("Database check error:", error);
       return res.status(500).json({
         error: "Database connection error",
-        details: error.message
+        details: error.message,
       });
     } else {
       // Table exists
       return res.status(200).json({
         message: "Database is properly configured",
-        tableExists: true
+        tableExists: true,
       });
     }
   } catch (error) {
-    console.error('Setup error:', error);
+    console.error("Setup error:", error);
     res.status(500).json({
       error: "Internal server error",
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };

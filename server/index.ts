@@ -2,7 +2,12 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
-import { handleSignup, handleSignin, handleSignout, handleGetUser } from "./routes/auth";
+import {
+  handleSignup,
+  handleSignin,
+  handleSignout,
+  handleGetUser,
+} from "./routes/auth";
 import { handleDatabaseSetup } from "./routes/setup";
 import { handleSupabaseTest, handleSupabaseAuthTest } from "./routes/test";
 import { handleAuthTroubleshoot } from "./routes/troubleshoot";
