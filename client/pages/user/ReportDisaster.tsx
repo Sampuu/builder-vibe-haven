@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  AlertTriangle, 
+import {
+  AlertTriangle,
   ArrowLeft,
   MapPin,
   Phone,
@@ -20,21 +20,10 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { firebaseDb } from '@/lib/firebase-db';
+import type { DisasterReport } from '@shared/types';
 
-interface DisasterReport {
-  id: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  location: string;
-  coordinates?: { lat: number; lng: number };
-  contactName: string;
-  contactPhone: string;
-  images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
-  timestamp: string;
-}
+// Using shared DisasterReport type from @shared/types
 
 const disasterTypes = [
   { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
@@ -90,38 +79,54 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
+    if (!user?.id) {
+      setErrors({ general: 'Please log in to submit a report' });
+      return;
+    }
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
+      // Create disaster report in Firebase
+      const reportData: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'> = {
+        userId: user.id,
+        type: formData.type as DisasterReport['type'],
+        severity: formData.severity as DisasterReport['severity'],
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        images: formData.images,
+        status: 'submitted'
       };
 
-      console.log('Disaster report submitted:', report);
-      setShowSuccess(true);
-      
-      // Reset form
-      setFormData({
-        type: '',
-        severity: 'medium',
-        title: '',
-        description: '',
-        location: '',
-        contactName: user?.name || '',
-        contactPhone: '',
-        images: []
-      });
+      const result = await firebaseDb.disasterReports.create(reportData);
+
+      if (result.success) {
+        console.log('Disaster report submitted successfully:', result.data);
+        setShowSuccess(true);
+
+        // Reset form
+        setFormData({
+          type: '',
+          severity: 'medium',
+          title: '',
+          description: '',
+          location: '',
+          contactName: user?.name || '',
+          contactPhone: '',
+          images: []
+        });
+        setErrors({});
+      } else {
+        setErrors({ general: result.error || 'Failed to submit report' });
+      }
     } catch (error) {
       console.error('Failed to submit report:', error);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -199,6 +204,16 @@ export default function ReportDisaster() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* General Error */}
+                  {errors.general && (
+                    <Alert className="border-emergency-danger bg-emergency-danger/5">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription className="text-emergency-danger">
+                        {errors.general}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* Emergency Type */}
                   <div className="space-y-2">
                     <Label htmlFor="type">Emergency Type *</Label>
