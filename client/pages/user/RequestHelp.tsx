@@ -69,8 +69,9 @@ export default function RequestHelp() {
         description: formData.description,
         location: formData.location,
         contactPhone: formData.contactPhone,
-        specialRequests: formData.specialRequests || undefined,
-        status: 'submitted'
+        status: 'submitted',
+        // Only include specialRequests if it has a value
+        ...(formData.specialRequests.trim() && { specialRequests: formData.specialRequests.trim() })
       };
 
       const result = await firebaseDb.helpRequests.create(requestData);
