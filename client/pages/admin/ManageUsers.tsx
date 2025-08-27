@@ -21,17 +21,7 @@ import {
   UserX,
   Shield
 } from 'lucide-react';
-import { UserRole } from '@/hooks/use-auth';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: 'active' | 'inactive';
-  createdAt: string;
-  lastLogin: string;
-}
+import { User, UserRole } from '@shared/api';
 
 const mockUsers: User[] = [
   {
