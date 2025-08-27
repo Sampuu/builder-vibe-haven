@@ -132,7 +132,7 @@ export default function ManageUsers() {
     };
 
     setUsers([...users, newUser]);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
+    setFormData({ displayName: '', email: '', role: 'user', status: 'active' });
     setIsAddDialogOpen(false);
     setSuccess('User added successfully');
     setError('');
@@ -165,7 +165,7 @@ export default function ManageUsers() {
     setUsers(updatedUsers);
     setIsEditDialogOpen(false);
     setEditingUser(null);
-    setFormData({ name: '', email: '', role: 'user', status: 'active' });
+    setFormData({ displayName: '', email: '', role: 'user', status: 'active' });
     setSuccess('User updated successfully');
     setError('');
     setTimeout(() => setSuccess(''), 3000);
