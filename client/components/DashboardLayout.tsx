@@ -82,7 +82,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                  <p className="text-sm font-medium text-slate-900">{user.displayName}</p>
                   <p className="text-xs text-slate-500 capitalize flex items-center">
                     <RoleIcon className={`h-3 w-3 mr-1 ${roleColors[user.role]}`} />
                     {user.role}
