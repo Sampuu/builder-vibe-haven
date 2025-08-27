@@ -99,7 +99,7 @@ export default function ManageUsers() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
+    displayName: '',
     email: '',
     role: 'user' as UserRole,
     status: 'active' as 'active' | 'inactive'
