@@ -45,27 +45,32 @@ export const handleSignup: RequestHandler = async (req, res) => {
       });
     }
 
-    // Create user profile in our custom table
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          name,
-          role
-        }
-      ])
-      .select()
-      .single();
-
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-      // If profile creation fails, we still have the auth user
-      // Let's try to continue with minimal data
+    // Try to create user profile in our custom table (optional)
+    let profileData = null;
+    try {
+      const { data, error: profileError } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            id: authData.user.id,
+            email,
+            name,
+            role
+          }
+        ])
+        .select()
+        .single();
+      
+      if (!profileError) {
+        profileData = data;
+      } else {
+        console.warn('Profile creation failed (table may not exist):', profileError.message);
+      }
+    } catch (profileError) {
+      console.warn('Profile table not available:', profileError);
     }
 
-    // Return user data and session
+    // Return user data and session (works with or without profile table)
     res.status(201).json({
       user: {
         id: authData.user.id,
@@ -73,7 +78,8 @@ export const handleSignup: RequestHandler = async (req, res) => {
         name: authData.user.user_metadata?.name || name,
         role: authData.user.user_metadata?.role || role
       },
-      session: authData.session
+      session: authData.session,
+      profileCreated: !!profileData
     });
 
   } catch (error) {
@@ -113,15 +119,22 @@ export const handleSignin: RequestHandler = async (req, res) => {
       });
     }
 
-    // Get user profile from our custom table
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', authData.user.id)
-      .single();
+    // Try to get user profile from our custom table (optional)
+    let profileData = null;
+    try {
+      const { data, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError);
+      if (!profileError) {
+        profileData = data;
+      } else {
+        console.warn('Profile fetch failed (table may not exist):', profileError.message);
+      }
+    } catch (profileError) {
+      console.warn('Profile table not available:', profileError);
     }
 
     const userRole = profileData?.role || authData.user.user_metadata?.role || 'user';
@@ -199,15 +212,20 @@ export const handleGetUser: RequestHandler = async (req, res) => {
       });
     }
 
-    // Get user profile
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', userData.user.id)
-      .single();
+    // Try to get user profile (optional)
+    let profileData = null;
+    try {
+      const { data, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userData.user.id)
+        .single();
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError);
+      if (!profileError) {
+        profileData = data;
+      }
+    } catch (profileError) {
+      console.warn('Profile table not available:', profileError);
     }
 
     res.status(200).json({
