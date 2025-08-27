@@ -10,7 +10,7 @@ import {
   DocumentData,
   Unsubscribe
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebase-safe';
 import { 
   AnyReport, 
   ReportProblemType, 
