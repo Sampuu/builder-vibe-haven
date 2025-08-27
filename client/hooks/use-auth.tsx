@@ -41,59 +41,111 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for existing session on app load
-    const storedUser = localStorage.getItem('disaster-auth-user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('disaster-auth-user');
-      }
-    }
-    setIsLoading(false);
+    // Listen to authentication state changes
+    const unsubscribe = onAuthStateChange((user) => {
+      setUser(user);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     setIsLoading(true);
-    
-    // Simulate API call - in real app this would be a server request
+    setError(null);
+
     try {
-      // Simple validation for demo purposes
-      if (email && password.length >= 6) {
-        const user: User = {
-          id: `${role}-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
-          role,
-        };
-        
-        setUser(user);
-        localStorage.setItem('disaster-auth-user', JSON.stringify(user));
-        setIsLoading(false);
-        return true;
+      const response = await signInUser(email, password);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+      } else {
+        setError(response.error || 'Login failed');
       }
+
       setIsLoading(false);
-      return false;
+      return response;
     } catch (error) {
       console.error('Login failed:', error);
+      const errorMessage = 'Login failed. Please try again.';
+      setError(errorMessage);
       setIsLoading(false);
-      return false;
+      return { success: false, error: errorMessage };
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('disaster-auth-user');
+  const register = async (data: UserRegistrationRequest): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await registerUser(data);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+      } else {
+        setError(response.error || 'Registration failed');
+      }
+
+      setIsLoading(false);
+      return response;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      const errorMessage = 'Registration failed. Please try again.';
+      setError(errorMessage);
+      setIsLoading(false);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await signOutUser();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setError('Logout failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async (updates: UserProfileUpdateRequest): Promise<void> => {
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await updateUserProfile(user.id, updates);
+
+      // Update local user state
+      setUser(prev => prev ? { ...prev, ...updates } : prev);
+    } catch (error) {
+      console.error('Profile update failed:', error);
+      setError('Failed to update profile');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value: AuthContextType = {
     user,
     login,
+    register,
     logout,
+    updateProfile,
     isLoading,
+    error,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
