@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSignup, handleSignin, handleSignout, handleGetUser } from "./routes/auth";
+import { handleDatabaseSetup } from "./routes/setup";
 
 export function createServer() {
   const app = express();
@@ -25,6 +26,9 @@ export function createServer() {
   app.post("/api/auth/signin", handleSignin);
   app.post("/api/auth/signout", handleSignout);
   app.get("/api/auth/user", handleGetUser);
+
+  // Database setup route
+  app.get("/api/setup/database", handleDatabaseSetup);
 
   return app;
 }
