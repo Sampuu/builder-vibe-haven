@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSignup, handleSignin, handleSignout, handleGetUser } from "./routes/auth";
 import { handleDatabaseSetup } from "./routes/setup";
+import { handleSupabaseTest, handleSupabaseAuthTest } from "./routes/test";
 
 export function createServer() {
   const app = express();
@@ -29,6 +30,10 @@ export function createServer() {
 
   // Database setup route
   app.get("/api/setup/database", handleDatabaseSetup);
+
+  // Test routes
+  app.get("/api/test/supabase", handleSupabaseTest);
+  app.get("/api/test/auth", handleSupabaseAuthTest);
 
   return app;
 }
