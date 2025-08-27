@@ -142,7 +142,7 @@ export default function ManageUsers() {
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setFormData({
-      name: user.displayName,
+      displayName: user.displayName,
       email: user.email,
       role: user.role,
       status: user.status
