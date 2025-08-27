@@ -123,52 +123,9 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      console.error('Signup error details:', {
-        code: error.code,
-        message: error.message,
-        customData: error.customData
-      });
-
-      let errorMessage = "Failed to create account";
-
-      switch (error.code) {
-        case "auth/network-request-failed":
-          errorMessage = "Network connection failed. Please check your internet connection and try again.";
-          break;
-        case "auth/email-already-in-use":
-          errorMessage = "An account with this email already exists";
-          break;
-        case "auth/weak-password":
-          errorMessage = "Password should be at least 6 characters";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address";
-          break;
-        case "auth/operation-not-allowed":
-          errorMessage = "Email/password accounts are not enabled. Please contact support.";
-          break;
-        case "auth/too-many-requests":
-          errorMessage = "Too many failed attempts. Please try again later.";
-          break;
-        case "auth/user-disabled":
-          errorMessage = "This account has been disabled. Please contact support.";
-          break;
-        case "auth/configuration-not-found":
-        case "auth/invalid-api-key":
-          errorMessage = "Authentication service is not properly configured. Please contact support.";
-          break;
-        default:
-          // For unknown errors, provide more helpful message
-          if (error.message?.includes('network')) {
-            errorMessage = "Network error occurred. Please check your connection and try again.";
-          } else if (error.message?.includes('CORS')) {
-            errorMessage = "Authentication service configuration error. Please contact support.";
-          } else {
-            errorMessage = error.message || "An unexpected error occurred. Please try again.";
-          }
-      }
-
-      return { success: false, error: errorMessage };
+      FirebaseErrorHandler.logError(error, 'signup');
+      const errorInfo = FirebaseErrorHandler.parseError(error);
+      return { success: false, error: errorInfo.userFriendlyMessage };
     }
   },
 
@@ -200,42 +157,9 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      console.error('Login error details:', {
-        code: error.code,
-        message: error.message
-      });
-
-      let errorMessage = "Failed to login";
-
-      switch (error.code) {
-        case "auth/network-request-failed":
-          errorMessage = "Network connection failed. Please check your internet connection and try again.";
-          break;
-        case "auth/user-not-found":
-          errorMessage = "No account found with this email";
-          break;
-        case "auth/wrong-password":
-        case "auth/invalid-credential":
-          errorMessage = "Incorrect email or password";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address";
-          break;
-        case "auth/user-disabled":
-          errorMessage = "This account has been disabled. Please contact support.";
-          break;
-        case "auth/too-many-requests":
-          errorMessage = "Too many failed login attempts. Please try again later";
-          break;
-        default:
-          if (error.message?.includes('network')) {
-            errorMessage = "Network error occurred. Please check your connection and try again.";
-          } else {
-            errorMessage = error.message || "An unexpected error occurred. Please try again.";
-          }
-      }
-
-      return { success: false, error: errorMessage };
+      FirebaseErrorHandler.logError(error, 'login');
+      const errorInfo = FirebaseErrorHandler.parseError(error);
+      return { success: false, error: errorInfo.userFriendlyMessage };
     }
   },
 
@@ -245,17 +169,9 @@ export const firebaseAuth = {
       await signOut(auth);
       return { success: true };
     } catch (error: any) {
-      console.error('Logout error:', error);
-
-      let errorMessage = "Failed to sign out";
-
-      if (error.code === "auth/network-request-failed") {
-        errorMessage = "Network error during sign out. You may already be signed out.";
-      } else {
-        errorMessage = error.message || errorMessage;
-      }
-
-      return { success: false, error: errorMessage };
+      FirebaseErrorHandler.logError(error, 'logout');
+      const errorInfo = FirebaseErrorHandler.parseError(error);
+      return { success: false, error: errorInfo.userFriendlyMessage };
     }
   },
 
