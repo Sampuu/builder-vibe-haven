@@ -132,3 +132,156 @@ export interface SubmitReportResponse {
   reportId?: string;
   error?: string;
 }
+
+/**
+ * User Management Types
+ */
+
+/**
+ * User roles in the emergency response system
+ */
+export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+
+/**
+ * User status types
+ */
+export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
+
+/**
+ * User interface for Firestore
+ */
+export interface User {
+  id: string; // Firebase Auth UID
+  email: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  role: UserRole;
+  status: UserStatus;
+  phoneNumber?: string;
+  profilePictureURL?: string;
+  department?: string; // For police, fire, ambulance, hospital users
+  badgeNumber?: string; // For official responders
+  permissions?: UserPermission[];
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string;
+  metadata?: UserMetadata;
+}
+
+/**
+ * User permissions for role-based access
+ */
+export interface UserPermission {
+  resource: string; // e.g., 'reports', 'users', 'analytics'
+  actions: string[]; // e.g., ['read', 'write', 'delete']
+}
+
+/**
+ * Additional user metadata
+ */
+export interface UserMetadata {
+  preferences?: {
+    notifications: boolean;
+    darkMode: boolean;
+    language: string;
+  };
+  statistics?: {
+    reportsSubmitted: number;
+    helpRequestsCreated: number;
+    incidentsResolved: number;
+  };
+  location?: {
+    city: string;
+    state: string;
+    country: string;
+    coordinates?: { lat: number; lng: number };
+  };
+}
+
+/**
+ * User registration request
+ */
+export interface UserRegistrationRequest {
+  email: string;
+  password: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  role: UserRole;
+  phoneNumber?: string;
+  department?: string;
+  badgeNumber?: string;
+}
+
+/**
+ * User profile update request
+ */
+export interface UserProfileUpdateRequest {
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  department?: string;
+  profilePictureURL?: string;
+  metadata?: Partial<UserMetadata>;
+}
+
+/**
+ * Authentication response
+ */
+export interface AuthResponse {
+  success: boolean;
+  user?: User;
+  error?: string;
+  requiresEmailVerification?: boolean;
+}
+
+/**
+ * User collection name
+ */
+export const USER_COLLECTION = 'users';
+
+/**
+ * Default user permissions by role
+ */
+export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermission[]> = {
+  user: [
+    { resource: 'reports', actions: ['read', 'write'] },
+    { resource: 'help-requests', actions: ['read', 'write'] },
+    { resource: 'news', actions: ['read'] },
+    { resource: 'profile', actions: ['read', 'write'] }
+  ],
+  police: [
+    { resource: 'reports', actions: ['read', 'write', 'update'] },
+    { resource: 'police-reports', actions: ['read', 'write', 'update', 'delete'] },
+    { resource: 'incidents', actions: ['read', 'write', 'update'] },
+    { resource: 'users', actions: ['read'] },
+    { resource: 'profile', actions: ['read', 'write'] }
+  ],
+  fire: [
+    { resource: 'reports', actions: ['read', 'write', 'update'] },
+    { resource: 'fire-reports', actions: ['read', 'write', 'update', 'delete'] },
+    { resource: 'incidents', actions: ['read', 'write', 'update'] },
+    { resource: 'users', actions: ['read'] },
+    { resource: 'profile', actions: ['read', 'write'] }
+  ],
+  ambulance: [
+    { resource: 'reports', actions: ['read', 'write', 'update'] },
+    { resource: 'ambulance-requests', actions: ['read', 'write', 'update', 'delete'] },
+    { resource: 'medical-incidents', actions: ['read', 'write', 'update'] },
+    { resource: 'users', actions: ['read'] },
+    { resource: 'profile', actions: ['read', 'write'] }
+  ],
+  hospital: [
+    { resource: 'reports', actions: ['read', 'write', 'update'] },
+    { resource: 'hospital-reports', actions: ['read', 'write', 'update', 'delete'] },
+    { resource: 'medical-incidents', actions: ['read', 'write', 'update'] },
+    { resource: 'supply-requests', actions: ['read', 'write', 'update'] },
+    { resource: 'users', actions: ['read'] },
+    { resource: 'profile', actions: ['read', 'write'] }
+  ],
+  admin: [
+    { resource: '*', actions: ['read', 'write', 'update', 'delete'] }
+  ]
+};
