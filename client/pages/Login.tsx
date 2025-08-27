@@ -22,6 +22,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
@@ -53,7 +55,7 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, isRetry: boolean = false) => {
     e.preventDefault();
     setError("");
 
@@ -61,7 +63,12 @@ export default function Login() {
       return;
     }
 
-    setIsSubmitting(true);
+    if (isRetry) {
+      setIsRetrying(true);
+    } else {
+      setIsSubmitting(true);
+      setRetryCount(0);
+    }
 
     try {
       const result = await firebaseAuth.login(formData);
@@ -70,14 +77,28 @@ export default function Login() {
         // Login successful - redirect to appropriate dashboard based on user's role
         navigate(`/dashboard/${result.data.role}`);
       } else {
-        setError(result.error || "Login failed");
+        const errorMsg = result.error || "Login failed";
+        setError(errorMsg);
+
+        // If it's a network error and we haven't retried too many times
+        if (errorMsg.includes("Network") || errorMsg.includes("connection")) {
+          setRetryCount(prev => prev + 1);
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMsg = "An unexpected error occurred. Please try again.";
+      setError(errorMsg);
+      setRetryCount(prev => prev + 1);
     } finally {
       setIsSubmitting(false);
+      setIsRetrying(false);
     }
+  };
+
+  const handleRetry = () => {
+    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(fakeEvent, true);
   };
 
   // Role is now determined from the user's account, not selected during login
@@ -115,7 +136,33 @@ export default function Login() {
                 <Alert className="border-emergency-danger bg-emergency-danger/5">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription className="text-emergency-danger">
-                    {error}
+                    <div className="space-y-2">
+                      <div>{error}</div>
+                      {(error.includes("Network") || error.includes("connection")) && retryCount < 3 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRetry}
+                          disabled={isRetrying}
+                          className="text-xs"
+                        >
+                          {isRetrying ? (
+                            <>
+                              <div className="mr-1 h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                              Retrying...
+                            </>
+                          ) : (
+                            "Try Again"
+                          )}
+                        </Button>
+                      )}
+                      {retryCount >= 3 && (
+                        <div className="text-xs text-emergency-danger/80">
+                          Multiple attempts failed. Please check your internet connection or try again later.
+                        </div>
+                      )}
+                    </div>
                   </AlertDescription>
                 </Alert>
               )}
@@ -185,12 +232,12 @@ export default function Login() {
                 type="submit"
                 className="w-full"
                 variant="danger"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRetrying}
               >
-                {isSubmitting ? (
+                {isSubmitting || isRetrying ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Signing In...
+                    {isRetrying ? "Retrying..." : "Signing In..."}
                   </>
                 ) : (
                   <>
