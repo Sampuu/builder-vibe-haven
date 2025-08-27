@@ -5,6 +5,7 @@ import { handleDemo } from "./routes/demo";
 import { handleSignup, handleSignin, handleSignout, handleGetUser } from "./routes/auth";
 import { handleDatabaseSetup } from "./routes/setup";
 import { handleSupabaseTest, handleSupabaseAuthTest } from "./routes/test";
+import { handleAuthTroubleshoot } from "./routes/troubleshoot";
 
 export function createServer() {
   const app = express();
@@ -34,6 +35,9 @@ export function createServer() {
   // Test routes
   app.get("/api/test/supabase", handleSupabaseTest);
   app.get("/api/test/auth", handleSupabaseAuthTest);
+
+  // Troubleshooting
+  app.get("/api/troubleshoot/auth", handleAuthTroubleshoot);
 
   return app;
 }
