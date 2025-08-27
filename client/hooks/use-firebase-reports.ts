@@ -9,7 +9,7 @@ import {
   createStatusListener,
   createHighPriorityListener,
   createAllReportsListener
-} from '@/lib/firebase-reports';
+} from '@/lib/mock-reports';
 
 /**
  * Hook to listen to reports for a specific problem type
