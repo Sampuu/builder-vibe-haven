@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft, Mail } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth-simple';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UserRole } from '@shared/api';
 
