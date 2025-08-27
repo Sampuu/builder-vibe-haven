@@ -56,14 +56,7 @@ export default function Login() {
     }
   };
 
-  const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
-  ];
+  const displayError = localError || error;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
