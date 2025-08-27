@@ -1,13 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+import {
+  signInUser,
+  registerUser,
+  signOutUser,
+  onAuthStateChange,
+  updateUserProfile
+} from '@/lib/firebase-auth';
+import {
+  User,
+  UserRole,
+  UserRegistrationRequest,
+  UserProfileUpdateRequest,
+  AuthResponse
+} from '@shared/api';
 
 interface AuthContextType {
   user: User | null;
