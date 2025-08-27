@@ -115,19 +115,20 @@ export default function ManageUsers() {
   });
 
   const handleAddUser = () => {
-    if (!formData.name || !formData.email) {
+    if (!formData.displayName || !formData.email) {
       setError('Please fill in all required fields');
       return;
     }
 
     const newUser: User = {
       id: Date.now().toString(),
-      name: formData.name,
+      displayName: formData.displayName,
       email: formData.email,
       role: formData.role,
       status: formData.status,
-      createdAt: new Date().toISOString().split('T')[0],
-      lastLogin: 'Never'
+      permissions: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     setUsers([...users, newUser]);
@@ -150,7 +151,7 @@ export default function ManageUsers() {
   };
 
   const handleUpdateUser = () => {
-    if (!formData.name || !formData.email || !editingUser) {
+    if (!formData.displayName || !formData.email || !editingUser) {
       setError('Please fill in all required fields');
       return;
     }
