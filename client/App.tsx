@@ -66,6 +66,16 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
+            {/* Profile Route - Available to all authenticated users */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Protected Dashboard Routes */}
             <Route
               path="/dashboard/user"
