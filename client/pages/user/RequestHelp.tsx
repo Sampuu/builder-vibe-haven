@@ -1,13 +1,25 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Phone,
   ArrowLeft,
@@ -16,22 +28,22 @@ import {
   Truck,
   CheckCircle,
   Clock,
-  AlertTriangle
-} from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { firebaseDb } from '@/lib/firebase-db';
-import type { HelpRequest } from '@shared/types';
+  AlertTriangle,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { firebaseDb } from "@/lib/firebase-db";
+import type { HelpRequest } from "@shared/types";
 
 export default function RequestHelp() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    type: '',
-    urgency: 'medium',
-    description: '',
-    location: '',
-    contactPhone: '',
-    specialRequests: ''
+    type: "",
+    urgency: "medium",
+    description: "",
+    location: "",
+    contactPhone: "",
+    specialRequests: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -40,10 +52,14 @@ export default function RequestHelp() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.type) newErrors.type = 'Please select the type of help needed';
-    if (!formData.description.trim()) newErrors.description = 'Please describe what help you need';
-    if (!formData.location.trim()) newErrors.location = 'Please provide your location';
-    if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Please provide a contact phone number';
+    if (!formData.type)
+      newErrors.type = "Please select the type of help needed";
+    if (!formData.description.trim())
+      newErrors.description = "Please describe what help you need";
+    if (!formData.location.trim())
+      newErrors.location = "Please provide your location";
+    if (!formData.contactPhone.trim())
+      newErrors.contactPhone = "Please provide a contact phone number";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -54,7 +70,7 @@ export default function RequestHelp() {
 
     if (!validateForm()) return;
     if (!user?.id) {
-      setErrors({ general: 'Please log in to submit a help request' });
+      setErrors({ general: "Please log in to submit a help request" });
       return;
     }
 
@@ -62,30 +78,32 @@ export default function RequestHelp() {
 
     try {
       // Create help request in Firebase
-      const requestData: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'> = {
+      const requestData: Omit<HelpRequest, "id" | "createdAt" | "updatedAt"> = {
         userId: user.id,
-        type: formData.type as HelpRequest['type'],
-        urgency: formData.urgency as HelpRequest['urgency'],
+        type: formData.type as HelpRequest["type"],
+        urgency: formData.urgency as HelpRequest["urgency"],
         description: formData.description,
         location: formData.location,
         contactPhone: formData.contactPhone,
-        status: 'submitted',
+        status: "submitted",
         // Only include specialRequests if it has a value
-        ...(formData.specialRequests.trim() && { specialRequests: formData.specialRequests.trim() })
+        ...(formData.specialRequests.trim() && {
+          specialRequests: formData.specialRequests.trim(),
+        }),
       };
 
       const result = await firebaseDb.helpRequests.create(requestData);
 
       if (result.success) {
-        console.log('Help request submitted successfully:', result.data);
+        console.log("Help request submitted successfully:", result.data);
         setSubmitted(true);
         setErrors({});
       } else {
-        setErrors({ general: result.error || 'Failed to submit help request' });
+        setErrors({ general: result.error || "Failed to submit help request" });
       }
     } catch (error) {
-      console.error('Failed to submit help request:', error);
-      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+      console.error("Failed to submit help request:", error);
+      setErrors({ general: "An unexpected error occurred. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -98,9 +116,16 @@ export default function RequestHelp() {
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle className="h-16 w-16 text-emergency-resolved mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted</h2>
-              <p className="text-slate-600 mb-6">Medical assistance has been requested. Help is on the way.</p>
-              <Button onClick={() => navigate('/dashboard/user')} className="w-full">
+              <h2 className="text-xl font-bold text-slate-900 mb-2">
+                Help Request Submitted
+              </h2>
+              <p className="text-slate-600 mb-6">
+                Medical assistance has been requested. Help is on the way.
+              </p>
+              <Button
+                onClick={() => navigate("/dashboard/user")}
+                className="w-full"
+              >
                 Back to Dashboard
               </Button>
             </CardContent>
@@ -114,7 +139,7 @@ export default function RequestHelp() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/user')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/user")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
@@ -123,7 +148,9 @@ export default function RequestHelp() {
               <Phone className="mr-3 h-8 w-8 text-emergency-resolved" />
               Request Medical Help
             </h1>
-            <p className="text-slate-600">Request medical assistance and emergency supplies</p>
+            <p className="text-slate-600">
+              Request medical assistance and emergency supplies
+            </p>
           </div>
         </div>
 
@@ -138,7 +165,9 @@ export default function RequestHelp() {
           <Card>
             <CardHeader>
               <CardTitle>Help Request Form</CardTitle>
-              <CardDescription>Request medical assistance or emergency supplies</CardDescription>
+              <CardDescription>
+                Request medical assistance or emergency supplies
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,31 +183,57 @@ export default function RequestHelp() {
 
                 <div className="space-y-2">
                   <Label htmlFor="type">Type of Help Needed</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-                    <SelectTrigger className={errors.type ? 'border-emergency-danger' : ''}>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, type: value })
+                    }
+                  >
+                    <SelectTrigger
+                      className={errors.type ? "border-emergency-danger" : ""}
+                    >
                       <SelectValue placeholder="Select help type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="medical">Medical Assistance</SelectItem>
-                      <SelectItem value="supplies">Emergency Supplies</SelectItem>
-                      <SelectItem value="transport">Medical Transport</SelectItem>
+                      <SelectItem value="medical">
+                        Medical Assistance
+                      </SelectItem>
+                      <SelectItem value="supplies">
+                        Emergency Supplies
+                      </SelectItem>
+                      <SelectItem value="transport">
+                        Medical Transport
+                      </SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.type && <p className="text-sm text-emergency-danger">{errors.type}</p>}
+                  {errors.type && (
+                    <p className="text-sm text-emergency-danger">
+                      {errors.type}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="urgency">Urgency Level</Label>
-                  <Select value={formData.urgency} onValueChange={(value) => setFormData({...formData, urgency: value})}>
+                  <Select
+                    value={formData.urgency}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, urgency: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">Low - Can wait</SelectItem>
-                      <SelectItem value="medium">Medium - Needed soon</SelectItem>
+                      <SelectItem value="medium">
+                        Medium - Needed soon
+                      </SelectItem>
                       <SelectItem value="high">High - Urgent</SelectItem>
-                      <SelectItem value="critical">Critical - Emergency</SelectItem>
+                      <SelectItem value="critical">
+                        Critical - Emergency
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -188,12 +243,20 @@ export default function RequestHelp() {
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     placeholder="Describe what help you need..."
                     rows={3}
-                    className={errors.description ? 'border-emergency-danger' : ''}
+                    className={
+                      errors.description ? "border-emergency-danger" : ""
+                    }
                   />
-                  {errors.description && <p className="text-sm text-emergency-danger">{errors.description}</p>}
+                  {errors.description && (
+                    <p className="text-sm text-emergency-danger">
+                      {errors.description}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -201,11 +264,17 @@ export default function RequestHelp() {
                   <Input
                     id="location"
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     placeholder="Your current address"
-                    className={errors.location ? 'border-emergency-danger' : ''}
+                    className={errors.location ? "border-emergency-danger" : ""}
                   />
-                  {errors.location && <p className="text-sm text-emergency-danger">{errors.location}</p>}
+                  {errors.location && (
+                    <p className="text-sm text-emergency-danger">
+                      {errors.location}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -213,14 +282,27 @@ export default function RequestHelp() {
                   <Input
                     id="contactPhone"
                     value={formData.contactPhone}
-                    onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactPhone: e.target.value })
+                    }
                     placeholder="Your phone number"
-                    className={errors.contactPhone ? 'border-emergency-danger' : ''}
+                    className={
+                      errors.contactPhone ? "border-emergency-danger" : ""
+                    }
                   />
-                  {errors.contactPhone && <p className="text-sm text-emergency-danger">{errors.contactPhone}</p>}
+                  {errors.contactPhone && (
+                    <p className="text-sm text-emergency-danger">
+                      {errors.contactPhone}
+                    </p>
+                  )}
                 </div>
 
-                <Button type="submit" className="w-full" variant="success" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  variant="success"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -282,11 +364,15 @@ export default function RequestHelp() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Emergency Services</span>
-                  <Button size="sm" variant="danger">911</Button>
+                  <Button size="sm" variant="danger">
+                    911
+                  </Button>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Poison Control</span>
-                  <Button size="sm" variant="outline">1-800-222-1222</Button>
+                  <Button size="sm" variant="outline">
+                    1-800-222-1222
+                  </Button>
                 </div>
               </CardContent>
             </Card>

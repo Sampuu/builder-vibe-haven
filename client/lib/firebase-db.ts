@@ -15,9 +15,9 @@ import {
   serverTimestamp,
   Timestamp,
   QueryDocumentSnapshot,
-  DocumentData
-} from 'firebase/firestore';
-import { db } from '@/config/firebase';
+  DocumentData,
+} from "firebase/firestore";
+import { db } from "@/config/firebase";
 import type {
   DisasterReport,
   HelpRequest,
@@ -25,16 +25,16 @@ import type {
   Incident,
   User,
   DatabaseResponse,
-  PaginatedResponse
-} from '@shared/types';
+  PaginatedResponse,
+} from "@shared/types";
 
 // Collection references
 const COLLECTIONS = {
-  USERS: 'users',
-  DISASTER_REPORTS: 'disasterReports',
-  HELP_REQUESTS: 'helpRequests',
-  NEWS_UPDATES: 'newsUpdates',
-  INCIDENTS: 'incidents'
+  USERS: "users",
+  DISASTER_REPORTS: "disasterReports",
+  HELP_REQUESTS: "helpRequests",
+  NEWS_UPDATES: "newsUpdates",
+  INCIDENTS: "incidents",
 } as const;
 
 // Helper function to convert Firestore timestamp to ISO string
@@ -55,19 +55,21 @@ const prepareDataForFirestore = (data: any) => {
 
 // User Services
 export const userService = {
-  async create(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseResponse<User>> {
+  async create(
+    userData: Omit<User, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DatabaseResponse<User>> {
     try {
       const docRef = await addDoc(collection(db, COLLECTIONS.USERS), {
         ...userData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       const user: User = {
         id: docRef.id,
         ...userData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       return { success: true, data: user };
@@ -80,7 +82,7 @@ export const userService = {
     try {
       const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, id));
       if (!docSnap.exists()) {
-        return { success: false, error: 'User not found' };
+        return { success: false, error: "User not found" };
       }
 
       const data = docSnap.data();
@@ -88,7 +90,7 @@ export const userService = {
         id: docSnap.id,
         ...data,
         createdAt: timestampToString(data.createdAt),
-        updatedAt: timestampToString(data.updatedAt)
+        updatedAt: timestampToString(data.updatedAt),
       } as User;
 
       return { success: true, data: user };
@@ -101,17 +103,17 @@ export const userService = {
     try {
       const q = query(
         collection(db, COLLECTIONS.USERS),
-        orderBy('createdAt', 'desc')
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const users = querySnapshot.docs.map(doc => {
+      const users = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as User;
       });
 
@@ -125,18 +127,18 @@ export const userService = {
     try {
       const q = query(
         collection(db, COLLECTIONS.USERS),
-        where('role', '==', role),
-        orderBy('createdAt', 'desc')
+        where("role", "==", role),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const users = querySnapshot.docs.map(doc => {
+      const users = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as User;
       });
 
@@ -146,9 +148,15 @@ export const userService = {
     }
   },
 
-  async update(id: string, updates: Partial<User>): Promise<DatabaseResponse<void>> {
+  async update(
+    id: string,
+    updates: Partial<User>,
+  ): Promise<DatabaseResponse<void>> {
     try {
-      await updateDoc(doc(db, COLLECTIONS.USERS, id), prepareDataForFirestore(updates));
+      await updateDoc(
+        doc(db, COLLECTIONS.USERS, id),
+        prepareDataForFirestore(updates),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -160,22 +168,19 @@ export const userService = {
     const q = role
       ? query(
           collection(db, COLLECTIONS.USERS),
-          where('role', '==', role),
-          orderBy('createdAt', 'desc')
+          where("role", "==", role),
+          orderBy("createdAt", "desc"),
         )
-      : query(
-          collection(db, COLLECTIONS.USERS),
-          orderBy('createdAt', 'desc')
-        );
+      : query(collection(db, COLLECTIONS.USERS), orderBy("createdAt", "desc"));
 
     return onSnapshot(q, (snapshot) => {
-      const users = snapshot.docs.map(doc => {
+      const users = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as User;
       });
       callback(users);
@@ -191,33 +196,38 @@ export const userService = {
           id: snapshot.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as User;
         callback(user);
       } else {
         callback(null);
       }
     });
-  }
+  },
 };
 
 // Disaster Report Services
 export const disasterReportService = {
-  async create(reportData: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseResponse<DisasterReport>> {
+  async create(
+    reportData: Omit<DisasterReport, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DatabaseResponse<DisasterReport>> {
     try {
-      const docRef = await addDoc(collection(db, COLLECTIONS.DISASTER_REPORTS), {
-        ...reportData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      
+      const docRef = await addDoc(
+        collection(db, COLLECTIONS.DISASTER_REPORTS),
+        {
+          ...reportData,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+      );
+
       const report: DisasterReport = {
         id: docRef.id,
         ...reportData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
-      
+
       return { success: true, data: report };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -228,79 +238,90 @@ export const disasterReportService = {
     try {
       const docSnap = await getDoc(doc(db, COLLECTIONS.DISASTER_REPORTS, id));
       if (!docSnap.exists()) {
-        return { success: false, error: 'Report not found' };
+        return { success: false, error: "Report not found" };
       }
-      
+
       const data = docSnap.data();
       const report: DisasterReport = {
         id: docSnap.id,
         ...data,
         createdAt: timestampToString(data.createdAt),
-        updatedAt: timestampToString(data.updatedAt)
+        updatedAt: timestampToString(data.updatedAt),
       } as DisasterReport;
-      
+
       return { success: true, data: report };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   },
 
-  async getByUserId(userId: string): Promise<DatabaseResponse<DisasterReport[]>> {
+  async getByUserId(
+    userId: string,
+  ): Promise<DatabaseResponse<DisasterReport[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.DISASTER_REPORTS),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc"),
       );
-      
+
       const querySnapshot = await getDocs(q);
-      const reports = querySnapshot.docs.map(doc => {
+      const reports = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as DisasterReport;
       });
-      
+
       return { success: true, data: reports };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   },
 
-  async getRecent(limitCount: number = 10): Promise<DatabaseResponse<DisasterReport[]>> {
+  async getRecent(
+    limitCount: number = 10,
+  ): Promise<DatabaseResponse<DisasterReport[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.DISASTER_REPORTS),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
-      
+
       const querySnapshot = await getDocs(q);
-      const reports = querySnapshot.docs.map(doc => {
+      const reports = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as DisasterReport;
       });
-      
+
       return { success: true, data: reports };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   },
 
-  async updateStatus(id: string, status: DisasterReport['status'], notes?: string): Promise<DatabaseResponse<void>> {
+  async updateStatus(
+    id: string,
+    status: DisasterReport["status"],
+    notes?: string,
+  ): Promise<DatabaseResponse<void>> {
     try {
       const updates: any = { status };
       if (notes) updates.notes = notes;
-      
-      await updateDoc(doc(db, COLLECTIONS.DISASTER_REPORTS, id), prepareDataForFirestore(updates));
+
+      await updateDoc(
+        doc(db, COLLECTIONS.DISASTER_REPORTS, id),
+        prepareDataForFirestore(updates),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -308,49 +329,54 @@ export const disasterReportService = {
   },
 
   // Real-time listener for reports
-  subscribeToReports(callback: (reports: DisasterReport[]) => void, userId?: string) {
-    const q = userId 
+  subscribeToReports(
+    callback: (reports: DisasterReport[]) => void,
+    userId?: string,
+  ) {
+    const q = userId
       ? query(
           collection(db, COLLECTIONS.DISASTER_REPORTS),
-          where('userId', '==', userId),
-          orderBy('createdAt', 'desc')
+          where("userId", "==", userId),
+          orderBy("createdAt", "desc"),
         )
       : query(
           collection(db, COLLECTIONS.DISASTER_REPORTS),
-          orderBy('createdAt', 'desc'),
-          limit(20)
+          orderBy("createdAt", "desc"),
+          limit(20),
         );
 
     return onSnapshot(q, (snapshot) => {
-      const reports = snapshot.docs.map(doc => {
+      const reports = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as DisasterReport;
       });
       callback(reports);
     });
-  }
+  },
 };
 
 // Help Request Services
 export const helpRequestService = {
-  async create(requestData: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseResponse<HelpRequest>> {
+  async create(
+    requestData: Omit<HelpRequest, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DatabaseResponse<HelpRequest>> {
     try {
       const docRef = await addDoc(collection(db, COLLECTIONS.HELP_REQUESTS), {
         ...requestData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       const request: HelpRequest = {
         id: docRef.id,
         ...requestData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       return { success: true, data: request };
@@ -363,7 +389,7 @@ export const helpRequestService = {
     try {
       const docSnap = await getDoc(doc(db, COLLECTIONS.HELP_REQUESTS, id));
       if (!docSnap.exists()) {
-        return { success: false, error: 'Help request not found' };
+        return { success: false, error: "Help request not found" };
       }
 
       const data = docSnap.data();
@@ -371,7 +397,7 @@ export const helpRequestService = {
         id: docSnap.id,
         ...data,
         createdAt: timestampToString(data.createdAt),
-        updatedAt: timestampToString(data.updatedAt)
+        updatedAt: timestampToString(data.updatedAt),
       } as HelpRequest;
 
       return { success: true, data: request };
@@ -380,22 +406,24 @@ export const helpRequestService = {
     }
   },
 
-  async getAll(limitCount: number = 50): Promise<DatabaseResponse<HelpRequest[]>> {
+  async getAll(
+    limitCount: number = 50,
+  ): Promise<DatabaseResponse<HelpRequest[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.HELP_REQUESTS),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
 
       const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => {
+      const requests = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as HelpRequest;
       });
 
@@ -409,18 +437,18 @@ export const helpRequestService = {
     try {
       const q = query(
         collection(db, COLLECTIONS.HELP_REQUESTS),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => {
+      const requests = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as HelpRequest;
       });
 
@@ -430,22 +458,24 @@ export const helpRequestService = {
     }
   },
 
-  async getByStatus(status: HelpRequest['status']): Promise<DatabaseResponse<HelpRequest[]>> {
+  async getByStatus(
+    status: HelpRequest["status"],
+  ): Promise<DatabaseResponse<HelpRequest[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.HELP_REQUESTS),
-        where('status', '==', status),
-        orderBy('createdAt', 'desc')
+        where("status", "==", status),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => {
+      const requests = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as HelpRequest;
       });
 
@@ -455,12 +485,19 @@ export const helpRequestService = {
     }
   },
 
-  async updateStatus(id: string, status: HelpRequest['status'], estimatedArrival?: string): Promise<DatabaseResponse<void>> {
+  async updateStatus(
+    id: string,
+    status: HelpRequest["status"],
+    estimatedArrival?: string,
+  ): Promise<DatabaseResponse<void>> {
     try {
       const updates: any = { status };
       if (estimatedArrival) updates.estimatedArrival = estimatedArrival;
 
-      await updateDoc(doc(db, COLLECTIONS.HELP_REQUESTS, id), prepareDataForFirestore(updates));
+      await updateDoc(
+        doc(db, COLLECTIONS.HELP_REQUESTS, id),
+        prepareDataForFirestore(updates),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -468,35 +505,39 @@ export const helpRequestService = {
   },
 
   // Real-time listener for help requests
-  subscribeToHelpRequests(callback: (requests: HelpRequest[]) => void, userId?: string, status?: HelpRequest['status']) {
+  subscribeToHelpRequests(
+    callback: (requests: HelpRequest[]) => void,
+    userId?: string,
+    status?: HelpRequest["status"],
+  ) {
     let q = query(
       collection(db, COLLECTIONS.HELP_REQUESTS),
-      orderBy('createdAt', 'desc'),
-      limit(50)
+      orderBy("createdAt", "desc"),
+      limit(50),
     );
 
     if (userId) {
       q = query(
         collection(db, COLLECTIONS.HELP_REQUESTS),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc"),
       );
     } else if (status) {
       q = query(
         collection(db, COLLECTIONS.HELP_REQUESTS),
-        where('status', '==', status),
-        orderBy('createdAt', 'desc')
+        where("status", "==", status),
+        orderBy("createdAt", "desc"),
       );
     }
 
     return onSnapshot(q, (snapshot) => {
-      const requests = snapshot.docs.map(doc => {
+      const requests = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as HelpRequest;
       });
       callback(requests);
@@ -504,39 +545,47 @@ export const helpRequestService = {
   },
 
   // Real-time listener for a specific help request
-  subscribeToHelpRequest(requestId: string, callback: (request: HelpRequest | null) => void) {
-    return onSnapshot(doc(db, COLLECTIONS.HELP_REQUESTS, requestId), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        const request: HelpRequest = {
-          id: snapshot.id,
-          ...data,
-          createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
-        } as HelpRequest;
-        callback(request);
-      } else {
-        callback(null);
-      }
-    });
-  }
+  subscribeToHelpRequest(
+    requestId: string,
+    callback: (request: HelpRequest | null) => void,
+  ) {
+    return onSnapshot(
+      doc(db, COLLECTIONS.HELP_REQUESTS, requestId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const request: HelpRequest = {
+            id: snapshot.id,
+            ...data,
+            createdAt: timestampToString(data.createdAt),
+            updatedAt: timestampToString(data.updatedAt),
+          } as HelpRequest;
+          callback(request);
+        } else {
+          callback(null);
+        }
+      },
+    );
+  },
 };
 
 // News Update Services
 export const newsService = {
-  async create(newsData: Omit<NewsUpdate, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseResponse<NewsUpdate>> {
+  async create(
+    newsData: Omit<NewsUpdate, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DatabaseResponse<NewsUpdate>> {
     try {
       const docRef = await addDoc(collection(db, COLLECTIONS.NEWS_UPDATES), {
         ...newsData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       const news: NewsUpdate = {
         id: docRef.id,
         ...newsData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       return { success: true, data: news };
@@ -549,7 +598,7 @@ export const newsService = {
     try {
       const docSnap = await getDoc(doc(db, COLLECTIONS.NEWS_UPDATES, id));
       if (!docSnap.exists()) {
-        return { success: false, error: 'News update not found' };
+        return { success: false, error: "News update not found" };
       }
 
       const data = docSnap.data();
@@ -557,7 +606,7 @@ export const newsService = {
         id: docSnap.id,
         ...data,
         createdAt: timestampToString(data.createdAt),
-        updatedAt: timestampToString(data.updatedAt)
+        updatedAt: timestampToString(data.updatedAt),
       } as NewsUpdate;
 
       return { success: true, data: news };
@@ -566,22 +615,24 @@ export const newsService = {
     }
   },
 
-  async getAll(limitCount: number = 50): Promise<DatabaseResponse<NewsUpdate[]>> {
+  async getAll(
+    limitCount: number = 50,
+  ): Promise<DatabaseResponse<NewsUpdate[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
 
       const querySnapshot = await getDocs(q);
-      const news = querySnapshot.docs.map(doc => {
+      const news = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as NewsUpdate;
       });
 
@@ -591,23 +642,25 @@ export const newsService = {
     }
   },
 
-  async getPublicNews(limitCount: number = 10): Promise<DatabaseResponse<NewsUpdate[]>> {
+  async getPublicNews(
+    limitCount: number = 10,
+  ): Promise<DatabaseResponse<NewsUpdate[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        where('isPublic', '==', true),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        where("isPublic", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
 
       const querySnapshot = await getDocs(q);
-      const news = querySnapshot.docs.map(doc => {
+      const news = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as NewsUpdate;
       });
 
@@ -617,24 +670,27 @@ export const newsService = {
     }
   },
 
-  async getByCategory(category: NewsUpdate['category'], limitCount: number = 20): Promise<DatabaseResponse<NewsUpdate[]>> {
+  async getByCategory(
+    category: NewsUpdate["category"],
+    limitCount: number = 20,
+  ): Promise<DatabaseResponse<NewsUpdate[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        where('category', '==', category),
-        where('isPublic', '==', true),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        where("category", "==", category),
+        where("isPublic", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
 
       const querySnapshot = await getDocs(q);
-      const news = querySnapshot.docs.map(doc => {
+      const news = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as NewsUpdate;
       });
 
@@ -644,9 +700,15 @@ export const newsService = {
     }
   },
 
-  async update(id: string, updates: Partial<NewsUpdate>): Promise<DatabaseResponse<void>> {
+  async update(
+    id: string,
+    updates: Partial<NewsUpdate>,
+  ): Promise<DatabaseResponse<void>> {
     try {
-      await updateDoc(doc(db, COLLECTIONS.NEWS_UPDATES, id), prepareDataForFirestore(updates));
+      await updateDoc(
+        doc(db, COLLECTIONS.NEWS_UPDATES, id),
+        prepareDataForFirestore(updates),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -663,45 +725,49 @@ export const newsService = {
   },
 
   // Real-time listener for news updates
-  subscribeToNews(callback: (news: NewsUpdate[]) => void, isPublicOnly: boolean = true, category?: NewsUpdate['category']) {
+  subscribeToNews(
+    callback: (news: NewsUpdate[]) => void,
+    isPublicOnly: boolean = true,
+    category?: NewsUpdate["category"],
+  ) {
     let q = query(
       collection(db, COLLECTIONS.NEWS_UPDATES),
-      orderBy('createdAt', 'desc'),
-      limit(50)
+      orderBy("createdAt", "desc"),
+      limit(50),
     );
 
     if (isPublicOnly && category) {
       q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        where('isPublic', '==', true),
-        where('category', '==', category),
-        orderBy('createdAt', 'desc'),
-        limit(50)
+        where("isPublic", "==", true),
+        where("category", "==", category),
+        orderBy("createdAt", "desc"),
+        limit(50),
       );
     } else if (isPublicOnly) {
       q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        where('isPublic', '==', true),
-        orderBy('createdAt', 'desc'),
-        limit(50)
+        where("isPublic", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(50),
       );
     } else if (category) {
       q = query(
         collection(db, COLLECTIONS.NEWS_UPDATES),
-        where('category', '==', category),
-        orderBy('createdAt', 'desc'),
-        limit(50)
+        where("category", "==", category),
+        orderBy("createdAt", "desc"),
+        limit(50),
       );
     }
 
     return onSnapshot(q, (snapshot) => {
-      const news = snapshot.docs.map(doc => {
+      const news = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as NewsUpdate;
       });
       callback(news);
@@ -709,7 +775,10 @@ export const newsService = {
   },
 
   // Real-time listener for a specific news update
-  subscribeToNewsItem(newsId: string, callback: (news: NewsUpdate | null) => void) {
+  subscribeToNewsItem(
+    newsId: string,
+    callback: (news: NewsUpdate | null) => void,
+  ) {
     return onSnapshot(doc(db, COLLECTIONS.NEWS_UPDATES, newsId), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
@@ -717,31 +786,33 @@ export const newsService = {
           id: snapshot.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as NewsUpdate;
         callback(news);
       } else {
         callback(null);
       }
     });
-  }
+  },
 };
 
 // Incident Services
 export const incidentService = {
-  async create(incidentData: Omit<Incident, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseResponse<Incident>> {
+  async create(
+    incidentData: Omit<Incident, "id" | "createdAt" | "updatedAt">,
+  ): Promise<DatabaseResponse<Incident>> {
     try {
       const docRef = await addDoc(collection(db, COLLECTIONS.INCIDENTS), {
         ...incidentData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       const incident: Incident = {
         id: docRef.id,
         ...incidentData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       return { success: true, data: incident };
@@ -754,7 +825,7 @@ export const incidentService = {
     try {
       const docSnap = await getDoc(doc(db, COLLECTIONS.INCIDENTS, id));
       if (!docSnap.exists()) {
-        return { success: false, error: 'Incident not found' };
+        return { success: false, error: "Incident not found" };
       }
 
       const data = docSnap.data();
@@ -762,7 +833,7 @@ export const incidentService = {
         id: docSnap.id,
         ...data,
         createdAt: timestampToString(data.createdAt),
-        updatedAt: timestampToString(data.updatedAt)
+        updatedAt: timestampToString(data.updatedAt),
       } as Incident;
 
       return { success: true, data: incident };
@@ -775,18 +846,18 @@ export const incidentService = {
     try {
       const q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
+        orderBy("createdAt", "desc"),
+        limit(limitCount),
       );
 
       const querySnapshot = await getDocs(q);
-      const incidents = querySnapshot.docs.map(doc => {
+      const incidents = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as Incident;
       });
 
@@ -800,18 +871,18 @@ export const incidentService = {
     try {
       const q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        where('status', 'in', ['active', 'contained']),
-        orderBy('createdAt', 'desc')
+        where("status", "in", ["active", "contained"]),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const incidents = querySnapshot.docs.map(doc => {
+      const incidents = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as Incident;
       });
 
@@ -821,22 +892,24 @@ export const incidentService = {
     }
   },
 
-  async getByType(type: Incident['type']): Promise<DatabaseResponse<Incident[]>> {
+  async getByType(
+    type: Incident["type"],
+  ): Promise<DatabaseResponse<Incident[]>> {
     try {
       const q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        where('type', '==', type),
-        orderBy('createdAt', 'desc')
+        where("type", "==", type),
+        orderBy("createdAt", "desc"),
       );
 
       const querySnapshot = await getDocs(q);
-      const incidents = querySnapshot.docs.map(doc => {
+      const incidents = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as Incident;
       });
 
@@ -846,18 +919,30 @@ export const incidentService = {
     }
   },
 
-  async updateStatus(id: string, status: Incident['status']): Promise<DatabaseResponse<void>> {
+  async updateStatus(
+    id: string,
+    status: Incident["status"],
+  ): Promise<DatabaseResponse<void>> {
     try {
-      await updateDoc(doc(db, COLLECTIONS.INCIDENTS, id), prepareDataForFirestore({ status }));
+      await updateDoc(
+        doc(db, COLLECTIONS.INCIDENTS, id),
+        prepareDataForFirestore({ status }),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
   },
 
-  async update(id: string, updates: Partial<Incident>): Promise<DatabaseResponse<void>> {
+  async update(
+    id: string,
+    updates: Partial<Incident>,
+  ): Promise<DatabaseResponse<void>> {
     try {
-      await updateDoc(doc(db, COLLECTIONS.INCIDENTS, id), prepareDataForFirestore(updates));
+      await updateDoc(
+        doc(db, COLLECTIONS.INCIDENTS, id),
+        prepareDataForFirestore(updates),
+      );
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -865,42 +950,46 @@ export const incidentService = {
   },
 
   // Real-time listener for incidents
-  subscribeToIncidents(callback: (incidents: Incident[]) => void, activeOnly: boolean = false, type?: Incident['type']) {
+  subscribeToIncidents(
+    callback: (incidents: Incident[]) => void,
+    activeOnly: boolean = false,
+    type?: Incident["type"],
+  ) {
     let q = query(
       collection(db, COLLECTIONS.INCIDENTS),
-      orderBy('createdAt', 'desc'),
-      limit(50)
+      orderBy("createdAt", "desc"),
+      limit(50),
     );
 
     if (activeOnly && type) {
       q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        where('status', 'in', ['active', 'contained']),
-        where('type', '==', type),
-        orderBy('createdAt', 'desc')
+        where("status", "in", ["active", "contained"]),
+        where("type", "==", type),
+        orderBy("createdAt", "desc"),
       );
     } else if (activeOnly) {
       q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        where('status', 'in', ['active', 'contained']),
-        orderBy('createdAt', 'desc')
+        where("status", "in", ["active", "contained"]),
+        orderBy("createdAt", "desc"),
       );
     } else if (type) {
       q = query(
         collection(db, COLLECTIONS.INCIDENTS),
-        where('type', '==', type),
-        orderBy('createdAt', 'desc')
+        where("type", "==", type),
+        orderBy("createdAt", "desc"),
       );
     }
 
     return onSnapshot(q, (snapshot) => {
-      const incidents = snapshot.docs.map(doc => {
+      const incidents = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
           createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
+          updatedAt: timestampToString(data.updatedAt),
         } as Incident;
       });
       callback(incidents);
@@ -908,22 +997,28 @@ export const incidentService = {
   },
 
   // Real-time listener for a specific incident
-  subscribeToIncident(incidentId: string, callback: (incident: Incident | null) => void) {
-    return onSnapshot(doc(db, COLLECTIONS.INCIDENTS, incidentId), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        const incident: Incident = {
-          id: snapshot.id,
-          ...data,
-          createdAt: timestampToString(data.createdAt),
-          updatedAt: timestampToString(data.updatedAt)
-        } as Incident;
-        callback(incident);
-      } else {
-        callback(null);
-      }
-    });
-  }
+  subscribeToIncident(
+    incidentId: string,
+    callback: (incident: Incident | null) => void,
+  ) {
+    return onSnapshot(
+      doc(db, COLLECTIONS.INCIDENTS, incidentId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const incident: Incident = {
+            id: snapshot.id,
+            ...data,
+            createdAt: timestampToString(data.createdAt),
+            updatedAt: timestampToString(data.updatedAt),
+          } as Incident;
+          callback(incident);
+        } else {
+          callback(null);
+        }
+      },
+    );
+  },
 };
 
 // Export all services
@@ -932,7 +1027,7 @@ export const firebaseDb = {
   disasterReports: disasterReportService,
   helpRequests: helpRequestService,
   news: newsService,
-  incidents: incidentService
+  incidents: incidentService,
 };
 
 export default firebaseDb;
