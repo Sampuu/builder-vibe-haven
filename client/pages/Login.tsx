@@ -124,15 +124,6 @@ export default function Login() {
                 />
               </div>
 
-              {(role === 'police' || role === 'admin') && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This role requires enhanced security authentication in production.
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <Button 
                 type="submit" 
                 className="w-full" 
