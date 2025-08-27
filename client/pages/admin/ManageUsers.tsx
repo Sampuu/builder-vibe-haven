@@ -241,8 +241,8 @@ export default function ManageUsers() {
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
                     id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    value={formData.displayName}
+                    onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
                     placeholder="Enter full name"
                   />
                 </div>
@@ -441,8 +441,8 @@ export default function ManageUsers() {
                 <Label htmlFor="editName">Full Name *</Label>
                 <Input
                   id="editName"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.displayName}
+                  onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
                   placeholder="Enter full name"
                 />
               </div>
