@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
 import { adminDb } from "../lib/firebase-admin";
-import { 
-  SubmitReportRequest, 
-  SubmitReportResponse, 
+import {
+  SubmitReportRequest,
+  SubmitReportResponse,
   AnyReport,
   getCollectionName,
   ReportProblemType
-} from "@shared/api";
+} from "../../shared/api";
 
 /**
  * Validate report data before submission
