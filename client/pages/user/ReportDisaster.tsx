@@ -19,7 +19,7 @@ import {
   Upload,
   Camera
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth-simple';
 import { saveReport, mapLegacyTypeToProbleType, createGeneralUserReport } from '@/lib/firebase-reports';
 import { ReportProblemType } from '@shared/api';
 
