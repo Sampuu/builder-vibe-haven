@@ -8,18 +8,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Phone, 
+import {
+  Phone,
   ArrowLeft,
   Heart,
   Package,
   Truck,
   CheckCircle,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { firebaseDb } from '@/lib/firebase-db';
+import type { HelpRequest } from '@shared/types';
 
 export default function RequestHelp() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     type: '',
     urgency: 'medium',
@@ -30,13 +35,59 @@ export default function RequestHelp() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.type) newErrors.type = 'Please select the type of help needed';
+    if (!formData.description.trim()) newErrors.description = 'Please describe what help you need';
+    if (!formData.location.trim()) newErrors.location = 'Please provide your location';
+    if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Please provide a contact phone number';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
+    if (!user?.id) {
+      setErrors({ general: 'Please log in to submit a help request' });
+      return;
+    }
+
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setIsSubmitting(false);
+
+    try {
+      // Create help request in Firebase
+      const requestData: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'> = {
+        userId: user.id,
+        type: formData.type as HelpRequest['type'],
+        urgency: formData.urgency as HelpRequest['urgency'],
+        description: formData.description,
+        location: formData.location,
+        contactPhone: formData.contactPhone,
+        specialRequests: formData.specialRequests || undefined,
+        status: 'submitted'
+      };
+
+      const result = await firebaseDb.helpRequests.create(requestData);
+
+      if (result.success) {
+        console.log('Help request submitted successfully:', result.data);
+        setSubmitted(true);
+        setErrors({});
+      } else {
+        setErrors({ general: result.error || 'Failed to submit help request' });
+      }
+    } catch (error) {
+      console.error('Failed to submit help request:', error);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -90,10 +141,20 @@ export default function RequestHelp() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* General Error */}
+                {errors.general && (
+                  <Alert className="border-emergency-danger bg-emergency-danger/5">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-emergency-danger">
+                      {errors.general}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="type">Type of Help Needed</Label>
                   <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
-                    <SelectTrigger>
+                    <SelectTrigger className={errors.type ? 'border-emergency-danger' : ''}>
                       <SelectValue placeholder="Select help type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -103,6 +164,7 @@ export default function RequestHelp() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.type && <p className="text-sm text-emergency-danger">{errors.type}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -128,7 +190,9 @@ export default function RequestHelp() {
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     placeholder="Describe what help you need..."
                     rows={3}
+                    className={errors.description ? 'border-emergency-danger' : ''}
                   />
+                  {errors.description && <p className="text-sm text-emergency-danger">{errors.description}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -138,7 +202,9 @@ export default function RequestHelp() {
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     placeholder="Your current address"
+                    className={errors.location ? 'border-emergency-danger' : ''}
                   />
+                  {errors.location && <p className="text-sm text-emergency-danger">{errors.location}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -148,7 +214,9 @@ export default function RequestHelp() {
                     value={formData.contactPhone}
                     onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
                     placeholder="Your phone number"
+                    className={errors.contactPhone ? 'border-emergency-danger' : ''}
                   />
+                  {errors.contactPhone && <p className="text-sm text-emergency-danger">{errors.contactPhone}</p>}
                 </div>
 
                 <Button type="submit" className="w-full" variant="success" disabled={isSubmitting}>
