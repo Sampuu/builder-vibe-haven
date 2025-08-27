@@ -9,6 +9,7 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/config/firebase";
 import type { User, DatabaseResponse } from "@shared/types";
+import FirebaseErrorHandler from "./firebase-error-handler";
 
 export type UserRole =
   | "user"
