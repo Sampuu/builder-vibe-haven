@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  AlertTriangle, 
+import {
+  AlertTriangle,
   ArrowLeft,
   MapPin,
   Phone,
@@ -20,8 +20,10 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { saveReport, mapLegacyTypeToProbleType, createGeneralUserReport } from '@/lib/firebase-reports';
+import { ReportProblemType } from '@shared/api';
 
-interface DisasterReport {
+interface LegacyDisasterReport {
   id: string;
   type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
   severity: 'low' | 'medium' | 'high' | 'critical';
@@ -37,11 +39,12 @@ interface DisasterReport {
 }
 
 const disasterTypes = [
-  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
-  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies' },
-  { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents' },
-  { value: 'natural', label: 'Natural Disaster', description: 'Floods, storms, earthquakes' },
-  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation' }
+  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions', problemType: 'fire' as ReportProblemType },
+  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies', problemType: 'ambulance' as ReportProblemType },
+  { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents', problemType: 'police' as ReportProblemType },
+  { value: 'natural', label: 'Natural Disaster', description: 'Floods, storms, earthquakes', problemType: 'general' as ReportProblemType },
+  { value: 'hospital', label: 'Hospital/Medical Facility', description: 'Hospital equipment, staff shortages, supplies', problemType: 'hospital' as ReportProblemType },
+  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation', problemType: 'general' as ReportProblemType }
 ];
 
 const severityLevels = [
@@ -90,25 +93,52 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
-      };
+      // Get the problem type from the selected disaster type
+      const selectedType = disasterTypes.find(t => t.value === formData.type);
+      const problemType = selectedType?.problemType || 'general';
 
-      console.log('Disaster report submitted:', report);
+      // Create the appropriate report based on problem type
+      let reportData;
+
+      if (problemType === 'general') {
+        reportData = createGeneralUserReport({
+          title: formData.title,
+          description: formData.description,
+          location: formData.location,
+          contactName: formData.contactName,
+          contactPhone: formData.contactPhone,
+          images: formData.images,
+          severity: formData.severity as 'low' | 'medium' | 'high' | 'critical',
+          category: 'other',
+          urgencyLevel: formData.severity === 'critical' ? 'high' : formData.severity === 'high' ? 'high' : 'medium'
+        });
+      } else {
+        // For other types, create a general report with the appropriate problem type
+        // In a real implementation, you'd have specific forms for each type
+        reportData = {
+          problemType,
+          title: formData.title,
+          description: formData.description,
+          location: formData.location,
+          contactName: formData.contactName,
+          contactPhone: formData.contactPhone,
+          images: formData.images,
+          severity: formData.severity as 'low' | 'medium' | 'high' | 'critical'
+        };
+      }
+
+      // Save to Firebase
+      const reportId = await saveReport(reportData);
+
+      console.log('Report submitted successfully with ID:', reportId);
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
         type: '',
@@ -122,6 +152,8 @@ export default function ReportDisaster() {
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
+      // You could add error state handling here
+      alert('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -212,6 +244,7 @@ export default function ReportDisaster() {
                             <div>
                               <div className="font-medium">{type.label}</div>
                               <div className="text-xs text-slate-500">{type.description}</div>
+                              <div className="text-xs text-slate-400">→ {type.problemType} collection</div>
                             </div>
                           </SelectItem>
                         ))}
