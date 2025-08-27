@@ -1,44 +1,47 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { 
-  Bell, 
-  CheckCheck, 
-  Trash2, 
-  Volume2, 
+} from "@/components/ui/popover";
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  Volume2,
   VolumeX,
   AlertTriangle,
   Clock,
-  MapPin
-} from 'lucide-react';
-import { useRealtimeNotifications, NotificationData } from '@/hooks/use-realtime-notifications';
-import { formatDistanceToNow } from 'date-fns';
+  MapPin,
+} from "lucide-react";
+import {
+  useRealtimeNotifications,
+  NotificationData,
+} from "@/hooks/use-realtime-notifications";
+import { formatDistanceToNow } from "date-fns";
 
 const severityColors = {
-  low: 'text-slate-600',
-  medium: 'text-blue-600',
-  high: 'text-orange-600',
-  critical: 'text-red-600'
+  low: "text-slate-600",
+  medium: "text-blue-600",
+  high: "text-orange-600",
+  critical: "text-red-600",
 };
 
 const typeIcons = {
   emergency: AlertTriangle,
   high_priority: AlertTriangle,
-  general: Bell
+  general: Bell,
 };
 
 const typeColors = {
-  emergency: 'text-red-600',
-  high_priority: 'text-orange-600',
-  general: 'text-blue-600'
+  emergency: "text-red-600",
+  high_priority: "text-orange-600",
+  general: "text-blue-600",
 };
 
 interface NotificationItemProps {
@@ -46,14 +49,17 @@ interface NotificationItemProps {
   onMarkAsRead: (id: string) => void;
 }
 
-function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+function NotificationItem({
+  notification,
+  onMarkAsRead,
+}: NotificationItemProps) {
   const { report, type, read, timestamp } = notification;
   const TypeIcon = typeIcons[type];
-  
+
   return (
-    <div 
+    <div
       className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-        read ? 'bg-slate-50' : 'bg-white border-blue-200'
+        read ? "bg-slate-50" : "bg-white border-blue-200"
       }`}
       onClick={() => !read && onMarkAsRead(notification.id)}
     >
@@ -61,24 +67,27 @@ function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps)
         <TypeIcon className={`h-4 w-4 mt-1 ${typeColors[type]}`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <p className={`text-sm font-medium ${read ? 'text-slate-600' : 'text-slate-900'}`}>
+            <p
+              className={`text-sm font-medium ${read ? "text-slate-600" : "text-slate-900"}`}
+            >
               {report.title}
             </p>
-            {!read && (
-              <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-            )}
+            {!read && <div className="h-2 w-2 bg-blue-500 rounded-full"></div>}
           </div>
-          
-          <p className={`text-xs mt-1 ${read ? 'text-slate-500' : 'text-slate-700'}`}>
-            {report.description.length > 100 
-              ? `${report.description.substring(0, 100)}...` 
-              : report.description
-            }
+
+          <p
+            className={`text-xs mt-1 ${read ? "text-slate-500" : "text-slate-700"}`}
+          >
+            {report.description.length > 100
+              ? `${report.description.substring(0, 100)}...`
+              : report.description}
           </p>
-          
+
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center space-x-3 text-xs text-slate-500">
-              <span className={`font-medium ${severityColors[report.severity]}`}>
+              <span
+                className={`font-medium ${severityColors[report.severity]}`}
+              >
                 {report.severity.toUpperCase()}
               </span>
               <span className="flex items-center">
@@ -86,7 +95,7 @@ function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps)
                 {report.location}
               </span>
             </div>
-            
+
             <span className="text-xs text-slate-400 flex items-center">
               <Clock className="h-3 w-3 mr-1" />
               {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
@@ -107,7 +116,7 @@ export default function NotificationBell() {
     setSoundEnabled,
     markAsRead,
     markAllAsRead,
-    clearAll
+    clearAll,
   } = useRealtimeNotifications();
 
   const recentNotifications = notifications.slice(0, 10);
@@ -118,16 +127,16 @@ export default function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      
+
       <PopoverContent className="w-80 p-0" side="bottom" align="end">
         <Card className="border-0 shadow-lg">
           <CardHeader className="pb-3">
@@ -146,7 +155,7 @@ export default function NotificationBell() {
                     <VolumeX className="h-4 w-4" />
                   )}
                 </Button>
-                
+
                 {notifications.length > 0 && (
                   <>
                     <Button
@@ -158,7 +167,7 @@ export default function NotificationBell() {
                       <CheckCheck className="h-4 w-4 mr-1" />
                       All
                     </Button>
-                    
+
                     <Button
                       variant="ghost"
                       size="sm"
@@ -171,16 +180,16 @@ export default function NotificationBell() {
                 )}
               </div>
             </div>
-            
+
             {unreadCount > 0 && (
               <p className="text-sm text-slate-600">
-                {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
               </p>
             )}
           </CardHeader>
-          
+
           <Separator />
-          
+
           <CardContent className="p-0">
             {recentNotifications.length > 0 ? (
               <ScrollArea className="h-96">
@@ -193,11 +202,12 @@ export default function NotificationBell() {
                     />
                   ))}
                 </div>
-                
+
                 {notifications.length > 10 && (
                   <div className="p-3 pt-0">
                     <p className="text-xs text-center text-slate-500">
-                      {notifications.length - 10} more notification{notifications.length - 10 !== 1 ? 's' : ''}
+                      {notifications.length - 10} more notification
+                      {notifications.length - 10 !== 1 ? "s" : ""}
                     </p>
                   </div>
                 )}

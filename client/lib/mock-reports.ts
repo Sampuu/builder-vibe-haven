@@ -1,16 +1,16 @@
-import { 
-  AnyReport, 
-  ReportProblemType, 
+import {
+  AnyReport,
+  ReportProblemType,
   getCollectionName,
   HospitalReport,
   FireReport,
   PoliceReport,
   AmbulanceRequest,
-  GeneralUserReport
-} from '@shared/api';
+  GeneralUserReport,
+} from "@shared/api";
 
 // Mock reports storage key
-const REPORTS_STORAGE_KEY = 'mock_reports';
+const REPORTS_STORAGE_KEY = "mock_reports";
 
 // Helper to generate simple IDs
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -33,7 +33,7 @@ const saveReports = (reports: Record<string, AnyReport[]>) => {
   try {
     localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(reports));
   } catch (error) {
-    console.warn('Failed to save reports to localStorage:', error);
+    console.warn("Failed to save reports to localStorage:", error);
   }
 };
 
@@ -41,8 +41,8 @@ const saveReports = (reports: Record<string, AnyReport[]>) => {
 const notifyListeners = (collectionName: string) => {
   const reports = getStoredReports();
   const collectionReports = reports[collectionName] || [];
-  
-  Object.keys(reportListeners).forEach(listenerId => {
+
+  Object.keys(reportListeners).forEach((listenerId) => {
     if (listenerId.startsWith(collectionName)) {
       reportListeners[listenerId](collectionReports);
     }
@@ -52,19 +52,21 @@ const notifyListeners = (collectionName: string) => {
 /**
  * Save a report to the appropriate collection based on problem type
  */
-export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 'status'>): Promise<string> => {
+export const saveReport = async (
+  report: Omit<AnyReport, "id" | "timestamp" | "status">,
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       try {
         // Determine the correct collection name based on problem type
         const collectionName = getCollectionName(report.problemType);
-        
+
         // Create the complete report object
         const reportId = generateId();
         const completeReport: AnyReport = {
           ...report,
           id: reportId,
-          status: 'submitted',
+          status: "submitted",
           timestamp: new Date().toISOString(),
         } as AnyReport;
 
@@ -76,19 +78,22 @@ export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 's
 
         // Add the new report
         allReports[collectionName].push(completeReport);
-        
+
         // Save back to storage
         saveReports(allReports);
-        
-        console.log(`Mock report saved to ${collectionName} with ID:`, reportId);
-        
+
+        console.log(
+          `Mock report saved to ${collectionName} with ID:`,
+          reportId,
+        );
+
         // Notify listeners
         notifyListeners(collectionName);
-        
+
         resolve(reportId);
       } catch (error) {
-        console.error('Error saving mock report:', error);
-        reject(new Error('Failed to save report. Please try again.'));
+        console.error("Error saving mock report:", error);
+        reject(new Error("Failed to save report. Please try again."));
       }
     }, 300); // Simulate network delay
   });
@@ -100,22 +105,22 @@ export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 's
 export const createReportListener = (
   problemType: ReportProblemType,
   callback: (reports: AnyReport[]) => void,
-  orderByField: 'timestamp' | 'severity' = 'timestamp',
-  orderDirection: 'asc' | 'desc' = 'desc'
+  orderByField: "timestamp" | "severity" = "timestamp",
+  orderDirection: "asc" | "desc" = "desc",
 ): (() => void) => {
   const collectionName = getCollectionName(problemType);
   const listenerId = `${collectionName}_${Date.now()}_${Math.random()}`;
-  
+
   // Store the callback
   reportListeners[listenerId] = (reports: AnyReport[]) => {
     // Sort reports based on the specified criteria
     const sortedReports = [...reports].sort((a, b) => {
       let aValue, bValue;
-      
-      if (orderByField === 'timestamp') {
+
+      if (orderByField === "timestamp") {
         aValue = new Date(a.timestamp).getTime();
         bValue = new Date(b.timestamp).getTime();
-      } else if (orderByField === 'severity') {
+      } else if (orderByField === "severity") {
         const severityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
         aValue = severityOrder[a.severity as keyof typeof severityOrder] || 0;
         bValue = severityOrder[b.severity as keyof typeof severityOrder] || 0;
@@ -123,10 +128,10 @@ export const createReportListener = (
         aValue = 0;
         bValue = 0;
       }
-      
-      return orderDirection === 'desc' ? bValue - aValue : aValue - bValue;
+
+      return orderDirection === "desc" ? bValue - aValue : aValue - bValue;
     });
-    
+
     callback(sortedReports);
   };
 
@@ -146,16 +151,19 @@ export const createReportListener = (
  */
 export const createStatusListener = (
   problemType: ReportProblemType,
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved',
-  callback: (reports: AnyReport[]) => void
+  status: "submitted" | "acknowledged" | "in-progress" | "resolved",
+  callback: (reports: AnyReport[]) => void,
 ): (() => void) => {
   const collectionName = getCollectionName(problemType);
   const listenerId = `${collectionName}_status_${status}_${Date.now()}_${Math.random()}`;
-  
+
   reportListeners[listenerId] = (reports: AnyReport[]) => {
-    const filteredReports = reports.filter(report => report.status === status);
-    const sortedReports = filteredReports.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    const filteredReports = reports.filter(
+      (report) => report.status === status,
+    );
+    const sortedReports = filteredReports.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
     callback(sortedReports);
   };
@@ -174,27 +182,37 @@ export const createStatusListener = (
  * Create a listener for high-priority reports across all collections
  */
 export const createHighPriorityListener = (
-  callback: (reports: AnyReport[]) => void
+  callback: (reports: AnyReport[]) => void,
 ): (() => void)[] => {
   const unsubscribeFunctions: (() => void)[] = [];
   const allReports: { [key: string]: AnyReport[] } = {};
 
-  const problemTypes: ReportProblemType[] = ['hospital', 'fire', 'police', 'ambulance', 'general'];
-  
+  const problemTypes: ReportProblemType[] = [
+    "hospital",
+    "fire",
+    "police",
+    "ambulance",
+    "general",
+  ];
+
   problemTypes.forEach((problemType) => {
     const unsubscribe = createReportListener(problemType, (reports) => {
       // Filter for high priority reports
-      const highPriorityReports = reports.filter(report => 
-        report.severity === 'high' || report.severity === 'critical'
+      const highPriorityReports = reports.filter(
+        (report) =>
+          report.severity === "high" || report.severity === "critical",
       );
-      
+
       allReports[problemType] = highPriorityReports;
-      
+
       // Combine all high-priority reports and sort by timestamp
       const combinedReports = Object.values(allReports)
         .flat()
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        );
+
       callback(combinedReports);
     });
 
@@ -208,7 +226,9 @@ export const createHighPriorityListener = (
  * Create listeners for all report types (for admin dashboard)
  */
 export const createAllReportsListener = (
-  callback: (reportsByType: { [key in ReportProblemType]: AnyReport[] }) => void
+  callback: (reportsByType: {
+    [key in ReportProblemType]: AnyReport[];
+  }) => void,
 ): (() => void)[] => {
   const unsubscribeFunctions: (() => void)[] = [];
   const reportsByType: { [key in ReportProblemType]: AnyReport[] } = {
@@ -216,11 +236,17 @@ export const createAllReportsListener = (
     fire: [],
     police: [],
     ambulance: [],
-    general: []
+    general: [],
   };
 
-  const problemTypes: ReportProblemType[] = ['hospital', 'fire', 'police', 'ambulance', 'general'];
-  
+  const problemTypes: ReportProblemType[] = [
+    "hospital",
+    "fire",
+    "police",
+    "ambulance",
+    "general",
+  ];
+
   problemTypes.forEach((problemType) => {
     const unsubscribe = createReportListener(problemType, (reports) => {
       reportsByType[problemType] = reports;
@@ -235,45 +261,57 @@ export const createAllReportsListener = (
 /**
  * Type-safe report creation helpers
  */
-export const createHospitalReport = (data: Omit<HospitalReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<HospitalReport, 'id' | 'timestamp' | 'status'> => ({
+export const createHospitalReport = (
+  data: Omit<HospitalReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<HospitalReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'hospital'
+  problemType: "hospital",
 });
 
-export const createFireReport = (data: Omit<FireReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<FireReport, 'id' | 'timestamp' | 'status'> => ({
+export const createFireReport = (
+  data: Omit<FireReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<FireReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'fire'
+  problemType: "fire",
 });
 
-export const createPoliceReport = (data: Omit<PoliceReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<PoliceReport, 'id' | 'timestamp' | 'status'> => ({
+export const createPoliceReport = (
+  data: Omit<PoliceReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<PoliceReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'police'
+  problemType: "police",
 });
 
-export const createAmbulanceRequest = (data: Omit<AmbulanceRequest, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<AmbulanceRequest, 'id' | 'timestamp' | 'status'> => ({
+export const createAmbulanceRequest = (
+  data: Omit<AmbulanceRequest, "id" | "timestamp" | "status" | "problemType">,
+): Omit<AmbulanceRequest, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'ambulance'
+  problemType: "ambulance",
 });
 
-export const createGeneralUserReport = (data: Omit<GeneralUserReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<GeneralUserReport, 'id' | 'timestamp' | 'status'> => ({
+export const createGeneralUserReport = (
+  data: Omit<GeneralUserReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<GeneralUserReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'general'
+  problemType: "general",
 });
 
 /**
  * Utility function to map legacy report types to new problem types
  */
-export const mapLegacyTypeToProbleType = (legacyType: string): ReportProblemType => {
+export const mapLegacyTypeToProbleType = (
+  legacyType: string,
+): ReportProblemType => {
   switch (legacyType) {
-    case 'fire':
-      return 'fire';
-    case 'medical':
-      return 'ambulance';
-    case 'accident':
-      return 'police';
-    case 'natural':
-      return 'general';
+    case "fire":
+      return "fire";
+    case "medical":
+      return "ambulance";
+    case "accident":
+      return "police";
+    case "natural":
+      return "general";
     default:
-      return 'general';
+      return "general";
   }
 };

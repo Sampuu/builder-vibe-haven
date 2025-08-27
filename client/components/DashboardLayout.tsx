@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth-firebase';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import NotificationBell from '@/components/NotificationBell';
+import { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth-firebase";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import NotificationBell from "@/components/NotificationBell";
 import {
   AlertTriangle,
   LogOut,
@@ -11,8 +11,8 @@ import {
   Truck,
   Building2,
   User,
-  Settings
-} from 'lucide-react';
+  Settings,
+} from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -28,24 +28,24 @@ const roleIcons = {
 };
 
 const roleColors = {
-  user: 'text-emergency-info',
-  police: 'text-emergency-danger',
-  fire: 'text-emergency-warning',
-  ambulance: 'text-emergency-resolved',
-  hospital: 'text-emergency-info',
-  admin: 'text-slate-700',
+  user: "text-emergency-info",
+  police: "text-emergency-danger",
+  fire: "text-emergency-warning",
+  ambulance: "text-emergency-resolved",
+  hospital: "text-emergency-info",
+  admin: "text-slate-700",
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
-  
+
   if (!user) return null;
 
   const RoleIcon = roleIcons[user.role];
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   return (
@@ -79,15 +79,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{user.displayName}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {user.displayName}
+                  </p>
                   <p className="text-xs text-slate-500 capitalize flex items-center">
-                    <RoleIcon className={`h-3 w-3 mr-1 ${roleColors[user.role]}`} />
+                    <RoleIcon
+                      className={`h-3 w-3 mr-1 ${roleColors[user.role]}`}
+                    />
                     {user.role}
                   </p>
                 </div>
                 <Avatar>
                   <AvatarFallback className="bg-emergency-info/10 text-emergency-info font-semibold">
-                    {user.displayName?.substring(0, 2).toUpperCase() || user.email?.substring(0, 2).toUpperCase() || "??"}
+                    {user.displayName?.substring(0, 2).toUpperCase() ||
+                      user.email?.substring(0, 2).toUpperCase() ||
+                      "??"}
                   </AvatarFallback>
                 </Avatar>
               </div>

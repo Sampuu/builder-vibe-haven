@@ -6,89 +6,90 @@ import {
   updateProfile,
   sendEmailVerification,
   User as FirebaseUser,
-  UserCredential
-} from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
+  UserCredential,
+} from "firebase/auth";
+import {
+  doc,
+  setDoc,
+  getDoc,
   updateDoc,
   collection,
   query,
   where,
   getDocs,
-  serverTimestamp
-} from 'firebase/firestore';
-import { auth, db } from './firebase-realtime';
-import { 
-  User, 
-  UserRole, 
-  UserRegistrationRequest, 
-  UserProfileUpdateRequest, 
+  serverTimestamp,
+} from "firebase/firestore";
+import { auth, db } from "./firebase-realtime";
+import {
+  User,
+  UserRole,
+  UserRegistrationRequest,
+  UserProfileUpdateRequest,
   AuthResponse,
   USER_COLLECTION,
-  DEFAULT_PERMISSIONS
-} from '@shared/api';
+  DEFAULT_PERMISSIONS,
+} from "@shared/api";
 
 /**
  * Create user document in Firestore
  */
 const createUserDocument = async (
-  firebaseUser: FirebaseUser, 
-  additionalData: Partial<User> = {}
+  firebaseUser: FirebaseUser,
+  additionalData: Partial<User> = {},
 ): Promise<User> => {
-  if (!firebaseUser) throw new Error('Firebase user is required');
+  if (!firebaseUser) throw new Error("Firebase user is required");
 
   const userRef = doc(db, USER_COLLECTION, firebaseUser.uid);
-  
+
   try {
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       const { displayName, email } = firebaseUser;
       const now = new Date().toISOString();
-      
-      const userData: Omit<User, 'id'> = {
-        email: email || '',
-        displayName: displayName || email?.split('@')[0] || '',
-        role: 'user', // Default role
-        status: 'active',
+
+      const userData: Omit<User, "id"> = {
+        email: email || "",
+        displayName: displayName || email?.split("@")[0] || "",
+        role: "user", // Default role
+        status: "active",
         permissions: DEFAULT_PERMISSIONS.user,
         createdAt: now,
         updatedAt: now,
-        ...additionalData
+        ...additionalData,
       };
 
       await setDoc(userRef, {
         ...userData,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
+
       return { id: firebaseUser.uid, ...userData };
     }
 
     // Update last login time if user exists
-    await updateDoc(userRef, { 
+    await updateDoc(userRef, {
       lastLoginAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
 
-    const userData = userDoc.data() as Omit<User, 'id'>;
+    const userData = userDoc.data() as Omit<User, "id">;
     return { id: firebaseUser.uid, ...userData };
   } catch (error) {
-    console.error('Error creating/fetching user document:', error);
+    console.error("Error creating/fetching user document:", error);
     // Return a fallback user object if Firestore fails
     return {
       id: firebaseUser.uid,
-      email: firebaseUser.email || '',
-      displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || '',
-      role: 'user',
-      status: 'active',
+      email: firebaseUser.email || "",
+      displayName:
+        firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "",
+      role: "user",
+      status: "active",
       permissions: DEFAULT_PERMISSIONS.user,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      ...additionalData
+      ...additionalData,
     };
   }
 };
@@ -100,15 +101,15 @@ export const getUserDocument = async (uid: string): Promise<User | null> => {
   try {
     const userRef = doc(db, USER_COLLECTION, uid);
     const userDoc = await getDoc(userRef);
-    
+
     if (userDoc.exists()) {
-      const userData = userDoc.data() as Omit<User, 'id'>;
+      const userData = userDoc.data() as Omit<User, "id">;
       return { id: uid, ...userData };
     }
-    
+
     return null;
   } catch (error) {
-    console.error('Error getting user document:', error);
+    console.error("Error getting user document:", error);
     return null;
   }
 };
@@ -117,22 +118,22 @@ export const getUserDocument = async (uid: string): Promise<User | null> => {
  * Register a new user with email and password
  */
 export const registerUser = async (
-  registrationData: UserRegistrationRequest
+  registrationData: UserRegistrationRequest,
 ): Promise<AuthResponse> => {
   try {
     const { email, password, role, ...additionalData } = registrationData;
 
     // Create Firebase Auth user
     const userCredential: UserCredential = await createUserWithEmailAndPassword(
-      auth, 
-      email, 
-      password
+      auth,
+      email,
+      password,
     );
 
     // Update Firebase Auth profile
     if (additionalData.displayName) {
       await updateProfile(userCredential.user, {
-        displayName: additionalData.displayName
+        displayName: additionalData.displayName,
       });
     }
 
@@ -140,7 +141,7 @@ export const registerUser = async (
     try {
       await sendEmailVerification(userCredential.user);
     } catch (verificationError) {
-      console.warn('Email verification failed:', verificationError);
+      console.warn("Email verification failed:", verificationError);
       // Continue without verification in development
     }
 
@@ -148,8 +149,8 @@ export const registerUser = async (
     const userData: Partial<User> = {
       ...additionalData,
       role,
-      status: 'active',
-      permissions: DEFAULT_PERMISSIONS[role]
+      status: "active",
+      permissions: DEFAULT_PERMISSIONS[role],
     };
 
     const user = await createUserDocument(userCredential.user, userData);
@@ -157,25 +158,26 @@ export const registerUser = async (
     return {
       success: true,
       user,
-      requiresEmailVerification: false // Simplified for development
+      requiresEmailVerification: false, // Simplified for development
     };
   } catch (error: any) {
-    console.error('Registration error:', error);
-    
-    let errorMessage = 'Registration failed';
-    if (error.code === 'auth/email-already-in-use') {
-      errorMessage = 'Email is already registered';
-    } else if (error.code === 'auth/weak-password') {
-      errorMessage = 'Password is too weak';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Invalid email address';
-    } else if (error.code === 'auth/network-request-failed') {
-      errorMessage = 'Network connection failed. Please check if Firebase emulators are running.';
+    console.error("Registration error:", error);
+
+    let errorMessage = "Registration failed";
+    if (error.code === "auth/email-already-in-use") {
+      errorMessage = "Email is already registered";
+    } else if (error.code === "auth/weak-password") {
+      errorMessage = "Password is too weak";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "Invalid email address";
+    } else if (error.code === "auth/network-request-failed") {
+      errorMessage =
+        "Network connection failed. Please check if Firebase emulators are running.";
     }
 
     return {
       success: false,
-      error: errorMessage
+      error: errorMessage,
     };
   }
 };
@@ -184,37 +186,42 @@ export const registerUser = async (
  * Sign in user with email and password
  */
 export const signInUser = async (
-  email: string, 
-  password: string
+  email: string,
+  password: string,
 ): Promise<AuthResponse> => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const user = await createUserDocument(userCredential.user);
 
     return {
       success: true,
       user,
-      requiresEmailVerification: false // Simplified for development
+      requiresEmailVerification: false, // Simplified for development
     };
   } catch (error: any) {
-    console.error('Sign in error:', error);
-    
-    let errorMessage = 'Sign in failed';
-    if (error.code === 'auth/user-not-found') {
-      errorMessage = 'No account found with this email';
-    } else if (error.code === 'auth/wrong-password') {
-      errorMessage = 'Incorrect password';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Invalid email address';
-    } else if (error.code === 'auth/too-many-requests') {
-      errorMessage = 'Too many failed attempts. Please try again later';
-    } else if (error.code === 'auth/network-request-failed') {
-      errorMessage = 'Network connection failed. Please check if Firebase emulators are running.';
+    console.error("Sign in error:", error);
+
+    let errorMessage = "Sign in failed";
+    if (error.code === "auth/user-not-found") {
+      errorMessage = "No account found with this email";
+    } else if (error.code === "auth/wrong-password") {
+      errorMessage = "Incorrect password";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "Invalid email address";
+    } else if (error.code === "auth/too-many-requests") {
+      errorMessage = "Too many failed attempts. Please try again later";
+    } else if (error.code === "auth/network-request-failed") {
+      errorMessage =
+        "Network connection failed. Please check if Firebase emulators are running.";
     }
 
     return {
       success: false,
-      error: errorMessage
+      error: errorMessage,
     };
   }
 };
@@ -226,8 +233,8 @@ export const signOutUser = async (): Promise<void> => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error('Sign out error:', error);
-    throw new Error('Failed to sign out');
+    console.error("Sign out error:", error);
+    throw new Error("Failed to sign out");
   }
 };
 
@@ -236,14 +243,14 @@ export const signOutUser = async (): Promise<void> => {
  */
 export const updateUserProfile = async (
   uid: string,
-  updates: UserProfileUpdateRequest
+  updates: UserProfileUpdateRequest,
 ): Promise<void> => {
   try {
     const userRef = doc(db, USER_COLLECTION, uid);
-    
+
     const updateData = {
       ...updates,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     };
 
     await updateDoc(userRef, updateData);
@@ -251,12 +258,12 @@ export const updateUserProfile = async (
     // Update Firebase Auth profile if displayName changed
     if (updates.displayName && auth.currentUser) {
       await updateProfile(auth.currentUser, {
-        displayName: updates.displayName
+        displayName: updates.displayName,
       });
     }
   } catch (error) {
-    console.error('Error updating user profile:', error);
-    throw new Error('Failed to update profile');
+    console.error("Error updating user profile:", error);
+    throw new Error("Failed to update profile");
   }
 };
 
@@ -276,7 +283,7 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
           callback(newUser);
         }
       } catch (error) {
-        console.error('Error in auth state change:', error);
+        console.error("Error in auth state change:", error);
         callback(null);
       }
     } else {
@@ -297,7 +304,7 @@ export const getCurrentUser = (): Promise<User | null> => {
           const user = await getUserDocument(firebaseUser.uid);
           resolve(user);
         } catch (error) {
-          console.error('Error getting current user:', error);
+          console.error("Error getting current user:", error);
           resolve(null);
         }
       } else {

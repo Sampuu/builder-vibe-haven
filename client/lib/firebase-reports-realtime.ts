@@ -1,29 +1,29 @@
-import { 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  where, 
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
   Timestamp,
   serverTimestamp,
   doc,
   updateDoc,
   QuerySnapshot,
   DocumentData,
-  Unsubscribe
-} from 'firebase/firestore';
-import { db } from './firebase-realtime';
-import { 
-  AnyReport, 
-  ReportProblemType, 
+  Unsubscribe,
+} from "firebase/firestore";
+import { db } from "./firebase-realtime";
+import {
+  AnyReport,
+  ReportProblemType,
   getCollectionName,
   HospitalReport,
   FireReport,
   PoliceReport,
   AmbulanceRequest,
-  GeneralUserReport
-} from '@shared/api';
+  GeneralUserReport,
+} from "@shared/api";
 
 // Real-time notification callbacks
 const notificationCallbacks: ((report: AnyReport) => void)[] = [];
@@ -31,9 +31,11 @@ const notificationCallbacks: ((report: AnyReport) => void)[] = [];
 /**
  * Subscribe to real-time notifications for new reports
  */
-export const subscribeToNotifications = (callback: (report: AnyReport) => void) => {
+export const subscribeToNotifications = (
+  callback: (report: AnyReport) => void,
+) => {
   notificationCallbacks.push(callback);
-  
+
   // Return unsubscribe function
   return () => {
     const index = notificationCallbacks.indexOf(callback);
@@ -47,11 +49,11 @@ export const subscribeToNotifications = (callback: (report: AnyReport) => void) 
  * Notify all subscribers about a new report
  */
 const notifySubscribers = (report: AnyReport) => {
-  notificationCallbacks.forEach(callback => {
+  notificationCallbacks.forEach((callback) => {
     try {
       callback(report);
     } catch (error) {
-      console.error('Error in notification callback:', error);
+      console.error("Error in notification callback:", error);
     }
   });
 };
@@ -59,15 +61,17 @@ const notifySubscribers = (report: AnyReport) => {
 /**
  * Save a report to Firebase and trigger real-time notifications
  */
-export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 'status'>): Promise<string> => {
+export const saveReport = async (
+  report: Omit<AnyReport, "id" | "timestamp" | "status">,
+): Promise<string> => {
   try {
     // Determine the correct collection name based on problem type
     const collectionName = getCollectionName(report.problemType);
-    
+
     // Create the complete report object
-    const completeReport: Omit<AnyReport, 'id'> = {
+    const completeReport: Omit<AnyReport, "id"> = {
       ...report,
-      status: 'submitted',
+      status: "submitted",
       timestamp: new Date().toISOString(),
     };
 
@@ -75,24 +79,26 @@ export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 's
     const docRef = await addDoc(collection(db, collectionName), {
       ...completeReport,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
-    
+
     console.log(`Report saved to ${collectionName} with ID:`, docRef.id);
-    
+
     // Create the report with ID for notification
     const reportWithId: AnyReport = {
       ...completeReport,
-      id: docRef.id
+      id: docRef.id,
     } as AnyReport;
-    
+
     // Trigger real-time notification
     notifySubscribers(reportWithId);
-    
+
     return docRef.id;
   } catch (error) {
-    console.error('Error saving report:', error);
-    throw new Error('Failed to save report. Please check your connection and try again.');
+    console.error("Error saving report:", error);
+    throw new Error(
+      "Failed to save report. Please check your connection and try again.",
+    );
   }
 };
 
@@ -102,23 +108,23 @@ export const saveReport = async (report: Omit<AnyReport, 'id' | 'timestamp' | 's
 export const updateReportStatus = async (
   problemType: ReportProblemType,
   reportId: string,
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved',
-  updatedBy?: string
+  status: "submitted" | "acknowledged" | "in-progress" | "resolved",
+  updatedBy?: string,
 ): Promise<void> => {
   try {
     const collectionName = getCollectionName(problemType);
     const reportRef = doc(db, collectionName, reportId);
-    
+
     await updateDoc(reportRef, {
       status,
       updatedAt: serverTimestamp(),
-      ...(updatedBy && { updatedBy })
+      ...(updatedBy && { updatedBy }),
     });
-    
+
     console.log(`Report ${reportId} status updated to ${status}`);
   } catch (error) {
-    console.error('Error updating report status:', error);
-    throw new Error('Failed to update report status');
+    console.error("Error updating report status:", error);
+    throw new Error("Failed to update report status");
   }
 };
 
@@ -128,40 +134,44 @@ export const updateReportStatus = async (
 export const createReportListener = (
   problemType: ReportProblemType,
   callback: (reports: AnyReport[]) => void,
-  orderByField: 'timestamp' | 'severity' = 'timestamp',
-  orderDirection: 'asc' | 'desc' = 'desc'
+  orderByField: "timestamp" | "severity" = "timestamp",
+  orderDirection: "asc" | "desc" = "desc",
 ): Unsubscribe => {
   const collectionName = getCollectionName(problemType);
-  
+
   // Create query based on order preferences
   let q;
-  if (orderByField === 'timestamp') {
+  if (orderByField === "timestamp") {
     q = query(
       collection(db, collectionName),
-      orderBy('createdAt', orderDirection)
+      orderBy("createdAt", orderDirection),
     );
   } else {
     q = query(
       collection(db, collectionName),
-      orderBy('severity', orderDirection),
-      orderBy('createdAt', 'desc')
+      orderBy("severity", orderDirection),
+      orderBy("createdAt", "desc"),
     );
   }
 
-  return onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const reports: AnyReport[] = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      reports.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp || new Date().toISOString()
-      } as AnyReport);
-    });
-    callback(reports);
-  }, (error) => {
-    console.error(`Error listening to ${collectionName}:`, error);
-  });
+  return onSnapshot(
+    q,
+    (querySnapshot: QuerySnapshot<DocumentData>) => {
+      const reports: AnyReport[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        reports.push({
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp || new Date().toISOString(),
+        } as AnyReport);
+      });
+      callback(reports);
+    },
+    (error) => {
+      console.error(`Error listening to ${collectionName}:`, error);
+    },
+  );
 };
 
 /**
@@ -169,74 +179,97 @@ export const createReportListener = (
  */
 export const createStatusListener = (
   problemType: ReportProblemType,
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved',
-  callback: (reports: AnyReport[]) => void
+  status: "submitted" | "acknowledged" | "in-progress" | "resolved",
+  callback: (reports: AnyReport[]) => void,
 ): Unsubscribe => {
   const collectionName = getCollectionName(problemType);
   const q = query(
     collection(db, collectionName),
-    where('status', '==', status),
-    orderBy('createdAt', 'desc')
+    where("status", "==", status),
+    orderBy("createdAt", "desc"),
   );
 
-  return onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-    const reports: AnyReport[] = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      reports.push({
-        id: doc.id,
-        ...data,
-        timestamp: data.timestamp || new Date().toISOString()
-      } as AnyReport);
-    });
-    callback(reports);
-  }, (error) => {
-    console.error(`Error listening to ${collectionName} with status ${status}:`, error);
-  });
-};
-
-/**
- * Create a listener for high-priority reports across all collections
- */
-export const createHighPriorityListener = (
-  callback: (reports: AnyReport[]) => void
-): Unsubscribe[] => {
-  const unsubscribeFunctions: Unsubscribe[] = [];
-  const allReports: { [key: string]: AnyReport[] } = {};
-
-  // Listen to all collection types for high-priority reports
-  const problemTypes: ReportProblemType[] = ['hospital', 'fire', 'police', 'ambulance', 'general'];
-  
-  problemTypes.forEach((problemType) => {
-    const collectionName = getCollectionName(problemType);
-    const q = query(
-      collection(db, collectionName),
-      where('severity', 'in', ['high', 'critical']),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+  return onSnapshot(
+    q,
+    (querySnapshot: QuerySnapshot<DocumentData>) => {
       const reports: AnyReport[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         reports.push({
           id: doc.id,
           ...data,
-          timestamp: data.timestamp || new Date().toISOString()
+          timestamp: data.timestamp || new Date().toISOString(),
         } as AnyReport);
       });
-      
-      allReports[problemType] = reports;
-      
-      // Combine all high-priority reports and sort by timestamp
-      const combinedReports = Object.values(allReports)
-        .flat()
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
-      callback(combinedReports);
-    }, (error) => {
-      console.error(`Error listening to high-priority reports in ${collectionName}:`, error);
-    });
+      callback(reports);
+    },
+    (error) => {
+      console.error(
+        `Error listening to ${collectionName} with status ${status}:`,
+        error,
+      );
+    },
+  );
+};
+
+/**
+ * Create a listener for high-priority reports across all collections
+ */
+export const createHighPriorityListener = (
+  callback: (reports: AnyReport[]) => void,
+): Unsubscribe[] => {
+  const unsubscribeFunctions: Unsubscribe[] = [];
+  const allReports: { [key: string]: AnyReport[] } = {};
+
+  // Listen to all collection types for high-priority reports
+  const problemTypes: ReportProblemType[] = [
+    "hospital",
+    "fire",
+    "police",
+    "ambulance",
+    "general",
+  ];
+
+  problemTypes.forEach((problemType) => {
+    const collectionName = getCollectionName(problemType);
+    const q = query(
+      collection(db, collectionName),
+      where("severity", "in", ["high", "critical"]),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot: QuerySnapshot<DocumentData>) => {
+        const reports: AnyReport[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          reports.push({
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp || new Date().toISOString(),
+          } as AnyReport);
+        });
+
+        allReports[problemType] = reports;
+
+        // Combine all high-priority reports and sort by timestamp
+        const combinedReports = Object.values(allReports)
+          .flat()
+          .sort(
+            (a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          );
+
+        callback(combinedReports);
+      },
+      (error) => {
+        console.error(
+          `Error listening to high-priority reports in ${collectionName}:`,
+          error,
+        );
+      },
+    );
 
     unsubscribeFunctions.push(unsubscribe);
   });
@@ -248,7 +281,9 @@ export const createHighPriorityListener = (
  * Create listeners for all report types (for admin dashboard)
  */
 export const createAllReportsListener = (
-  callback: (reportsByType: { [key in ReportProblemType]: AnyReport[] }) => void
+  callback: (reportsByType: {
+    [key in ReportProblemType]: AnyReport[];
+  }) => void,
 ): Unsubscribe[] => {
   const unsubscribeFunctions: Unsubscribe[] = [];
   const reportsByType: { [key in ReportProblemType]: AnyReport[] } = {
@@ -256,11 +291,17 @@ export const createAllReportsListener = (
     fire: [],
     police: [],
     ambulance: [],
-    general: []
+    general: [],
   };
 
-  const problemTypes: ReportProblemType[] = ['hospital', 'fire', 'police', 'ambulance', 'general'];
-  
+  const problemTypes: ReportProblemType[] = [
+    "hospital",
+    "fire",
+    "police",
+    "ambulance",
+    "general",
+  ];
+
   problemTypes.forEach((problemType) => {
     const unsubscribe = createReportListener(problemType, (reports) => {
       reportsByType[problemType] = reports;
@@ -276,41 +317,54 @@ export const createAllReportsListener = (
  * Listen for new emergency reports (last 5 minutes) for real-time notifications
  */
 export const createEmergencyNotificationListener = (
-  callback: (newReports: AnyReport[]) => void
+  callback: (newReports: AnyReport[]) => void,
 ): Unsubscribe[] => {
   const unsubscribeFunctions: Unsubscribe[] = [];
-  const problemTypes: ReportProblemType[] = ['hospital', 'fire', 'police', 'ambulance', 'general'];
-  
+  const problemTypes: ReportProblemType[] = [
+    "hospital",
+    "fire",
+    "police",
+    "ambulance",
+    "general",
+  ];
+
   problemTypes.forEach((problemType) => {
     const collectionName = getCollectionName(problemType);
-    
+
     // Listen for reports from the last 5 minutes with high severity
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    
+
     const q = query(
       collection(db, collectionName),
-      where('createdAt', '>=', Timestamp.fromDate(fiveMinutesAgo)),
-      where('severity', 'in', ['high', 'critical']),
-      orderBy('createdAt', 'desc')
+      where("createdAt", ">=", Timestamp.fromDate(fiveMinutesAgo)),
+      where("severity", "in", ["high", "critical"]),
+      orderBy("createdAt", "desc"),
     );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const newReports: AnyReport[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        newReports.push({
-          id: doc.id,
-          ...data,
-          timestamp: data.timestamp || new Date().toISOString()
-        } as AnyReport);
-      });
-      
-      if (newReports.length > 0) {
-        callback(newReports);
-      }
-    }, (error) => {
-      console.error(`Error listening to emergency notifications in ${collectionName}:`, error);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot: QuerySnapshot<DocumentData>) => {
+        const newReports: AnyReport[] = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          newReports.push({
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp || new Date().toISOString(),
+          } as AnyReport);
+        });
+
+        if (newReports.length > 0) {
+          callback(newReports);
+        }
+      },
+      (error) => {
+        console.error(
+          `Error listening to emergency notifications in ${collectionName}:`,
+          error,
+        );
+      },
+    );
 
     unsubscribeFunctions.push(unsubscribe);
   });
@@ -321,45 +375,57 @@ export const createEmergencyNotificationListener = (
 /**
  * Type-safe report creation helpers
  */
-export const createHospitalReport = (data: Omit<HospitalReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<HospitalReport, 'id' | 'timestamp' | 'status'> => ({
+export const createHospitalReport = (
+  data: Omit<HospitalReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<HospitalReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'hospital'
+  problemType: "hospital",
 });
 
-export const createFireReport = (data: Omit<FireReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<FireReport, 'id' | 'timestamp' | 'status'> => ({
+export const createFireReport = (
+  data: Omit<FireReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<FireReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'fire'
+  problemType: "fire",
 });
 
-export const createPoliceReport = (data: Omit<PoliceReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<PoliceReport, 'id' | 'timestamp' | 'status'> => ({
+export const createPoliceReport = (
+  data: Omit<PoliceReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<PoliceReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'police'
+  problemType: "police",
 });
 
-export const createAmbulanceRequest = (data: Omit<AmbulanceRequest, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<AmbulanceRequest, 'id' | 'timestamp' | 'status'> => ({
+export const createAmbulanceRequest = (
+  data: Omit<AmbulanceRequest, "id" | "timestamp" | "status" | "problemType">,
+): Omit<AmbulanceRequest, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'ambulance'
+  problemType: "ambulance",
 });
 
-export const createGeneralUserReport = (data: Omit<GeneralUserReport, 'id' | 'timestamp' | 'status' | 'problemType'>): Omit<GeneralUserReport, 'id' | 'timestamp' | 'status'> => ({
+export const createGeneralUserReport = (
+  data: Omit<GeneralUserReport, "id" | "timestamp" | "status" | "problemType">,
+): Omit<GeneralUserReport, "id" | "timestamp" | "status"> => ({
   ...data,
-  problemType: 'general'
+  problemType: "general",
 });
 
 /**
  * Utility function to map legacy report types to new problem types
  */
-export const mapLegacyTypeToProbleType = (legacyType: string): ReportProblemType => {
+export const mapLegacyTypeToProbleType = (
+  legacyType: string,
+): ReportProblemType => {
   switch (legacyType) {
-    case 'fire':
-      return 'fire';
-    case 'medical':
-      return 'ambulance';
-    case 'accident':
-      return 'police';
-    case 'natural':
-      return 'general';
+    case "fire":
+      return "fire";
+    case "medical":
+      return "ambulance";
+    case "accident":
+      return "police";
+    case "natural":
+      return "general";
     default:
-      return 'general';
+      return "general";
   }
 };
