@@ -27,9 +27,9 @@ export const handleSupabaseTest: RequestHandler = async (req, res) => {
 
 export const handleSupabaseAuthTest: RequestHandler = async (req, res) => {
   try {
-    // Test auth functionality with a fake email (should fail but give us info)
+    // Test auth functionality with a simple email format
     const { data, error } = await supabase.auth.signUp({
-      email: 'test.connection@example.com',
+      email: 'user@demo.com',
       password: 'testpassword123'
     });
 
