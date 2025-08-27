@@ -10,6 +10,7 @@ import {
   Newspaper,
   Map
 } from 'lucide-react';
+import FirebaseTest from '@/components/FirebaseTest';
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -168,6 +169,9 @@ export default function UserDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Firebase Integration Test */}
+        <FirebaseTest />
       </div>
     </DashboardLayout>
   );
