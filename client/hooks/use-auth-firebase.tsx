@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode, FC } from 'react';
-import { 
-  signInUser, 
-  registerUser, 
-  signOutUser, 
+import {
+  signInUser,
+  registerUser,
+  signOutUser,
   onAuthStateChange,
   updateUserProfile
-} from '@/lib/firebase-auth-safe';
+} from '@/lib/mock-auth';
 import { 
   User, 
   UserRole, 
