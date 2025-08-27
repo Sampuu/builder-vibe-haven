@@ -171,14 +171,14 @@ export default function Signup() {
 
         // If it's a network error and we haven't retried too many times
         if (errorMsg.includes("Network") || errorMsg.includes("connection")) {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
         }
       }
     } catch (error) {
       console.error("Signup error:", error);
       const errorMsg = "An unexpected error occurred. Please try again.";
       setError(errorMsg);
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
     } finally {
       setIsSubmitting(false);
       setIsRetrying(false);
@@ -233,28 +233,31 @@ export default function Signup() {
                   <AlertDescription className="text-emergency-danger">
                     <div className="space-y-2">
                       <div>{error}</div>
-                      {(error.includes("Network") || error.includes("connection")) && retryCount < 3 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleRetry}
-                          disabled={isRetrying}
-                          className="text-xs"
-                        >
-                          {isRetrying ? (
-                            <>
-                              <div className="mr-1 h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                              Retrying...
-                            </>
-                          ) : (
-                            "Try Again"
-                          )}
-                        </Button>
-                      )}
+                      {(error.includes("Network") ||
+                        error.includes("connection")) &&
+                        retryCount < 3 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRetry}
+                            disabled={isRetrying}
+                            className="text-xs"
+                          >
+                            {isRetrying ? (
+                              <>
+                                <div className="mr-1 h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                Retrying...
+                              </>
+                            ) : (
+                              "Try Again"
+                            )}
+                          </Button>
+                        )}
                       {retryCount >= 3 && (
                         <div className="text-xs text-emergency-danger/80">
-                          Multiple attempts failed. Please check your internet connection or try again later.
+                          Multiple attempts failed. Please check your internet
+                          connection or try again later.
                         </div>
                       )}
                     </div>

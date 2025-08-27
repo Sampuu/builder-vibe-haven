@@ -1,4 +1,4 @@
-import { FirebaseError } from 'firebase/app';
+import { FirebaseError } from "firebase/app";
 
 export interface FirebaseErrorInfo {
   code: string;
@@ -16,136 +16,139 @@ export interface FirebaseErrorInfo {
 export class FirebaseErrorHandler {
   private static authErrorMap: Record<string, Partial<FirebaseErrorInfo>> = {
     // Network-related errors
-    'auth/network-request-failed': {
-      userFriendlyMessage: 'Network connection failed. Please check your internet connection and try again.',
+    "auth/network-request-failed": {
+      userFriendlyMessage:
+        "Network connection failed. Please check your internet connection and try again.",
       isNetworkError: true,
       isRetryable: true,
-      actionRequired: 'Check your internet connection'
+      actionRequired: "Check your internet connection",
     },
-    'auth/timeout': {
-      userFriendlyMessage: 'Request timed out. Please try again.',
+    "auth/timeout": {
+      userFriendlyMessage: "Request timed out. Please try again.",
       isNetworkError: true,
       isRetryable: true,
-      actionRequired: 'Try again in a moment'
+      actionRequired: "Try again in a moment",
     },
 
     // Authentication errors
-    'auth/email-already-in-use': {
-      userFriendlyMessage: 'An account with this email already exists.',
+    "auth/email-already-in-use": {
+      userFriendlyMessage: "An account with this email already exists.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Use a different email or sign in instead'
+      actionRequired: "Use a different email or sign in instead",
     },
-    'auth/weak-password': {
-      userFriendlyMessage: 'Password should be at least 6 characters long.',
+    "auth/weak-password": {
+      userFriendlyMessage: "Password should be at least 6 characters long.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Create a stronger password'
+      actionRequired: "Create a stronger password",
     },
-    'auth/invalid-email': {
-      userFriendlyMessage: 'Invalid email address format.',
+    "auth/invalid-email": {
+      userFriendlyMessage: "Invalid email address format.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Enter a valid email address'
+      actionRequired: "Enter a valid email address",
     },
-    'auth/user-not-found': {
-      userFriendlyMessage: 'No account found with this email address.',
+    "auth/user-not-found": {
+      userFriendlyMessage: "No account found with this email address.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Check your email or create a new account'
+      actionRequired: "Check your email or create a new account",
     },
-    'auth/wrong-password': {
-      userFriendlyMessage: 'Incorrect password.',
+    "auth/wrong-password": {
+      userFriendlyMessage: "Incorrect password.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Enter the correct password'
+      actionRequired: "Enter the correct password",
     },
-    'auth/invalid-credential': {
-      userFriendlyMessage: 'Invalid email or password.',
+    "auth/invalid-credential": {
+      userFriendlyMessage: "Invalid email or password.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Check your email and password'
+      actionRequired: "Check your email and password",
     },
-    'auth/user-disabled': {
-      userFriendlyMessage: 'This account has been disabled.',
+    "auth/user-disabled": {
+      userFriendlyMessage: "This account has been disabled.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Contact support for assistance'
+      actionRequired: "Contact support for assistance",
     },
-    'auth/too-many-requests': {
-      userFriendlyMessage: 'Too many failed attempts. Please try again later.',
+    "auth/too-many-requests": {
+      userFriendlyMessage: "Too many failed attempts. Please try again later.",
       isNetworkError: false,
       isRetryable: true,
-      actionRequired: 'Wait a few minutes before trying again'
+      actionRequired: "Wait a few minutes before trying again",
     },
 
     // Configuration errors
-    'auth/operation-not-allowed': {
-      userFriendlyMessage: 'Email/password accounts are not enabled.',
+    "auth/operation-not-allowed": {
+      userFriendlyMessage: "Email/password accounts are not enabled.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Contact support'
+      actionRequired: "Contact support",
     },
-    'auth/configuration-not-found': {
-      userFriendlyMessage: 'Authentication service is not properly configured.',
+    "auth/configuration-not-found": {
+      userFriendlyMessage: "Authentication service is not properly configured.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Contact support'
+      actionRequired: "Contact support",
     },
-    'auth/invalid-api-key': {
-      userFriendlyMessage: 'Authentication service configuration error.',
+    "auth/invalid-api-key": {
+      userFriendlyMessage: "Authentication service configuration error.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Contact support'
+      actionRequired: "Contact support",
     },
 
     // Permission errors
-    'permission-denied': {
-      userFriendlyMessage: 'You do not have permission to perform this action.',
+    "permission-denied": {
+      userFriendlyMessage: "You do not have permission to perform this action.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Contact an administrator'
+      actionRequired: "Contact an administrator",
     },
-    'unauthenticated': {
-      userFriendlyMessage: 'You need to sign in to perform this action.',
+    unauthenticated: {
+      userFriendlyMessage: "You need to sign in to perform this action.",
       isNetworkError: false,
       isRetryable: false,
-      actionRequired: 'Please sign in'
-    }
+      actionRequired: "Please sign in",
+    },
   };
 
-  private static firestoreErrorMap: Record<string, Partial<FirebaseErrorInfo>> = {
-    'unavailable': {
-      userFriendlyMessage: 'Service is temporarily unavailable. Please try again.',
-      isNetworkError: true,
-      isRetryable: true,
-      actionRequired: 'Try again in a moment'
-    },
-    'deadline-exceeded': {
-      userFriendlyMessage: 'Request timed out. Please try again.',
-      isNetworkError: true,
-      isRetryable: true,
-      actionRequired: 'Try again'
-    },
-    'resource-exhausted': {
-      userFriendlyMessage: 'Service quota exceeded. Please try again later.',
-      isNetworkError: false,
-      isRetryable: true,
-      actionRequired: 'Try again later'
-    }
-  };
+  private static firestoreErrorMap: Record<string, Partial<FirebaseErrorInfo>> =
+    {
+      unavailable: {
+        userFriendlyMessage:
+          "Service is temporarily unavailable. Please try again.",
+        isNetworkError: true,
+        isRetryable: true,
+        actionRequired: "Try again in a moment",
+      },
+      "deadline-exceeded": {
+        userFriendlyMessage: "Request timed out. Please try again.",
+        isNetworkError: true,
+        isRetryable: true,
+        actionRequired: "Try again",
+      },
+      "resource-exhausted": {
+        userFriendlyMessage: "Service quota exceeded. Please try again later.",
+        isNetworkError: false,
+        isRetryable: true,
+        actionRequired: "Try again later",
+      },
+    };
 
   /**
    * Parse Firebase error and return structured error information
    */
   static parseError(error: any): FirebaseErrorInfo {
     const defaultInfo: FirebaseErrorInfo = {
-      code: 'unknown',
-      message: error?.message || 'An unexpected error occurred',
+      code: "unknown",
+      message: error?.message || "An unexpected error occurred",
       isNetworkError: false,
       isRetryable: false,
-      userFriendlyMessage: 'An unexpected error occurred. Please try again.',
-      actionRequired: 'Try again or contact support'
+      userFriendlyMessage: "An unexpected error occurred. Please try again.",
+      actionRequired: "Try again or contact support",
     };
 
     if (!error) {
@@ -165,30 +168,36 @@ export class FirebaseErrorHandler {
           message: error.message,
           isNetworkError: errorInfo.isNetworkError ?? false,
           isRetryable: errorInfo.isRetryable ?? false,
-          userFriendlyMessage: errorInfo.userFriendlyMessage ?? defaultInfo.userFriendlyMessage,
-          actionRequired: errorInfo.actionRequired
+          userFriendlyMessage:
+            errorInfo.userFriendlyMessage ?? defaultInfo.userFriendlyMessage,
+          actionRequired: errorInfo.actionRequired,
         };
       }
     }
 
     // Handle network-related errors by message content
-    const message = error.message?.toLowerCase() || '';
-    if (message.includes('network') || message.includes('connection') || 
-        message.includes('fetch') || message.includes('cors')) {
+    const message = error.message?.toLowerCase() || "";
+    if (
+      message.includes("network") ||
+      message.includes("connection") ||
+      message.includes("fetch") ||
+      message.includes("cors")
+    ) {
       return {
         ...defaultInfo,
-        code: 'network-error',
+        code: "network-error",
         isNetworkError: true,
         isRetryable: true,
-        userFriendlyMessage: 'Network error occurred. Please check your connection and try again.',
-        actionRequired: 'Check your internet connection'
+        userFriendlyMessage:
+          "Network error occurred. Please check your connection and try again.",
+        actionRequired: "Check your internet connection",
       };
     }
 
     return {
       ...defaultInfo,
-      code: error.code || 'unknown',
-      message: error.message
+      code: error.code || "unknown",
+      message: error.message,
     };
   }
 
@@ -226,8 +235,8 @@ export class FirebaseErrorHandler {
   static logError(error: any, context?: string): void {
     if (import.meta.env.DEV) {
       const errorInfo = this.parseError(error);
-      console.group(`🔥 Firebase Error ${context ? `(${context})` : ''}`);
-      console.error('Original error:', error);
+      console.group(`🔥 Firebase Error ${context ? `(${context})` : ""}`);
+      console.error("Original error:", error);
       console.table(errorInfo);
       console.groupEnd();
     }

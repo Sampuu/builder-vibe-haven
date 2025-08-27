@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 
 interface NetworkStatusProps {
   onRetry?: () => void;
@@ -9,10 +9,10 @@ interface NetworkStatusProps {
   className?: string;
 }
 
-export default function NetworkStatus({ 
-  onRetry, 
-  showRetryButton = false, 
-  className = "" 
+export default function NetworkStatus({
+  onRetry,
+  showRetryButton = false,
+  className = "",
 }: NetworkStatusProps) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOfflineAlert, setShowOfflineAlert] = useState(false);
@@ -29,8 +29,8 @@ export default function NetworkStatus({
       setShowOfflineAlert(true);
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Initial check
     if (!navigator.onLine) {
@@ -38,8 +38,8 @@ export default function NetworkStatus({
     }
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -59,7 +59,9 @@ export default function NetworkStatus({
   }
 
   return (
-    <Alert className={`border-emergency-warning bg-emergency-warning/5 ${className}`}>
+    <Alert
+      className={`border-emergency-warning bg-emergency-warning/5 ${className}`}
+    >
       {isOnline ? (
         <Wifi className="h-4 w-4 text-emergency-resolved" />
       ) : (
@@ -68,10 +70,9 @@ export default function NetworkStatus({
       <AlertDescription className="text-emergency-warning">
         <div className="flex items-center justify-between">
           <div>
-            {isOnline 
+            {isOnline
               ? "Connection restored. You can continue using the app."
-              : "No internet connection. Please check your network settings."
-            }
+              : "No internet connection. Please check your network settings."}
           </div>
           {showRetryButton && onRetry && (
             <Button
@@ -104,45 +105,47 @@ export default function NetworkStatus({
 // Hook for checking network connectivity
 export const useNetworkStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [connectionQuality, setConnectionQuality] = useState<'good' | 'poor' | 'offline'>('good');
+  const [connectionQuality, setConnectionQuality] = useState<
+    "good" | "poor" | "offline"
+  >("good");
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   const checkConnectivity = async (): Promise<boolean> => {
     if (!navigator.onLine) {
-      setConnectionQuality('offline');
+      setConnectionQuality("offline");
       return false;
     }
 
     try {
       const start = Date.now();
-      const response = await fetch('https://www.google.com/favicon.ico', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-cache'
+      const response = await fetch("https://www.google.com/favicon.ico", {
+        method: "HEAD",
+        mode: "no-cors",
+        cache: "no-cache",
       });
       const duration = Date.now() - start;
-      
+
       if (duration > 3000) {
-        setConnectionQuality('poor');
+        setConnectionQuality("poor");
       } else {
-        setConnectionQuality('good');
+        setConnectionQuality("good");
       }
-      
+
       return true;
     } catch {
-      setConnectionQuality('offline');
+      setConnectionQuality("offline");
       return false;
     }
   };
@@ -150,6 +153,6 @@ export const useNetworkStatus = () => {
   return {
     isOnline,
     connectionQuality,
-    checkConnectivity
+    checkConnectivity,
   };
 };

@@ -67,10 +67,10 @@ export const firebaseAuth = {
   async checkNetworkConnectivity(): Promise<boolean> {
     try {
       // Try to make a simple request to check connectivity
-      const response = await fetch('https://www.google.com/favicon.ico', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-cache'
+      const response = await fetch("https://www.google.com/favicon.ico", {
+        method: "HEAD",
+        mode: "no-cors",
+        cache: "no-cache",
       });
       return true;
     } catch {
@@ -86,7 +86,8 @@ export const firebaseAuth = {
       if (!isOnline) {
         return {
           success: false,
-          error: "No internet connection. Please check your network and try again."
+          error:
+            "No internet connection. Please check your network and try again.",
         };
       }
 
@@ -123,7 +124,7 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, 'signup');
+      FirebaseErrorHandler.logError(error, "signup");
       const errorInfo = FirebaseErrorHandler.parseError(error);
       return { success: false, error: errorInfo.userFriendlyMessage };
     }
@@ -137,7 +138,8 @@ export const firebaseAuth = {
       if (!isOnline) {
         return {
           success: false,
-          error: "No internet connection. Please check your network and try again."
+          error:
+            "No internet connection. Please check your network and try again.",
         };
       }
 
@@ -157,7 +159,7 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, 'login');
+      FirebaseErrorHandler.logError(error, "login");
       const errorInfo = FirebaseErrorHandler.parseError(error);
       return { success: false, error: errorInfo.userFriendlyMessage };
     }
@@ -169,7 +171,7 @@ export const firebaseAuth = {
       await signOut(auth);
       return { success: true };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, 'logout');
+      FirebaseErrorHandler.logError(error, "logout");
       const errorInfo = FirebaseErrorHandler.parseError(error);
       return { success: false, error: errorInfo.userFriendlyMessage };
     }
