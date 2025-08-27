@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
                 <Avatar>
                   <AvatarFallback className="bg-emergency-info/10 text-emergency-info font-semibold">
-                    {user.name.substring(0, 2).toUpperCase()}
+                    {user.displayName?.substring(0, 2).toUpperCase() || user.email?.substring(0, 2).toUpperCase() || "??"}
                   </AvatarFallback>
                 </Avatar>
               </div>
