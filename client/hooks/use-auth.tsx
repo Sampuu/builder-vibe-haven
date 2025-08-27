@@ -39,9 +39,18 @@ function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let mounted = true;
 
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (mounted && isLoading) {
+        console.warn('Firebase auth initialization timeout');
+        setIsLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
     // Listen for authentication state changes
     const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
       if (mounted) {
+        clearTimeout(timeoutId);
         setUser(user);
         setIsLoading(false);
       }
@@ -50,9 +59,10 @@ function AuthProvider({ children }: AuthProviderProps) {
     // Cleanup subscription on unmount
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
       unsubscribe();
     };
-  }, []);
+  }, [isLoading]);
 
   const logout = async (): Promise<void> => {
     setIsLoading(true);

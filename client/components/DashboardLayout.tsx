@@ -37,9 +37,26 @@ const roleColors = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, logout } = useAuth();
-  
-  if (!user) return null;
+  // Wrap useAuth in try-catch to handle context errors gracefully
+  let user = null;
+  let logout = async () => {};
+
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    logout = authContext.logout;
+  } catch (error) {
+    console.error('DashboardLayout: Auth context error:', error);
+    // Redirect to login if auth context is not available
+    window.location.href = '/login';
+    return null;
+  }
+
+  if (!user) {
+    // Redirect to login if no user
+    window.location.href = '/login';
+    return null;
+  }
 
   const RoleIcon = roleIcons[user.role];
 

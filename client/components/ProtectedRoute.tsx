@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/use-auth";
-import type { UserRole } from "@shared/types";
+import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/use-auth';
+import type { UserRole } from '@shared/types';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -12,10 +12,25 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({
   children,
   allowedRoles,
-  requiredRole,
+  requiredRole
 }: ProtectedRouteProps) {
-  const { user, isLoading, hasRole } = useAuth();
   const location = useLocation();
+
+  // Wrap useAuth in try-catch to handle context errors gracefully
+  let user = null;
+  let isLoading = true;
+  let hasRole: (role: UserRole | UserRole[]) => boolean = () => false;
+
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    isLoading = authContext.isLoading;
+    hasRole = authContext.hasRole;
+  } catch (error) {
+    console.error('ProtectedRoute: Auth context error:', error);
+    // Redirect to login if auth context is not available
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   if (isLoading) {
     return (
