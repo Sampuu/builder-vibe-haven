@@ -4,13 +4,19 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/config/firebase';
-import type { User, DatabaseResponse } from '@shared/types';
+  User as FirebaseUser,
+} from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/config/firebase";
+import type { User, DatabaseResponse } from "@shared/types";
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface SignupData {
   email: string;
@@ -26,27 +32,30 @@ export interface LoginData {
 }
 
 // Convert Firebase User to our User type
-const createUserProfile = async (firebaseUser: FirebaseUser, role?: UserRole): Promise<User | null> => {
+const createUserProfile = async (
+  firebaseUser: FirebaseUser,
+  role?: UserRole,
+): Promise<User | null> => {
   try {
     // Get user data from Firestore
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-    
+    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+
     if (userDoc.exists()) {
       const userData = userDoc.data();
       return {
         id: firebaseUser.uid,
-        email: firebaseUser.email || '',
-        name: userData.name || firebaseUser.displayName || '',
+        email: firebaseUser.email || "",
+        name: userData.name || firebaseUser.displayName || "",
         phone: userData.phone,
         role: userData.role as UserRole,
         createdAt: userData.createdAt,
-        updatedAt: userData.updatedAt
+        updatedAt: userData.updatedAt,
       };
     }
-    
+
     return null;
   } catch (error) {
-    console.error('Error creating user profile:', error);
+    console.error("Error creating user profile:", error);
     return null;
   }
 };
@@ -57,50 +66,54 @@ export const firebaseAuth = {
   async signup(data: SignupData): Promise<DatabaseResponse<User>> {
     try {
       // Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
       const firebaseUser = userCredential.user;
 
       // Update display name
       await updateProfile(firebaseUser, {
-        displayName: data.name
+        displayName: data.name,
       });
 
       // Create user document in Firestore
-      const userData: Omit<User, 'id'> = {
+      const userData: Omit<User, "id"> = {
         email: data.email,
         name: data.name,
         phone: data.phone,
         role: data.role,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
-      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      await setDoc(doc(db, "users", firebaseUser.uid), userData);
 
       // Return complete user object
       const user: User = {
         id: firebaseUser.uid,
-        ...userData
+        ...userData,
       };
 
       return { success: true, data: user };
     } catch (error: any) {
-      let errorMessage = 'Failed to create account';
-      
+      let errorMessage = "Failed to create account";
+
       switch (error.code) {
-        case 'auth/email-already-in-use':
-          errorMessage = 'An account with this email already exists';
+        case "auth/email-already-in-use":
+          errorMessage = "An account with this email already exists";
           break;
-        case 'auth/weak-password':
-          errorMessage = 'Password should be at least 6 characters';
+        case "auth/weak-password":
+          errorMessage = "Password should be at least 6 characters";
           break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address';
+        case "auth/invalid-email":
+          errorMessage = "Invalid email address";
           break;
         default:
           errorMessage = error.message || errorMessage;
       }
-      
+
       return { success: false, error: errorMessage };
     }
   },
@@ -108,37 +121,42 @@ export const firebaseAuth = {
   // Sign in existing user
   async login(data: LoginData): Promise<DatabaseResponse<User>> {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
       const firebaseUser = userCredential.user;
 
       // Get user profile from Firestore
       const user = await createUserProfile(firebaseUser);
-      
+
       if (!user) {
-        throw new Error('User profile not found');
+        throw new Error("User profile not found");
       }
 
       return { success: true, data: user };
     } catch (error: any) {
-      let errorMessage = 'Failed to login';
-      
+      let errorMessage = "Failed to login";
+
       switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No account found with this email';
+        case "auth/user-not-found":
+          errorMessage = "No account found with this email";
           break;
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password';
+        case "auth/wrong-password":
+          errorMessage = "Incorrect password";
           break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address';
+        case "auth/invalid-email":
+          errorMessage = "Invalid email address";
           break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Too many failed login attempts. Please try again later';
+        case "auth/too-many-requests":
+          errorMessage =
+            "Too many failed login attempts. Please try again later";
           break;
         default:
           errorMessage = error.message || errorMessage;
       }
-      
+
       return { success: false, error: errorMessage };
     }
   },
@@ -171,13 +189,20 @@ export const firebaseAuth = {
   },
 
   // Update user profile
-  async updateUserProfile(userId: string, updates: Partial<User>): Promise<DatabaseResponse<void>> {
+  async updateUserProfile(
+    userId: string,
+    updates: Partial<User>,
+  ): Promise<DatabaseResponse<void>> {
     try {
-      const userRef = doc(db, 'users', userId);
-      await setDoc(userRef, {
-        ...updates,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
+      const userRef = doc(db, "users", userId);
+      await setDoc(
+        userRef,
+        {
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true },
+      );
 
       return { success: true };
     } catch (error: any) {
@@ -188,24 +213,26 @@ export const firebaseAuth = {
   // Check if user has specific role
   hasRole(user: User | null, requiredRole: UserRole | UserRole[]): boolean {
     if (!user) return false;
-    
+
     if (Array.isArray(requiredRole)) {
       return requiredRole.includes(user.role);
     }
-    
+
     return user.role === requiredRole;
   },
 
   // Check if user is admin
   isAdmin(user: User | null): boolean {
-    return user?.role === 'admin';
+    return user?.role === "admin";
   },
 
   // Check if user can access emergency services
   isEmergencyResponder(user: User | null): boolean {
     if (!user) return false;
-    return ['police', 'fire', 'ambulance', 'hospital', 'admin'].includes(user.role);
-  }
+    return ["police", "fire", "ambulance", "hospital", "admin"].includes(
+      user.role,
+    );
+  },
 };
 
 export default firebaseAuth;

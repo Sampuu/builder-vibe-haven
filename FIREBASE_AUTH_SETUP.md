@@ -7,6 +7,7 @@ The emergency response system now includes complete Firebase Authentication with
 ## Features Implemented
 
 ### 🔐 **Firebase Authentication**
+
 - Email/password authentication
 - Secure user registration with validation
 - Real-time auth state management
@@ -14,14 +15,16 @@ The emergency response system now includes complete Firebase Authentication with
 - Password strength requirements
 
 ### 👥 **User Roles & Permissions**
+
 - **User**: Report disasters & request help
-- **Police**: Monitor & coordinate response  
+- **Police**: Monitor & coordinate response
 - **Fire Brigade**: Handle fire emergencies
 - **Ambulance**: Medical emergency response
 - **Hospital**: Medical supplies & dispatch
 - **Admin**: Full system access
 
 ### 📱 **User Interface**
+
 - Professional signup form with validation
 - Secure login interface
 - Password visibility toggle
@@ -32,6 +35,7 @@ The emergency response system now includes complete Firebase Authentication with
 ## Database Schema
 
 ### Users Collection (`users`)
+
 ```typescript
 {
   id: string;           // Firebase Auth UID
@@ -45,27 +49,30 @@ The emergency response system now includes complete Firebase Authentication with
 ```
 
 ### User Roles
+
 ```typescript
-type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+type UserRole = "user" | "police" | "fire" | "ambulance" | "hospital" | "admin";
 ```
 
 ## Authentication Flow
 
 ### 1. **User Registration** (`/signup`)
+
 ```typescript
 // Example signup data
 const signupData: SignupData = {
-  email: 'user@example.com',
-  password: 'SecurePass123!',
-  name: 'John Doe',
-  phone: '+1-555-0123',      // Optional
-  role: 'user'               // Selected role
+  email: "user@example.com",
+  password: "SecurePass123!",
+  name: "John Doe",
+  phone: "+1-555-0123", // Optional
+  role: "user", // Selected role
 };
 
 const result = await firebaseAuth.signup(signupData);
 ```
 
 **Validation Rules:**
+
 - ✅ Valid email format
 - ✅ Password minimum 6 characters with uppercase, lowercase, number
 - ✅ Full name required (min 2 characters)
@@ -74,17 +81,19 @@ const result = await firebaseAuth.signup(signupData);
 - ✅ Role selection required
 
 ### 2. **User Login** (`/login`)
+
 ```typescript
 // Example login
 const loginData: LoginData = {
-  email: 'user@example.com',
-  password: 'SecurePass123!'
+  email: "user@example.com",
+  password: "SecurePass123!",
 };
 
 const result = await firebaseAuth.login(loginData);
 ```
 
 **Features:**
+
 - ✅ Email/password authentication
 - ✅ Password visibility toggle
 - ✅ Auto-redirect to role-specific dashboard
@@ -92,6 +101,7 @@ const result = await firebaseAuth.login(loginData);
 - ✅ Comprehensive error messages
 
 ### 3. **Protected Routes**
+
 ```typescript
 // Role-based route protection
 <ProtectedRoute requiredRole="admin">
@@ -105,11 +115,12 @@ const result = await firebaseAuth.login(loginData);
 ```
 
 ### 4. **Auth Context Usage**
+
 ```typescript
 const { user, logout, hasRole, isAdmin, isEmergencyResponder } = useAuth();
 
 // Check user permissions
-if (hasRole('admin')) {
+if (hasRole("admin")) {
   // Admin functionality
 }
 
@@ -121,24 +132,28 @@ if (isEmergencyResponder()) {
 ## Security Features
 
 ### ✅ **Firebase Security Rules**
+
 - Users can only read/write their own data
 - Admin roles can access all data
 - Emergency responders can read incident data
 - Public data (news) is readable by all authenticated users
 
 ### ✅ **Client-Side Validation**
+
 - Email format validation
 - Strong password requirements
 - Phone number format checking
 - Terms agreement verification
 
 ### ✅ **Server-Side Security**
+
 - Firebase Auth handles password encryption
 - Secure token-based authentication
 - Automatic session management
 - HTTPS-only communication
 
 ### ✅ **Role-Based Access Control**
+
 - Route-level protection
 - Component-level permission checks
 - Database-level security rules
@@ -172,12 +187,13 @@ shared/
 ## Usage Examples
 
 ### 1. **Creating New User**
+
 ```typescript
-import { firebaseAuth } from '@/lib/firebase-auth';
+import { firebaseAuth } from "@/lib/firebase-auth";
 
 const handleSignup = async (formData: SignupData) => {
   const result = await firebaseAuth.signup(formData);
-  
+
   if (result.success) {
     // Redirect to dashboard
     navigate(`/dashboard/${result.data.role}`);
@@ -189,10 +205,11 @@ const handleSignup = async (formData: SignupData) => {
 ```
 
 ### 2. **User Login**
+
 ```typescript
 const handleLogin = async (loginData: LoginData) => {
   const result = await firebaseAuth.login(loginData);
-  
+
   if (result.success) {
     // Auto-redirect based on user role
     navigate(`/dashboard/${result.data.role}`);
@@ -201,16 +218,18 @@ const handleLogin = async (loginData: LoginData) => {
 ```
 
 ### 3. **Logout**
+
 ```typescript
 const { logout } = useAuth();
 
 const handleLogout = async () => {
   await logout();
-  navigate('/');
+  navigate("/");
 };
 ```
 
 ### 4. **Check Permissions**
+
 ```typescript
 const { hasRole, isAdmin } = useAuth();
 
@@ -227,10 +246,11 @@ const { hasRole, isAdmin } = useAuth();
 ## Testing
 
 ### 🧪 **Firebase Auth Test Component**
+
 Access the **Firebase Authentication Test** section in the User Dashboard to:
 
 1. **Test Signup**: Create new user accounts
-2. **Test Login**: Authenticate existing users  
+2. **Test Login**: Authenticate existing users
 3. **Test Logout**: Sign out users
 4. **View User Data**: See current authentication status
 5. **Verify Database**: Check Firestore user collection
@@ -244,7 +264,7 @@ Access the **Firebase Authentication Test** section in the User Dashboard to:
    - Verify account creation in Firebase Console
 
 2. **Login Flow**:
-   - Go to `/login` 
+   - Go to `/login`
    - Enter credentials
    - Verify redirect to role-specific dashboard
    - Check auth state persistence
@@ -262,6 +282,7 @@ Access the **Firebase Authentication Test** section in the User Dashboard to:
 ## Environment Variables
 
 Ensure these Firebase configuration variables are set:
+
 ```env
 VITE_PUBLIC_FIREBASE_API_KEY=AIzaSyAPGnT4qxz8YHGmXujEsN_w1nPtetdCa8s
 VITE_PUBLIC_FIREBASE_AUTH_DOMAIN=rescue-system-com.firebaseapp.com
@@ -275,6 +296,7 @@ VITE_PUBLIC_FIREBASE_MEASUREMENT_ID=G-PETD5ZZLFG
 ## Error Handling
 
 ### Common Error Messages:
+
 - **auth/email-already-in-use**: Account exists with this email
 - **auth/weak-password**: Password must be at least 6 characters
 - **auth/invalid-email**: Invalid email format
@@ -283,6 +305,7 @@ VITE_PUBLIC_FIREBASE_MEASUREMENT_ID=G-PETD5ZZLFG
 - **auth/too-many-requests**: Too many failed attempts
 
 ### Client-Side Validation:
+
 - Email format checking
 - Password strength requirements
 - Phone number validation
@@ -312,6 +335,7 @@ VITE_PUBLIC_FIREBASE_MEASUREMENT_ID=G-PETD5ZZLFG
 ## Support
 
 For authentication issues:
+
 1. Check Firebase Console for project status
 2. Verify environment variables
 3. Check browser console for detailed errors

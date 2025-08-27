@@ -1,22 +1,30 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, LogIn, Eye, EyeOff } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { firebaseAuth, LoginData } from '@/lib/firebase-auth';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { firebaseAuth, LoginData } from "@/lib/firebase-auth";
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginData>({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const navigate = useNavigate();
 
@@ -24,13 +32,13 @@ export default function Login() {
     const errors: Record<string, string> = {};
 
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = "Password is required";
     }
 
     setValidationErrors(errors);
@@ -38,16 +46,16 @@ export default function Login() {
   };
 
   const handleInputChange = (field: keyof LoginData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear validation error when user starts typing
     if (validationErrors[field]) {
-      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+      setValidationErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!validateForm()) {
       return;
@@ -62,11 +70,11 @@ export default function Login() {
         // Login successful - redirect to appropriate dashboard based on user's role
         navigate(`/dashboard/${result.data.role}`);
       } else {
-        setError(result.error || 'Login failed');
+        setError(result.error || "Login failed");
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Login error:", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,9 +86,9 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
           className="mb-6 p-2 hover:bg-white/60"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -94,7 +102,9 @@ export default function Login() {
                 <AlertTriangle className="h-8 w-8 text-emergency-danger" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Login to System</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Login to System
+            </CardTitle>
             <CardDescription className="text-slate-600">
               Access your emergency response dashboard
             </CardDescription>
@@ -116,11 +126,17 @@ export default function Login() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="Enter your email address"
-                  className={validationErrors.email ? 'border-emergency-danger' : ''}
+                  className={
+                    validationErrors.email ? "border-emergency-danger" : ""
+                  }
                 />
-                {validationErrors.email && <p className="text-sm text-emergency-danger">{validationErrors.email}</p>}
+                {validationErrors.email && (
+                  <p className="text-sm text-emergency-danger">
+                    {validationErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -128,11 +144,13 @@ export default function Login() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder="Enter your password"
-                    className={`pr-10 ${validationErrors.password ? 'border-emergency-danger' : ''}`}
+                    className={`pr-10 ${validationErrors.password ? "border-emergency-danger" : ""}`}
                   />
                   <Button
                     type="button"
@@ -141,16 +159,25 @@ export default function Login() {
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
-                {validationErrors.password && <p className="text-sm text-emergency-danger">{validationErrors.password}</p>}
+                {validationErrors.password && (
+                  <p className="text-sm text-emergency-danger">
+                    {validationErrors.password}
+                  </p>
+                )}
               </div>
 
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Your role and permissions are determined by your account. Contact your administrator if you need role changes.
+                  Your role and permissions are determined by your account.
+                  Contact your administrator if you need role changes.
                 </AlertDescription>
               </Alert>
 
@@ -176,10 +203,10 @@ export default function Login() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Don't have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/signup')}
+                Don't have an account?{" "}
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/signup")}
                   className="p-0 h-auto text-emergency-danger hover:text-emergency-danger/80"
                 >
                   Sign up here

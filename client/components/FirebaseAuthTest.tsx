@@ -1,18 +1,31 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle, UserPlus, LogIn, LogOut, Shield } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { firebaseAuth, SignupData } from '@/lib/firebase-auth';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  CheckCircle,
+  AlertTriangle,
+  UserPlus,
+  LogIn,
+  LogOut,
+  Shield,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { firebaseAuth, SignupData } from "@/lib/firebase-auth";
 
 export default function FirebaseAuthTest() {
   const { user, logout, isLoading } = useAuth();
-  const [testEmail, setTestEmail] = useState('test@example.com');
-  const [testPassword, setTestPassword] = useState('Test123!');
-  const [testName, setTestName] = useState('Test User');
+  const [testEmail, setTestEmail] = useState("test@example.com");
+  const [testPassword, setTestPassword] = useState("Test123!");
+  const [testName, setTestName] = useState("Test User");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
@@ -31,15 +44,15 @@ export default function FirebaseAuthTest() {
         email: testEmail,
         password: testPassword,
         name: testName,
-        role: 'user'
+        role: "user",
       };
 
       const result = await firebaseAuth.signup(signupData);
-      
+
       if (result.success) {
-        setSuccess('Test account created successfully!');
+        setSuccess("Test account created successfully!");
       } else {
-        setError(result.error || 'Failed to create test account');
+        setError(result.error || "Failed to create test account");
       }
     } catch (err) {
       setError((err as Error).message);
@@ -55,13 +68,13 @@ export default function FirebaseAuthTest() {
     try {
       const result = await firebaseAuth.login({
         email: testEmail,
-        password: testPassword
+        password: testPassword,
       });
-      
+
       if (result.success) {
-        setSuccess('Login successful!');
+        setSuccess("Login successful!");
       } else {
-        setError(result.error || 'Failed to login');
+        setError(result.error || "Failed to login");
       }
     } catch (err) {
       setError((err as Error).message);
@@ -76,7 +89,7 @@ export default function FirebaseAuthTest() {
 
     try {
       await logout();
-      setSuccess('Logout successful!');
+      setSuccess("Logout successful!");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -93,7 +106,8 @@ export default function FirebaseAuthTest() {
             Firebase Authentication Test
           </CardTitle>
           <CardDescription>
-            Test Firebase authentication functionality with signup, login, and logout
+            Test Firebase authentication functionality with signup, login, and
+            logout
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -109,11 +123,22 @@ export default function FirebaseAuthTest() {
                   <span className="font-medium">Authenticated</span>
                 </div>
                 <div className="text-sm text-slate-600 space-y-1">
-                  <p><strong>ID:</strong> {user.id}</p>
-                  <p><strong>Name:</strong> {user.name}</p>
-                  <p><strong>Email:</strong> {user.email}</p>
-                  <p><strong>Role:</strong> <span className="capitalize font-medium">{user.role}</span></p>
-                  <p><strong>Phone:</strong> {user.phone || 'Not provided'}</p>
+                  <p>
+                    <strong>ID:</strong> {user.id}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {user.name}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {user.email}
+                  </p>
+                  <p>
+                    <strong>Role:</strong>{" "}
+                    <span className="capitalize font-medium">{user.role}</span>
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {user.phone || "Not provided"}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -160,34 +185,34 @@ export default function FirebaseAuthTest() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button 
-                onClick={handleTestSignup} 
-                disabled={testing || !!user} 
+              <Button
+                onClick={handleTestSignup}
+                disabled={testing || !!user}
                 variant="success"
                 size="sm"
               >
                 <UserPlus className="mr-2 h-4 w-4" />
-                {testing ? 'Testing...' : 'Test Signup'}
+                {testing ? "Testing..." : "Test Signup"}
               </Button>
-              
-              <Button 
-                onClick={handleTestLogin} 
-                disabled={testing || !!user} 
+
+              <Button
+                onClick={handleTestLogin}
+                disabled={testing || !!user}
                 variant="info"
                 size="sm"
               >
                 <LogIn className="mr-2 h-4 w-4" />
-                {testing ? 'Testing...' : 'Test Login'}
+                {testing ? "Testing..." : "Test Login"}
               </Button>
-              
-              <Button 
-                onClick={handleTestLogout} 
-                disabled={testing || !user} 
+
+              <Button
+                onClick={handleTestLogout}
+                disabled={testing || !user}
                 variant="outline"
                 size="sm"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                {testing ? 'Testing...' : 'Test Logout'}
+                {testing ? "Testing..." : "Test Logout"}
               </Button>
             </div>
 
@@ -212,7 +237,9 @@ export default function FirebaseAuthTest() {
 
           {/* Instructions */}
           <div className="text-sm text-slate-600 space-y-2">
-            <p><strong>Testing Instructions:</strong></p>
+            <p>
+              <strong>Testing Instructions:</strong>
+            </p>
             <ol className="list-decimal list-inside space-y-1 ml-4">
               <li>Use "Test Signup" to create a new Firebase user account</li>
               <li>Use "Test Login" to authenticate with the created account</li>

@@ -1,6 +1,12 @@
 // Shared types for the emergency response system
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface User {
   id: string;
@@ -15,8 +21,8 @@ export interface User {
 export interface DisasterReport {
   id: string;
   userId: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  type: "fire" | "medical" | "accident" | "natural" | "other";
+  severity: "low" | "medium" | "high" | "critical";
   title: string;
   description: string;
   location: string;
@@ -27,7 +33,7 @@ export interface DisasterReport {
   contactName: string;
   contactPhone: string;
   images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
+  status: "submitted" | "acknowledged" | "in-progress" | "resolved";
   assignedResponders?: string[];
   notes?: string;
   createdAt: string;
@@ -37,8 +43,8 @@ export interface DisasterReport {
 export interface HelpRequest {
   id: string;
   userId: string;
-  type: 'medical' | 'supplies' | 'transport' | 'other';
-  urgency: 'low' | 'medium' | 'high' | 'critical';
+  type: "medical" | "supplies" | "transport" | "other";
+  urgency: "low" | "medium" | "high" | "critical";
   description: string;
   location: string;
   coordinates?: {
@@ -47,7 +53,12 @@ export interface HelpRequest {
   };
   contactPhone: string;
   specialRequests?: string;
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'fulfilled' | 'cancelled';
+  status:
+    | "submitted"
+    | "acknowledged"
+    | "in-progress"
+    | "fulfilled"
+    | "cancelled";
   assignedResponders?: string[];
   estimatedArrival?: string;
   notes?: string;
@@ -59,8 +70,8 @@ export interface NewsUpdate {
   id: string;
   title: string;
   content: string;
-  category: 'emergency' | 'weather' | 'safety' | 'update' | 'resolved';
-  severity: 'info' | 'warning' | 'danger';
+  category: "emergency" | "weather" | "safety" | "update" | "resolved";
+  severity: "info" | "warning" | "danger";
   location?: string;
   authorId: string;
   authorName: string;
@@ -75,9 +86,9 @@ export interface Incident {
   id: string;
   title: string;
   description: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'active' | 'contained' | 'resolved';
+  type: "fire" | "medical" | "accident" | "natural" | "other";
+  severity: "low" | "medium" | "high" | "critical";
+  status: "active" | "contained" | "resolved";
   location: string;
   coordinates: {
     lat: number;
@@ -90,8 +101,8 @@ export interface Incident {
   responders: Array<{
     id: string;
     name: string;
-    type: 'police' | 'fire' | 'medical' | 'other';
-    status: 'dispatched' | 'on-scene' | 'available';
+    type: "police" | "fire" | "medical" | "other";
+    status: "dispatched" | "on-scene" | "available";
   }>;
   relatedReports?: string[]; // IDs of related DisasterReports
   evacuationZone?: boolean;

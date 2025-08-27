@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/use-auth';
-import type { UserRole } from '@shared/types';
+import { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
+import type { UserRole } from "@shared/types";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({
   children,
   allowedRoles,
-  requiredRole
+  requiredRole,
 }: ProtectedRouteProps) {
   const { user, isLoading, hasRole } = useAuth();
   const location = useLocation();
