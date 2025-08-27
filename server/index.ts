@@ -6,6 +6,7 @@ import { handleSignup, handleSignin, handleSignout, handleGetUser } from "./rout
 import { handleDatabaseSetup } from "./routes/setup";
 import { handleSupabaseTest, handleSupabaseAuthTest } from "./routes/test";
 import { handleAuthTroubleshoot } from "./routes/troubleshoot";
+import { handleCreateTestUser } from "./routes/test-user";
 
 export function createServer() {
   const app = express();
@@ -38,6 +39,7 @@ export function createServer() {
 
   // Troubleshooting
   app.get("/api/troubleshoot/auth", handleAuthTroubleshoot);
+  app.post("/api/test/create-users", handleCreateTestUser);
 
   return app;
 }
