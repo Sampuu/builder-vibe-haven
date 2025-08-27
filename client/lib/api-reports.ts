@@ -152,7 +152,7 @@ export const submitReportHybrid = async (
   } else {
     try {
       // Try client Firebase first
-      const { saveReport } = await import('./firebase-reports');
+      const { saveReport } = await import('./mock-reports');
       const reportId = await saveReport(report);
       return { reportId, method: 'client' };
     } catch (clientError) {
