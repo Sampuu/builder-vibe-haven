@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth, UserRole } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth-simple';
+import { UserRole } from '@shared/api';
 
 interface ProtectedRouteProps {
   children: ReactNode;
