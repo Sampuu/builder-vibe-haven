@@ -19,7 +19,7 @@ import {
   where,
   getDocs
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db } from './firebase-safe';
 import { 
   User, 
   UserRole, 
