@@ -96,7 +96,7 @@ export default function NewsPortal() {
       id: Date.now().toString(),
       title: newPost.title,
       content: newPost.content,
-      author: user.name,
+      author: user.displayName,
       role: user.role,
       timestamp: 'Just now',
       priority: newPost.priority,

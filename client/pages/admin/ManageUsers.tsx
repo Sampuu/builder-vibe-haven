@@ -108,7 +108,7 @@ export default function ManageUsers() {
   const [error, setError] = useState('');
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
@@ -141,7 +141,7 @@ export default function ManageUsers() {
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
+      name: user.displayName,
       email: user.email,
       role: user.role,
       status: user.status
@@ -370,7 +370,7 @@ export default function ManageUsers() {
                     <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="p-4">
                         <div>
-                          <div className="font-medium text-slate-900">{user.name}</div>
+                          <div className="font-medium text-slate-900">{user.displayName}</div>
                           <div className="text-sm text-slate-500">{user.email}</div>
                         </div>
                       </td>
