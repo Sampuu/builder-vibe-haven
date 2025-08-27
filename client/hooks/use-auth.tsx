@@ -19,31 +19,39 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+// Named export for better HMR compatibility
+function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Listen for authentication state changes
     const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
-      setUser(user);
-      setIsLoading(false);
+      if (mounted) {
+        setUser(user);
+        setIsLoading(false);
+      }
     });
 
     // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const logout = async (): Promise<void> => {
@@ -79,7 +87,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
+
+// Export named functions for better HMR compatibility
+export { useAuth, AuthProvider };
 
 // Export types for components
 export type { User, UserRole };
