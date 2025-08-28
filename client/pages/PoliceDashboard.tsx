@@ -15,30 +15,6 @@ import {
 
 export default function PoliceDashboard() {
   const navigate = useNavigate();
-  // Mock data for incidents
-  const incidents = [
-    { id: 1, type: 'Fire', location: 'Downtown Plaza', status: 'pending', priority: 'high', time: '2 mins ago' },
-    { id: 2, type: 'Medical', location: 'Oak Street', status: 'in-progress', priority: 'critical', time: '15 mins ago' },
-    { id: 3, type: 'Accident', location: 'Highway 101', status: 'resolved', priority: 'medium', time: '1 hour ago' },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-emergency-warning';
-      case 'in-progress': return 'bg-emergency-info';
-      case 'resolved': return 'bg-emergency-resolved';
-      default: return 'bg-slate-500';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'bg-emergency-danger';
-      case 'high': return 'bg-emergency-warning';
-      case 'medium': return 'bg-emergency-info';
-      default: return 'bg-slate-500';
-    }
-  };
 
   return (
     <DashboardLayout>
