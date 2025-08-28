@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Phone, 
+import {
+  Phone,
   ArrowLeft,
   Heart,
   Package,
@@ -17,9 +17,12 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { helpRequestsService, createNotificationForHelpRequest, HelpRequest } from '@/lib/firestore';
 
 export default function RequestHelp() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     type: '',
     urgency: 'medium',
@@ -30,13 +33,55 @@ export default function RequestHelp() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) return;
+    if (!formData.type || !formData.description || !formData.location || !formData.contactPhone) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setIsSubmitting(false);
+    setError('');
+
+    try {
+      // Create the help request in Firebase
+      const requestData: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'> = {
+        type: formData.type as HelpRequest['type'],
+        urgency: formData.urgency as HelpRequest['urgency'],
+        description: formData.description,
+        location: formData.location,
+        contactPhone: formData.contactPhone,
+        contactName: user.name,
+        contactEmail: user.email,
+        userId: user.id,
+        specialRequests: formData.specialRequests,
+        status: 'submitted',
+      };
+
+      const requestId = await helpRequestsService.create(requestData);
+
+      // Create notifications for relevant authorities
+      const requestWithId: HelpRequest = {
+        ...requestData,
+        id: requestId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await createNotificationForHelpRequest(requestWithId);
+
+      console.log('Help request submitted successfully:', requestId);
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Failed to submit help request:', error);
+      setError('Failed to submit help request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -90,6 +135,11 @@ export default function RequestHelp() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="type">Type of Help Needed</Label>
                   <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
