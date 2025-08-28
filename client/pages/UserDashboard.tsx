@@ -54,6 +54,29 @@ export default function UserDashboard() {
           </p>
         </div>
 
+        {/* Help Requests Status Alert */}
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Database className="h-5 w-5 text-red-600" />
+                <div>
+                  <h3 className="font-medium text-red-900">Help Requests Data Management</h3>
+                  <p className="text-sm text-red-700">Monitor and maintain your help requests collection</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById('help-requests-manager')?.scrollIntoView({ behavior: 'smooth' })}
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Manage Data
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Report Disaster */}
