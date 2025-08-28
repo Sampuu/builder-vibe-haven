@@ -20,7 +20,7 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
@@ -51,16 +51,21 @@ export default function Signup() {
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${formData.role}`);
-    } else {
-      setError('Failed to create account. Please try again.');
+    try {
+      // Create Firebase account and store user data
+      const success = await signup(formData.email, formData.password, formData.name, formData.role);
+
+      if (success) {
+        // Redirect to appropriate dashboard based on role
+        navigate(`/dashboard/${formData.role}`);
+      } else {
+        setError('Failed to create account. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      setError(error.message || 'Failed to create account. Please try again.');
     }
-    
+
     setIsSubmitting(false);
   };
 
