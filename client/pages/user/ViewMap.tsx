@@ -79,91 +79,80 @@ export default function ViewMap() {
                 <Map className="mr-3 h-8 w-8 text-emergency-info" />
                 Emergency Map
               </h1>
-              <p className="text-slate-600">View danger zones and reported incidents in your area</p>
+              <p className="text-slate-600">View danger zones, navigate safely, and track emergency response units</p>
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-              <Filter className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Map Area */}
           <div className="lg:col-span-3">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative bg-slate-100 h-96 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Interactive Emergency Map</p>
-                    <p className="text-sm">Map integration with incident markers will be implemented here</p>
-                    <p className="text-sm mt-2">• Red markers: Fire emergencies</p>
-                    <p className="text-sm">• Orange markers: Accidents</p>
-                    <p className="text-sm">• Blue markers: Medical emergencies</p>
-                    <p className="text-sm">• Green zones: Safe areas</p>
-                  </div>
-                  
-                  {/* Map Controls */}
-                  <div className="absolute top-4 right-4 flex flex-col space-y-2">
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <ZoomOut className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="bg-white">
-                      <Layers className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MapSystem
+              height="700px"
+              showControls={true}
+              defaultCenter={[20.5937, 78.9629]}
+              defaultZoom={5}
+            />
           </div>
 
           {/* Incident List */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Nearby Incidents</CardTitle>
-                <CardDescription>Active emergencies in your area</CardDescription>
+                <CardTitle className="text-lg">Recent Incidents</CardTitle>
+                <CardDescription>
+                  {incidents.length} active emergencies reported
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {mockIncidents.map((incident) => (
-                    <div 
-                      key={incident.id}
-                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
-                      }`}
-                      onClick={() => setSelectedIncident(incident.id)}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <AlertTriangle className={`h-4 w-4 ${
-                            incident.type === 'fire' ? 'text-emergency-danger' :
-                            incident.type === 'accident' ? 'text-emergency-warning' : 'text-emergency-info'
-                          }`} />
-                          <span className="text-sm font-medium capitalize">{incident.type}</span>
-                        </div>
-                        <Badge className={`text-xs ${
-                          incident.severity === 'high' ? 'bg-emergency-danger' : 
-                          incident.severity === 'medium' ? 'bg-emergency-warning' : 'bg-emergency-info'
-                        } text-white`}>
-                          {incident.severity}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-slate-600 flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {incident.location}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {incident.distance} away
-                      </div>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {incidents.length === 0 ? (
+                    <div className="text-center text-slate-500 py-8">
+                      <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No active incidents</p>
                     </div>
-                  ))}
+                  ) : (
+                    incidents.slice(0, 10).map((incident) => (
+                      <div
+                        key={incident.id}
+                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                        }`}
+                        onClick={() => setSelectedIncident(incident.id)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <AlertTriangle className={`h-4 w-4 ${
+                              incident.type === 'fire' ? 'text-emergency-danger' :
+                              incident.type === 'accident' ? 'text-emergency-warning' :
+                              incident.type === 'medical' ? 'text-emergency-info' : 'text-slate-500'
+                            }`} />
+                            <span className="text-sm font-medium capitalize">{incident.type}</span>
+                          </div>
+                          <Badge variant={
+                            incident.urgency === 'critical' || incident.urgency === 'high' ? 'destructive' : 'secondary'
+                          }>
+                            {incident.urgency}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-slate-600 flex items-center mb-1">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {incident.location}
+                        </div>
+                        <div className="text-xs text-slate-500 flex justify-between">
+                          <span>{getIncidentDistance(incident)} away</span>
+                          <span>{getTimeAgo(incident.timestamp)}</span>
+                        </div>
+                        {incident.status !== 'submitted' && (
+                          <div className="mt-2">
+                            <Badge variant="outline" className="text-xs">
+                              {incident.status.replace('-', ' ')}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -173,22 +162,41 @@ export default function ViewMap() {
                 <CardTitle className="text-lg">Map Legend</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-emergency-danger rounded-full"></div>
-                    <span className="text-sm">Fire Emergency</span>
+                <div className="space-y-3">
+                  <div className="text-sm font-medium text-slate-700 mb-2">Danger Zones</div>
+                  <div className="space-y-2 ml-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 border-2 border-red-500 bg-red-500/30 rounded-full"></div>
+                      <span className="text-sm">Critical - Avoid area</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 border-2 border-orange-500 bg-orange-500/30 rounded-full"></div>
+                      <span className="text-sm">High - Use caution</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 border-2 border-yellow-500 bg-yellow-500/30 rounded-full"></div>
+                      <span className="text-sm">Medium - Minor delays</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-emergency-warning rounded-full"></div>
-                    <span className="text-sm">Traffic Accident</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-emergency-info rounded-full"></div>
-                    <span className="text-sm">Medical Emergency</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-emergency-resolved rounded-full"></div>
-                    <span className="text-sm">Safe Zone</span>
+
+                  <div className="text-sm font-medium text-slate-700 mb-2 mt-4">Response Units</div>
+                  <div className="space-y-2 ml-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                      <span className="text-sm">Police Units</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-orange-600 rounded-full"></div>
+                      <span className="text-sm">Fire Department</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                      <span className="text-sm">Ambulance</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                      <span className="text-sm">Hospital</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -199,19 +207,19 @@ export default function ViewMap() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button 
-                  variant="danger" 
-                  size="sm" 
-                  className="w-full" 
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
                   onClick={() => navigate('/user/report')}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Report Emergency
                 </Button>
-                <Button 
-                  variant="success" 
-                  size="sm" 
-                  className="w-full"
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full bg-green-600 hover:bg-green-700"
                   onClick={() => navigate('/user/help')}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
