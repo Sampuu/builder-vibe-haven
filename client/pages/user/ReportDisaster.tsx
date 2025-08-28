@@ -92,25 +92,55 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
+      // Prepare incident data
+      const incidentData: CreateIncidentRequest = {
+        type: formData.type as CreateIncidentRequest['type'],
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        urgency: formData.severity as CreateIncidentRequest['urgency'],
+        severity: formData.severity as CreateIncidentRequest['urgency'],
+        contactName: formData.contactName,
+        contactPhone: formData.contactPhone,
+        images: formData.images
       };
 
-      console.log('Disaster report submitted:', report);
+      // Submit to server
+      const response = await fetch('/api/incidents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || 'unknown',
+          'x-user-role': user?.role || 'user'
+        },
+        body: JSON.stringify(incidentData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit disaster report');
+      }
+
+      const result: CreateIncidentResponse = await response.json();
+
+      console.log('Disaster report submitted successfully:', result);
+
+      // Show success toast
+      toast({
+        title: 'Disaster Report Submitted',
+        description: `Emergency responders have been notified. ${result.notifications.length} departments alerted.`,
+        variant: 'default',
+        duration: 5000,
+      });
+
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
         type: '',
@@ -124,6 +154,14 @@ export default function ReportDisaster() {
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit disaster report';
+
+      toast({
+        title: 'Submission Failed',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 5000,
+      });
     } finally {
       setIsSubmitting(false);
     }
