@@ -459,23 +459,61 @@ export default function ReportDisaster() {
             <DialogHeader>
               <DialogTitle className="flex items-center text-emergency-resolved">
                 <CheckCircle className="mr-2 h-6 w-6" />
-                Report Submitted Successfully
+                Emergency Report Submitted Successfully
               </DialogTitle>
               <DialogDescription>
-                Your emergency report has been submitted and emergency responders have been notified.
+                Your emergency report has been submitted and relevant departments have been automatically notified.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="text-green-800">
+                  <strong>🚨 EMERGENCY ALERT SENT!</strong>
+                  {formData.type && (
+                    <>
+                      <br />
+                      <span className="text-sm mt-1 block">
+                        Departments notified: {getNotificationRouting(formData.type as IncidentType, formData.severity)
+                          .map(dept => DEPARTMENT_CONTACTS[dept]?.name)
+                          .join(', ')}
+                      </span>
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+
               <div className="bg-emergency-resolved/10 p-4 rounded-lg">
                 <div className="text-sm text-emergency-resolved">
                   <strong>What happens next:</strong>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>Emergency responders will be dispatched</li>
+                    <li>Emergency responders have been automatically notified</li>
+                    <li>Dispatchers will coordinate the response</li>
                     <li>You may receive a call for additional information</li>
-                    <li>Track the status in your dashboard</li>
+                    <li>Track the response status in your dashboard</li>
                   </ul>
                 </div>
               </div>
+
+              {/* Department Contact Info */}
+              {formData.type && (
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-slate-900 mb-2">Notified Departments:</h4>
+                  <div className="space-y-2">
+                    {getNotificationRouting(formData.type as IncidentType, formData.severity).map(dept => {
+                      const contact = DEPARTMENT_CONTACTS[dept];
+                      return (
+                        <div key={dept} className="flex items-center space-x-2 text-sm">
+                          <span className="text-lg">{contact?.icon}</span>
+                          <span className="font-medium">{contact?.name}</span>
+                          <span className="text-slate-500">- {contact?.description}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => navigate('/dashboard/user')}>
                   Back to Dashboard
