@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { createIncident, getIncidents, updateIncidentStatus } from "./routes/incidents";
+import { getNotifications, updateNotification, markAllAsRead } from "./routes/notifications";
 
 export function createServer() {
   const app = express();
@@ -18,6 +20,16 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Incident API routes
+  app.post("/api/incidents", createIncident);
+  app.get("/api/incidents", getIncidents);
+  app.patch("/api/incidents/:id", updateIncidentStatus);
+
+  // Notification API routes
+  app.get("/api/notifications", getNotifications);
+  app.patch("/api/notifications/:id", updateNotification);
+  app.post("/api/notifications/mark-all-read", markAllAsRead);
 
   return app;
 }
