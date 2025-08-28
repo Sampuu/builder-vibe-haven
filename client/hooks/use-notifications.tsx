@@ -157,44 +157,55 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Initialize with sample notifications on mount
   useEffect(() => {
-    const sampleNotifications: Omit<Notification, 'id' | 'timestamp' | 'read'>[] = [
-      {
-        title: 'New Emergency Alert',
-        message: 'Fire reported at Downtown District - Units dispatched',
-        type: 'emergency',
-        priority: 'high',
-        category: 'incident'
-      },
-      {
+    if (!user) return;
+
+    // Add targeted sample notifications based on user role
+    setTimeout(() => {
+      // News notification - goes to all users
+      addNewsNotification({
+        title: 'Weather Warning',
+        message: 'Heavy rainfall expected in the next 2 hours - All departments stay alert',
+        type: 'warning',
+        priority: 'medium'
+      });
+    }, 500);
+
+    setTimeout(() => {
+      // System update - goes to all users
+      addNotification({
         title: 'System Update',
         message: 'Emergency response protocols have been updated',
         type: 'info',
         priority: 'medium',
         category: 'system'
-      },
-      {
-        title: 'Medical Unit Available',
-        message: 'Ambulance Unit 7 is now available for dispatch',
-        type: 'success',
-        priority: 'low',
-        category: 'update'
-      },
-      {
-        title: 'Weather Warning',
-        message: 'Heavy rainfall expected in the next 2 hours',
-        type: 'warning',
-        priority: 'medium',
-        category: 'alert'
-      }
-    ];
+      });
+    }, 1000);
 
-    // Add sample notifications with a delay to simulate real-time updates
-    sampleNotifications.forEach((notification, index) => {
+    // Role-specific notifications
+    if (user.role === 'fire' || user.role === 'police' || user.role === 'admin') {
       setTimeout(() => {
-        addNotification(notification);
-      }, index * 1000);
-    });
-  }, []);
+        addTargetedNotification({
+          title: 'Fire Emergency Alert',
+          message: 'Building fire reported at Downtown District - Fire and Police units needed',
+          type: 'emergency',
+          priority: 'high',
+          category: 'incident'
+        }, ['fire', 'police']);
+      }, 1500);
+    }
+
+    if (user.role === 'ambulance' || user.role === 'hospital' || user.role === 'admin') {
+      setTimeout(() => {
+        addTargetedNotification({
+          title: 'Medical Unit Available',
+          message: 'Ambulance Unit 7 is now available for dispatch',
+          type: 'success',
+          priority: 'low',
+          category: 'update'
+        }, ['ambulance', 'hospital']);
+      }, 2000);
+    }
+  }, [user]);
 
   const value: NotificationContextType = {
     notifications,
