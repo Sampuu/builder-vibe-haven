@@ -283,14 +283,16 @@ export const sendHelpRequestNotification = async (helpRequest: HelpRequest): Pro
 
   if (isFirebaseAvailable() && db) {
     try {
-      const docRef = await addDoc(collection(db, 'notifications'), {
+      const cleanNotificationForFirebase = cleanObjectForFirebase({
         ...notification,
         timestamps: {
           created: serverTimestamp(),
           sent: serverTimestamp()
         }
       });
-      
+
+      const docRef = await addDoc(collection(db, 'notifications'), cleanNotificationForFirebase);
+
       const createdNotification = { ...notification, id: docRef.id };
       console.log('🔥 Help request notification sent via Firebase to:', targetDepartments.join(', '));
       
