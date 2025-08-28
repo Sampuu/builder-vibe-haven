@@ -105,6 +105,8 @@ export default function Signup() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <AuthModeIndicator />
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
