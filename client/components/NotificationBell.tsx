@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
-import { notificationsService, Notification } from '@/lib/firestore';
+import { adaptiveNotificationService } from '@/lib/adaptiveServices';
+import { Notification } from '@/lib/firestore';
 import { cn } from '@/lib/utils';
 
 export default function NotificationBell() {
@@ -24,7 +25,7 @@ export default function NotificationBell() {
     if (!user || user.role === 'user') return;
 
     // Listen for real-time notifications for this user's role
-    const unsubscribe = notificationsService.onSnapshot(user.role, (newNotifications) => {
+    const unsubscribe = adaptiveNotificationService.onSnapshot(user.role, (newNotifications) => {
       setNotifications(newNotifications);
       setUnreadCount(newNotifications.filter(n => !n.read).length);
     });
@@ -34,7 +35,7 @@ export default function NotificationBell() {
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read) {
-      await notificationsService.markAsRead(notification.id!);
+      await adaptiveNotificationService.markAsRead(notification.id!);
     }
   };
 

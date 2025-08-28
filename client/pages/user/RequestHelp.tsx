@@ -18,7 +18,8 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { helpRequestsService, createNotificationForHelpRequest, HelpRequest } from '@/lib/firestore';
+import { adaptiveHelpService, createNotificationForHelpRequest } from '@/lib/adaptiveServices';
+import { HelpRequest } from '@/lib/firestore';
 
 export default function RequestHelp() {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ export default function RequestHelp() {
         status: 'submitted',
       };
 
-      const requestId = await helpRequestsService.create(requestData);
+      const requestId = await adaptiveHelpService.create(requestData);
 
       // Create notifications for relevant authorities
       const requestWithId: HelpRequest = {

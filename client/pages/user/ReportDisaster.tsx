@@ -20,7 +20,8 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { disasterReportsService, createNotificationForReport, DisasterReport } from '@/lib/firestore';
+import { adaptiveDisasterService, createNotificationForReport } from '@/lib/adaptiveServices';
+import { DisasterReport } from '@/lib/firestore';
 
 // Remove local interface - using the one from firestore.ts
 
@@ -93,7 +94,7 @@ export default function ReportDisaster() {
         status: 'submitted',
       };
 
-      const reportId = await disasterReportsService.create(reportData);
+      const reportId = await adaptiveDisasterService.create(reportData);
 
       // Create notifications for relevant authorities
       const reportWithId: DisasterReport = {
