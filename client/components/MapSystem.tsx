@@ -225,19 +225,27 @@ export default function MapSystem({
     }
   };
 
-  // Simple geocoding function (mock implementation)
+  // Geocoding function using server API
   const geocodeDestination = async (destination: string): Promise<{lat: number; lng: number} | null> => {
-    // Mock geocoding - in production, use a real service
-    const destinations: Record<string, {lat: number; lng: number}> = {
-      'mumbai': { lat: 19.0760, lng: 72.8777 },
-      'delhi': { lat: 28.6139, lng: 77.2090 },
-      'bangalore': { lat: 12.9716, lng: 77.5946 },
-      'chennai': { lat: 13.0827, lng: 80.2707 },
-      'kolkata': { lat: 22.5726, lng: 88.3639 },
-    };
+    try {
+      const response = await fetch(`/api/geocode?query=${encodeURIComponent(destination)}`, {
+        headers: {
+          'x-user-id': user?.id || '',
+          'x-user-role': user?.role || 'user'
+        }
+      });
 
-    const key = destination.toLowerCase();
-    return destinations[key] || null;
+      if (response.ok) {
+        const data = await response.json();
+        return data.coordinates;
+      } else {
+        console.error('Geocoding failed');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error geocoding destination:', error);
+      return null;
+    }
   };
 
   // Recalculate route (useful when danger zones update)
