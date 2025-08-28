@@ -1,5 +1,11 @@
 // User roles in the rescue system
-export type UserRole = 'user' | 'police' | 'ambulance' | 'fireBrigade' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "ambulance"
+  | "fireBrigade"
+  | "hospital"
+  | "admin";
 
 // User profile interface
 export interface UserProfile {
@@ -19,8 +25,8 @@ export interface PoliceReport {
   officerId: string;
   officerName: string;
   details: string;
-  status: 'open' | 'in_progress' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: "open" | "in_progress" | "closed";
+  priority: "low" | "medium" | "high" | "critical";
   location: string;
   timestamp: Date;
   caseUpdates?: CaseUpdate[];
@@ -40,8 +46,8 @@ export interface AmbulanceRequest {
   emergencyType: string;
   location: string;
   dispatchedAmbulanceId?: string;
-  status: 'requested' | 'dispatched' | 'en_route' | 'arrived' | 'completed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: "requested" | "dispatched" | "en_route" | "arrived" | "completed";
+  priority: "low" | "medium" | "high" | "critical";
   requestedBy: string;
   timestamp: Date;
   hospitalDestination?: string;
@@ -51,10 +57,10 @@ export interface AmbulanceRequest {
 export interface FireBrigadeReport {
   reportId: string;
   fireStationId: string;
-  incidentType: 'fire' | 'rescue' | 'hazmat' | 'natural_disaster';
+  incidentType: "fire" | "rescue" | "hazmat" | "natural_disaster";
   location: string;
-  severity: 'minor' | 'moderate' | 'major' | 'critical';
-  status: 'reported' | 'responding' | 'on_scene' | 'controlled' | 'resolved';
+  severity: "minor" | "moderate" | "major" | "critical";
+  status: "reported" | "responding" | "on_scene" | "controlled" | "resolved";
   timestamp: Date;
   assignedTeam: string;
   description: string;
@@ -73,7 +79,7 @@ export interface HospitalRecord {
   specialties: string[];
   contact: string;
   location: string;
-  status: 'operational' | 'full' | 'emergency_only' | 'closed';
+  status: "operational" | "full" | "emergency_only" | "closed";
   lastUpdated: Date;
   patientRecords?: PatientRecord[];
 }
@@ -83,7 +89,7 @@ export interface PatientRecord {
   name: string;
   condition: string;
   admissionDate: Date;
-  status: 'admitted' | 'discharged' | 'transferred';
+  status: "admitted" | "discharged" | "transferred";
   emergencyContact: string;
 }
 
@@ -95,7 +101,11 @@ export interface AdminLog {
   targetUser?: string;
   details: string;
   timestamp: Date;
-  category: 'user_management' | 'system_config' | 'emergency_response' | 'audit';
+  category:
+    | "user_management"
+    | "system_config"
+    | "emergency_response"
+    | "audit";
 }
 
 // Emergency request interface
@@ -103,11 +113,11 @@ export interface EmergencyRequest {
   requestId: string;
   userId: string;
   userName: string;
-  type: 'police' | 'ambulance' | 'fire' | 'general';
+  type: "police" | "ambulance" | "fire" | "general";
   description: string;
   location: string;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'cancelled';
+  urgency: "low" | "medium" | "high" | "critical";
+  status: "pending" | "assigned" | "in_progress" | "resolved" | "cancelled";
   timestamp: Date;
   assignedTo?: string;
   responseTime?: Date;

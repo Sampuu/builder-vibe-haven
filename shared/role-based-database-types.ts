@@ -1,8 +1,19 @@
 // Comprehensive Role-Based Database Types for 6 Main Collections
 
-export type EmergencyType = 'fire' | 'medical' | 'traffic_accident' | 'flood' | 'earthquake' | 'other';
-export type EmergencyPriority = 'low' | 'medium' | 'high' | 'critical';
-export type EmergencyStatus = 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'cancelled';
+export type EmergencyType =
+  | "fire"
+  | "medical"
+  | "traffic_accident"
+  | "flood"
+  | "earthquake"
+  | "other";
+export type EmergencyPriority = "low" | "medium" | "high" | "critical";
+export type EmergencyStatus =
+  | "pending"
+  | "assigned"
+  | "in_progress"
+  | "resolved"
+  | "cancelled";
 
 // Common location interface
 export interface Location {
@@ -16,7 +27,7 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
-  role: 'user' | 'police' | 'ambulance' | 'fireBrigade' | 'hospital' | 'admin';
+  role: "user" | "police" | "ambulance" | "fireBrigade" | "hospital" | "admin";
   contact: string;
   createdAt: Date;
   updatedAt: Date;
@@ -45,7 +56,7 @@ export interface UserRequestHelp {
   requestId: string;
   userId: string;
   userName: string;
-  helpType: 'medical' | 'supplies' | 'rescue' | 'evacuation' | 'other';
+  helpType: "medical" | "supplies" | "rescue" | "evacuation" | "other";
   details: string;
   urgency: EmergencyPriority;
   status: EmergencyStatus;
@@ -61,7 +72,7 @@ export interface UserViewMap {
   type: EmergencyType;
   location: Location;
   severity: EmergencyPriority;
-  status: 'active' | 'resolved' | 'monitoring';
+  status: "active" | "resolved" | "monitoring";
   reportedBy: string;
   reporterName: string;
   timestamp: Date;
@@ -75,7 +86,11 @@ export interface UserDisasterNews {
   authorName: string;
   title: string;
   content: string;
-  category: 'emergency_alert' | 'safety_tips' | 'incident_update' | 'general_info';
+  category:
+    | "emergency_alert"
+    | "safety_tips"
+    | "incident_update"
+    | "general_info";
   timestamp: Date;
   location?: Location;
   tags?: string[];
@@ -146,7 +161,7 @@ export interface AmbulanceProfile {
 export interface AmbulanceRequest {
   requestId: string;
   patientName?: string;
-  emergencyType: 'medical' | 'accident' | 'transport';
+  emergencyType: "medical" | "accident" | "transport";
   location: Location;
   description: string;
   priority: EmergencyPriority;
@@ -168,7 +183,7 @@ export interface AmbulanceDispatchLog {
   ambulanceId: string;
   paramedicId: string;
   dispatchTime: Date;
-  status: 'dispatched' | 'en_route' | 'on_scene' | 'transporting' | 'completed';
+  status: "dispatched" | "en_route" | "on_scene" | "transporting" | "completed";
   location: Location;
   notes?: string;
   mileage?: number;
@@ -194,7 +209,7 @@ export interface FireIncident {
   incidentId: string;
   firefighterId: string;
   firefighterName: string;
-  incidentType: 'fire' | 'rescue' | 'hazmat' | 'flood' | 'earthquake';
+  incidentType: "fire" | "rescue" | "hazmat" | "flood" | "earthquake";
   location: Location;
   description: string;
   severity: EmergencyPriority;
@@ -246,7 +261,7 @@ export interface HospitalRecord {
   specialties: string[];
   contact: string;
   location: Location;
-  status: 'operational' | 'full' | 'emergency_only' | 'maintenance';
+  status: "operational" | "full" | "emergency_only" | "maintenance";
   lastUpdated: Date;
 }
 
@@ -256,7 +271,7 @@ export interface PatientAdmission {
   emergencyType: EmergencyType;
   condition: string;
   admissionTime: Date;
-  status: 'admitted' | 'treated' | 'discharged' | 'transferred';
+  status: "admitted" | "treated" | "discharged" | "transferred";
   priority: EmergencyPriority;
   assignedDoctor?: string;
   roomNumber?: string;
@@ -270,7 +285,7 @@ export interface AdminProfile {
   uid: string;
   name: string;
   email: string;
-  adminLevel: 'system' | 'regional' | 'local';
+  adminLevel: "system" | "regional" | "local";
   permissions: string[];
   contact: string;
   lastLogin: Date;
@@ -289,7 +304,7 @@ export interface SystemLog {
   timestamp: Date;
   ipAddress?: string;
   userAgent?: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
+  severity: "info" | "warning" | "error" | "critical";
 }
 
 export interface RoleManagement {
@@ -301,14 +316,14 @@ export interface RoleManagement {
   reason: string;
   timestamp: Date;
   approvedBy?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 }
 
 // =================== EMERGENCY ROUTING CONFIGURATION ===================
 export interface EmergencyRoutingRule {
   emergencyType: EmergencyType;
   targetCollections: {
-    collection: 'police' | 'ambulance' | 'fireBrigade' | 'hospital' | 'admin';
+    collection: "police" | "ambulance" | "fireBrigade" | "hospital" | "admin";
     subCollection: string;
     priority: number; // 1 = highest priority
   }[];
@@ -316,47 +331,79 @@ export interface EmergencyRoutingRule {
 
 export const EMERGENCY_ROUTING_RULES: EmergencyRoutingRule[] = [
   {
-    emergencyType: 'fire',
+    emergencyType: "fire",
     targetCollections: [
-      { collection: 'fireBrigade', subCollection: 'fireIncidents', priority: 1 }
-    ]
+      {
+        collection: "fireBrigade",
+        subCollection: "fireIncidents",
+        priority: 1,
+      },
+    ],
   },
   {
-    emergencyType: 'medical',
+    emergencyType: "medical",
     targetCollections: [
-      { collection: 'hospital', subCollection: 'patientAdmissions', priority: 1 },
-      { collection: 'ambulance', subCollection: 'ambulanceRequests', priority: 1 }
-    ]
+      {
+        collection: "hospital",
+        subCollection: "patientAdmissions",
+        priority: 1,
+      },
+      {
+        collection: "ambulance",
+        subCollection: "ambulanceRequests",
+        priority: 1,
+      },
+    ],
   },
   {
-    emergencyType: 'traffic_accident',
+    emergencyType: "traffic_accident",
     targetCollections: [
-      { collection: 'police', subCollection: 'policeReports', priority: 1 },
-      { collection: 'ambulance', subCollection: 'ambulanceRequests', priority: 2 }
-    ]
+      { collection: "police", subCollection: "policeReports", priority: 1 },
+      {
+        collection: "ambulance",
+        subCollection: "ambulanceRequests",
+        priority: 2,
+      },
+    ],
   },
   {
-    emergencyType: 'flood',
+    emergencyType: "flood",
     targetCollections: [
-      { collection: 'fireBrigade', subCollection: 'fireIncidents', priority: 1 },
-      { collection: 'police', subCollection: 'policeReports', priority: 2 }
-    ]
+      {
+        collection: "fireBrigade",
+        subCollection: "fireIncidents",
+        priority: 1,
+      },
+      { collection: "police", subCollection: "policeReports", priority: 2 },
+    ],
   },
   {
-    emergencyType: 'earthquake',
+    emergencyType: "earthquake",
     targetCollections: [
-      { collection: 'police', subCollection: 'policeReports', priority: 1 },
-      { collection: 'fireBrigade', subCollection: 'fireIncidents', priority: 1 },
-      { collection: 'ambulance', subCollection: 'ambulanceRequests', priority: 1 },
-      { collection: 'hospital', subCollection: 'patientAdmissions', priority: 1 }
-    ]
+      { collection: "police", subCollection: "policeReports", priority: 1 },
+      {
+        collection: "fireBrigade",
+        subCollection: "fireIncidents",
+        priority: 1,
+      },
+      {
+        collection: "ambulance",
+        subCollection: "ambulanceRequests",
+        priority: 1,
+      },
+      {
+        collection: "hospital",
+        subCollection: "patientAdmissions",
+        priority: 1,
+      },
+    ],
   },
   {
-    emergencyType: 'other',
+    emergencyType: "other",
     targetCollections: [
-      { collection: 'admin', subCollection: 'systemLogs', priority: 1 }
-    ]
-  }
+      { collection: "admin", subCollection: "systemLogs", priority: 1 },
+    ],
+  },
 ];
 
 // =================== FORM INTERFACES ===================
@@ -369,7 +416,7 @@ export interface CreateEmergencyReportForm {
 }
 
 export interface CreateHelpRequestForm {
-  helpType: UserRequestHelp['helpType'];
+  helpType: UserRequestHelp["helpType"];
   details: string;
   urgency: EmergencyPriority;
   location: Location;
@@ -379,23 +426,23 @@ export interface CreateHelpRequestForm {
 export interface CreateNewsForm {
   title: string;
   content: string;
-  category: UserDisasterNews['category'];
+  category: UserDisasterNews["category"];
   location?: Location;
   tags?: string[];
   priority: EmergencyPriority;
 }
 
 // =================== ANALYTICS EVENTS ===================
-export type AnalyticsEvent = 
-  | 'emergency_report_created'
-  | 'help_request_created'
-  | 'news_created'
-  | 'map_viewed'
-  | 'dashboard_accessed'
-  | 'role_dashboard_accessed'
-  | 'emergency_forwarded'
-  | 'emergency_assigned'
-  | 'emergency_resolved';
+export type AnalyticsEvent =
+  | "emergency_report_created"
+  | "help_request_created"
+  | "news_created"
+  | "map_viewed"
+  | "dashboard_accessed"
+  | "role_dashboard_accessed"
+  | "emergency_forwarded"
+  | "emergency_assigned"
+  | "emergency_resolved";
 
 export interface AnalyticsEventData {
   userId: string;
@@ -408,7 +455,7 @@ export interface AnalyticsEventData {
 // =================== REAL-TIME NOTIFICATION TYPES ===================
 export interface NotificationData {
   id: string;
-  type: 'emergency' | 'assignment' | 'update' | 'resolved';
+  type: "emergency" | "assignment" | "update" | "resolved";
   title: string;
   message: string;
   priority: EmergencyPriority;
@@ -432,57 +479,83 @@ export interface DemoAccount {
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
   {
-    email: 'user_demo@test.com',
-    password: 'password123',
-    role: 'user',
+    email: "user_demo@test.com",
+    password: "password123",
+    role: "user",
     customClaims: {
-      role: 'user',
-      permissions: ['report_emergency', 'request_help', 'view_map', 'create_news']
-    }
+      role: "user",
+      permissions: [
+        "report_emergency",
+        "request_help",
+        "view_map",
+        "create_news",
+      ],
+    },
   },
   {
-    email: 'police_demo@test.com',
-    password: 'password123',
-    role: 'police',
+    email: "police_demo@test.com",
+    password: "password123",
+    role: "police",
     customClaims: {
-      role: 'police',
-      permissions: ['manage_police_reports', 'update_cases', 'view_all_emergencies']
-    }
+      role: "police",
+      permissions: [
+        "manage_police_reports",
+        "update_cases",
+        "view_all_emergencies",
+      ],
+    },
   },
   {
-    email: 'ambulance_demo@test.com',
-    password: 'password123',
-    role: 'ambulance',
+    email: "ambulance_demo@test.com",
+    password: "password123",
+    role: "ambulance",
     customClaims: {
-      role: 'ambulance',
-      permissions: ['manage_ambulance_requests', 'dispatch_logs', 'view_medical_emergencies']
-    }
+      role: "ambulance",
+      permissions: [
+        "manage_ambulance_requests",
+        "dispatch_logs",
+        "view_medical_emergencies",
+      ],
+    },
   },
   {
-    email: 'fire_demo@test.com',
-    password: 'password123',
-    role: 'fireBrigade',
+    email: "fire_demo@test.com",
+    password: "password123",
+    role: "fireBrigade",
     customClaims: {
-      role: 'fireBrigade',
-      permissions: ['manage_fire_incidents', 'rescue_logs', 'view_fire_emergencies']
-    }
+      role: "fireBrigade",
+      permissions: [
+        "manage_fire_incidents",
+        "rescue_logs",
+        "view_fire_emergencies",
+      ],
+    },
   },
   {
-    email: 'hospital_demo@test.com',
-    password: 'password123',
-    role: 'hospital',
+    email: "hospital_demo@test.com",
+    password: "password123",
+    role: "hospital",
     customClaims: {
-      role: 'hospital',
-      permissions: ['manage_hospital_records', 'patient_admissions', 'view_medical_emergencies']
-    }
+      role: "hospital",
+      permissions: [
+        "manage_hospital_records",
+        "patient_admissions",
+        "view_medical_emergencies",
+      ],
+    },
   },
   {
-    email: 'admin_demo@test.com',
-    password: 'password123',
-    role: 'admin',
+    email: "admin_demo@test.com",
+    password: "password123",
+    role: "admin",
     customClaims: {
-      role: 'admin',
-      permissions: ['full_access', 'role_management', 'system_logs', 'user_management']
-    }
-  }
+      role: "admin",
+      permissions: [
+        "full_access",
+        "role_management",
+        "system_logs",
+        "user_management",
+      ],
+    },
+  },
 ];

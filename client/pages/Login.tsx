@@ -1,52 +1,60 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate(`/dashboard/${user.role === 'fireBrigade' ? 'fire' : user.role}`);
+      navigate(
+        `/dashboard/${user.role === "fireBrigade" ? "fire" : user.role}`,
+      );
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       setIsSubmitting(false);
       return;
     }
 
     try {
       const success = await login(email, password);
-      
+
       if (success) {
         // The redirect will happen automatically via useEffect when user state updates
       } else {
-        setError('Invalid email or password. Please try again.');
+        setError("Invalid email or password. Please try again.");
       }
     } catch (error: any) {
-      setError(error.message || 'Login failed. Please try again.');
+      setError(error.message || "Login failed. Please try again.");
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -54,9 +62,9 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
           className="mb-6 p-2 hover:bg-white/60"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -70,7 +78,9 @@ export default function Login() {
                 <AlertTriangle className="h-8 w-8 text-emergency-danger" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Login to System</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Login to System
+            </CardTitle>
             <CardDescription className="text-slate-600">
               Access your emergency response dashboard
             </CardDescription>
@@ -107,22 +117,22 @@ export default function Login() {
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 variant="danger"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Logging in...' : 'Login'}
+                {isSubmitting ? "Logging in..." : "Login"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Don't have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/signup')}
+                Don't have an account?{" "}
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/signup")}
                   className="p-0 h-auto text-emergency-danger hover:text-emergency-danger/80"
                 >
                   Sign up here

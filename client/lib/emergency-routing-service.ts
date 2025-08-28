@@ -1,14 +1,14 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
+import {
+  collection,
+  doc,
+  addDoc,
   updateDoc,
   serverTimestamp,
   GeoPoint,
-  writeBatch 
-} from 'firebase/firestore';
-import { db, analytics } from './firebase';
-import { logEvent } from 'firebase/analytics';
+  writeBatch,
+} from "firebase/firestore";
+import { db, analytics } from "./firebase";
+import { logEvent } from "firebase/analytics";
 import {
   EmergencyType,
   EmergencyRoutingRule,
@@ -20,11 +20,10 @@ import {
   PatientAdmission,
   SystemLog,
   CreateEmergencyReportForm,
-  AnalyticsEvent
-} from '@shared/role-based-database-types';
+  AnalyticsEvent,
+} from "@shared/role-based-database-types";
 
 export class EmergencyRoutingService {
-  
   /**
    * Forward emergency report to appropriate role collections based on type
    */
@@ -32,13 +31,17 @@ export class EmergencyRoutingService {
     userId: string,
     userName: string,
     userReportId: string,
-    reportData: CreateEmergencyReportForm
+    reportData: CreateEmergencyReportForm,
   ): Promise<string[]> {
     try {
-      const routingRule = EMERGENCY_ROUTING_RULES.find(rule => rule.emergencyType === reportData.type);
-      
+      const routingRule = EMERGENCY_ROUTING_RULES.find(
+        (rule) => rule.emergencyType === reportData.type,
+      );
+
       if (!routingRule) {
-        throw new Error(`No routing rule found for emergency type: ${reportData.type}`);
+        throw new Error(
+          `No routing rule found for emergency type: ${reportData.type}`,
+        );
       }
 
       const forwardedTo: string[] = [];
@@ -54,14 +57,15 @@ export class EmergencyRoutingService {
             userId,
             userName,
             reportData,
-            batch
+            batch,
           );
-          
-          forwardedTo.push(`${target.collection}/${target.subCollection}/${forwardedId}`);
-          
+
+          forwardedTo.push(
+            `${target.collection}/${target.subCollection}/${forwardedId}`,
+          );
+
           // Track analytics for forwarding
           this.trackForwardingEvent(userId, reportData.type, target.collection);
-          
         } catch (error) {
           console.error(`Error forwarding to ${target.collection}:`, error);
           // Continue processing other targets even if one fails
@@ -76,7 +80,7 @@ export class EmergencyRoutingService {
 
       return forwardedTo;
     } catch (error) {
-      console.error('Error in emergency routing:', error);
+      console.error("Error in emergency routing:", error);
       throw error;
     }
   }
@@ -91,9 +95,8 @@ export class EmergencyRoutingService {
     userId: string,
     userName: string,
     reportData: CreateEmergencyReportForm,
-    batch: any
+    batch: any,
   ): Promise<string> {
-    
     const roleDocRef = doc(db, roleCollection, userId); // Using userId as role document ID for simplicity
     const subCollectionRef = collection(roleDocRef, subCollection);
     const newDocRef = doc(subCollectionRef);
@@ -101,20 +104,45 @@ export class EmergencyRoutingService {
     let forwardedData: any;
 
     switch (roleCollection) {
-      case 'police':
-        forwardedData = this.createPoliceReport(sourceReportId, userId, userName, reportData);
+      case "police":
+        forwardedData = this.createPoliceReport(
+          sourceReportId,
+          userId,
+          userName,
+          reportData,
+        );
         break;
-      case 'ambulance':
-        forwardedData = this.createAmbulanceRequest(sourceReportId, userId, userName, reportData);
+      case "ambulance":
+        forwardedData = this.createAmbulanceRequest(
+          sourceReportId,
+          userId,
+          userName,
+          reportData,
+        );
         break;
-      case 'fireBrigade':
-        forwardedData = this.createFireIncident(sourceReportId, userId, userName, reportData);
+      case "fireBrigade":
+        forwardedData = this.createFireIncident(
+          sourceReportId,
+          userId,
+          userName,
+          reportData,
+        );
         break;
-      case 'hospital':
-        forwardedData = this.createPatientAdmission(sourceReportId, userId, userName, reportData);
+      case "hospital":
+        forwardedData = this.createPatientAdmission(
+          sourceReportId,
+          userId,
+          userName,
+          reportData,
+        );
         break;
-      case 'admin':
-        forwardedData = this.createSystemLog(sourceReportId, userId, userName, reportData);
+      case "admin":
+        forwardedData = this.createSystemLog(
+          sourceReportId,
+          userId,
+          userName,
+          reportData,
+        );
         break;
       default:
         throw new Error(`Unknown role collection: ${roleCollection}`);
@@ -124,7 +152,10 @@ export class EmergencyRoutingService {
     batch.set(newDocRef, {
       ...forwardedData,
       timestamp: serverTimestamp(),
-      location: new GeoPoint(reportData.location.latitude, reportData.location.longitude)
+      location: new GeoPoint(
+        reportData.location.latitude,
+        reportData.location.longitude,
+      ),
     });
 
     return newDocRef.id;
@@ -137,20 +168,20 @@ export class EmergencyRoutingService {
     sourceReportId: string,
     userId: string,
     userName: string,
-    reportData: CreateEmergencyReportForm
-  ): Omit<PoliceReport, 'reportId' | 'timestamp'> {
+    reportData: CreateEmergencyReportForm,
+  ): Omit<PoliceReport, "reportId" | "timestamp"> {
     return {
-      officerId: 'auto-assigned', // Will be updated when officer takes the case
-      officerName: 'Auto-Assignment',
+      officerId: "auto-assigned", // Will be updated when officer takes the case
+      officerName: "Auto-Assignment",
       incidentType: reportData.type,
       location: reportData.location,
       description: reportData.description,
       priority: reportData.severity,
-      status: 'pending',
+      status: "pending",
       involvedParties: [userName],
       evidenceFiles: [],
       relatedIncidents: [],
-      sourceReportId
+      sourceReportId,
     };
   }
 
@@ -161,17 +192,18 @@ export class EmergencyRoutingService {
     sourceReportId: string,
     userId: string,
     userName: string,
-    reportData: CreateEmergencyReportForm
-  ): Omit<AmbulanceRequest, 'requestId' | 'timestamp'> {
+    reportData: CreateEmergencyReportForm,
+  ): Omit<AmbulanceRequest, "requestId" | "timestamp"> {
     return {
-      patientName: reportData.type === 'medical' ? userName : undefined,
-      emergencyType: reportData.type === 'traffic_accident' ? 'accident' : 'medical',
+      patientName: reportData.type === "medical" ? userName : undefined,
+      emergencyType:
+        reportData.type === "traffic_accident" ? "accident" : "medical",
       location: reportData.location,
       description: reportData.description,
       priority: reportData.severity,
-      status: 'pending',
+      status: "pending",
       requestedBy: userId,
-      sourceReportId
+      sourceReportId,
     };
   }
 
@@ -182,34 +214,33 @@ export class EmergencyRoutingService {
     sourceReportId: string,
     userId: string,
     userName: string,
-    reportData: CreateEmergencyReportForm
-  ): Omit<FireIncident, 'incidentId' | 'timestamp'> {
-    
-    let incidentType: FireIncident['incidentType'];
+    reportData: CreateEmergencyReportForm,
+  ): Omit<FireIncident, "incidentId" | "timestamp"> {
+    let incidentType: FireIncident["incidentType"];
     switch (reportData.type) {
-      case 'fire':
-        incidentType = 'fire';
+      case "fire":
+        incidentType = "fire";
         break;
-      case 'flood':
-        incidentType = 'flood';
+      case "flood":
+        incidentType = "flood";
         break;
-      case 'earthquake':
-        incidentType = 'earthquake';
+      case "earthquake":
+        incidentType = "earthquake";
         break;
       default:
-        incidentType = 'rescue';
+        incidentType = "rescue";
     }
 
     return {
-      firefighterId: 'auto-assigned', // Will be updated when firefighter takes the case
-      firefighterName: 'Auto-Assignment',
+      firefighterId: "auto-assigned", // Will be updated when firefighter takes the case
+      firefighterName: "Auto-Assignment",
       incidentType,
       location: reportData.location,
       description: reportData.description,
       severity: reportData.severity,
-      status: 'pending',
+      status: "pending",
       unitsDispatched: [],
-      sourceReportId
+      sourceReportId,
     };
   }
 
@@ -220,15 +251,15 @@ export class EmergencyRoutingService {
     sourceReportId: string,
     userId: string,
     userName: string,
-    reportData: CreateEmergencyReportForm
-  ): Omit<PatientAdmission, 'admissionId' | 'admissionTime'> {
+    reportData: CreateEmergencyReportForm,
+  ): Omit<PatientAdmission, "admissionId" | "admissionTime"> {
     return {
-      patientName: reportData.type === 'medical' ? userName : undefined,
+      patientName: reportData.type === "medical" ? userName : undefined,
       emergencyType: reportData.type,
       condition: reportData.description,
-      status: 'admitted',
+      status: "admitted",
       priority: reportData.severity,
-      sourceReportId
+      sourceReportId,
     };
   }
 
@@ -239,15 +270,15 @@ export class EmergencyRoutingService {
     sourceReportId: string,
     userId: string,
     userName: string,
-    reportData: CreateEmergencyReportForm
-  ): Omit<SystemLog, 'logId' | 'timestamp'> {
+    reportData: CreateEmergencyReportForm,
+  ): Omit<SystemLog, "logId" | "timestamp"> {
     return {
-      adminId: 'system',
-      action: 'emergency_report_received',
+      adminId: "system",
+      action: "emergency_report_received",
       targetUser: userId,
-      targetCollection: 'users',
+      targetCollection: "users",
       details: `Emergency report of type '${reportData.type}' from ${userName} requires manual assignment. Description: ${reportData.description}`,
-      severity: reportData.severity === 'critical' ? 'critical' : 'warning'
+      severity: reportData.severity === "critical" ? "critical" : "warning",
     };
   }
 
@@ -257,19 +288,19 @@ export class EmergencyRoutingService {
   private static async updateUserReportForwarding(
     userId: string,
     reportId: string,
-    forwardedTo: string[]
+    forwardedTo: string[],
   ): Promise<void> {
     try {
-      const userDocRef = doc(db, 'users', userId);
-      const reportDocRef = doc(userDocRef, 'reportDisaster', reportId);
-      
+      const userDocRef = doc(db, "users", userId);
+      const reportDocRef = doc(userDocRef, "reportDisaster", reportId);
+
       await updateDoc(reportDocRef, {
         forwardedTo,
-        status: 'assigned',
-        updatedAt: serverTimestamp()
+        status: "assigned",
+        updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      console.error('Error updating user report forwarding:', error);
+      console.error("Error updating user report forwarding:", error);
       throw error;
     }
   }
@@ -280,14 +311,14 @@ export class EmergencyRoutingService {
   private static trackForwardingEvent(
     userId: string,
     emergencyType: EmergencyType,
-    targetRole: string
+    targetRole: string,
   ): void {
     if (analytics) {
-      logEvent(analytics, 'emergency_forwarded', {
+      logEvent(analytics, "emergency_forwarded", {
         user_id: userId,
         emergency_type: emergencyType,
         target_role: targetRole,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -295,8 +326,12 @@ export class EmergencyRoutingService {
   /**
    * Get routing configuration for emergency type
    */
-  static getRoutingConfiguration(emergencyType: EmergencyType): EmergencyRoutingRule | undefined {
-    return EMERGENCY_ROUTING_RULES.find(rule => rule.emergencyType === emergencyType);
+  static getRoutingConfiguration(
+    emergencyType: EmergencyType,
+  ): EmergencyRoutingRule | undefined {
+    return EMERGENCY_ROUTING_RULES.find(
+      (rule) => rule.emergencyType === emergencyType,
+    );
   }
 
   /**
@@ -304,13 +339,17 @@ export class EmergencyRoutingService {
    */
   static getTargetRoles(emergencyType: EmergencyType): string[] {
     const rule = this.getRoutingConfiguration(emergencyType);
-    return rule ? rule.targetCollections.map(target => target.collection) : [];
+    return rule
+      ? rule.targetCollections.map((target) => target.collection)
+      : [];
   }
 
   /**
    * Validate emergency report before forwarding
    */
-  static validateEmergencyReport(reportData: CreateEmergencyReportForm): boolean {
+  static validateEmergencyReport(
+    reportData: CreateEmergencyReportForm,
+  ): boolean {
     return !!(
       reportData.type &&
       reportData.description &&
@@ -329,7 +368,7 @@ export class EmergencyRoutingService {
     userId: string,
     userName: string,
     userReportId: string,
-    reportData: CreateEmergencyReportForm
+    reportData: CreateEmergencyReportForm,
   ): Promise<{
     success: boolean;
     forwardedTo: string[];
@@ -341,7 +380,7 @@ export class EmergencyRoutingService {
         return {
           success: false,
           forwardedTo: [],
-          error: 'Invalid emergency report data'
+          error: "Invalid emergency report data",
         };
       }
 
@@ -350,30 +389,30 @@ export class EmergencyRoutingService {
         userId,
         userName,
         userReportId,
-        reportData
+        reportData,
       );
 
       // Track successful processing
       if (analytics) {
-        logEvent(analytics, 'emergency_report_processed', {
+        logEvent(analytics, "emergency_report_processed", {
           user_id: userId,
           emergency_type: reportData.type,
           forwarded_count: forwardedTo.length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
       return {
         success: true,
-        forwardedTo
+        forwardedTo,
       };
-
     } catch (error) {
-      console.error('Error processing emergency report:', error);
+      console.error("Error processing emergency report:", error);
       return {
         success: false,
         forwardedTo: [],
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   }

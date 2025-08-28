@@ -10,7 +10,7 @@ const firebaseConfig = {
   storageBucket: "rescue-system-com.firebasestorage.app",
   messagingSenderId: "700167192144",
   appId: "1:700167192144:web:3ab567e5ca28a6a7a3db55",
-  measurementId: "G-PETD5ZZLFG"
+  measurementId: "G-PETD5ZZLFG",
 };
 
 // Initialize Firebase

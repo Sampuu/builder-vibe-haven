@@ -1,22 +1,22 @@
-import { 
-  collection, 
-  doc, 
+import {
+  collection,
+  doc,
   addDoc,
-  query, 
-  orderBy, 
-  where, 
+  query,
+  orderBy,
+  where,
   onSnapshot,
   serverTimestamp,
-  Timestamp
-} from 'firebase/firestore';
-import { db, analytics } from './firebase';
-import { logEvent } from 'firebase/analytics';
+  Timestamp,
+} from "firebase/firestore";
+import { db, analytics } from "./firebase";
+import { logEvent } from "firebase/analytics";
 import {
   NotificationData,
   EmergencyType,
   EmergencyPriority,
-  UserReportDisaster
-} from '@shared/role-based-database-types';
+  UserReportDisaster,
+} from "@shared/role-based-database-types";
 
 export interface NotificationSubscription {
   id: string;
@@ -24,8 +24,12 @@ export interface NotificationSubscription {
 }
 
 export class RealTimeNotificationService {
-  private static subscriptions: Map<string, NotificationSubscription> = new Map();
-  private static notificationCallbacks: Map<string, (notifications: NotificationData[]) => void> = new Map();
+  private static subscriptions: Map<string, NotificationSubscription> =
+    new Map();
+  private static notificationCallbacks: Map<
+    string,
+    (notifications: NotificationData[]) => void
+  > = new Map();
 
   /**
    * Subscribe to real-time notifications for a specific role
@@ -33,18 +37,25 @@ export class RealTimeNotificationService {
   static subscribeToRoleNotifications(
     userId: string,
     userRole: string,
-    callback: (notifications: NotificationData[]) => void
+    callback: (notifications: NotificationData[]) => void,
   ): string {
     const subscriptionId = `${userRole}_${userId}_notifications`;
-    
+
     // Store callback for this subscription
     this.notificationCallbacks.set(subscriptionId, callback);
 
     // Subscribe to role-specific collection changes
-    const unsubscribeRole = this.subscribeToRoleCollection(userId, userRole, subscriptionId);
-    
+    const unsubscribeRole = this.subscribeToRoleCollection(
+      userId,
+      userRole,
+      subscriptionId,
+    );
+
     // Subscribe to global notifications for this role
-    const unsubscribeGlobal = this.subscribeToGlobalNotifications(userRole, subscriptionId);
+    const unsubscribeGlobal = this.subscribeToGlobalNotifications(
+      userRole,
+      subscriptionId,
+    );
 
     // Combine unsubscribe functions
     const combinedUnsubscribe = () => {
@@ -55,7 +66,7 @@ export class RealTimeNotificationService {
 
     const subscription: NotificationSubscription = {
       id: subscriptionId,
-      unsubscribe: combinedUnsubscribe
+      unsubscribe: combinedUnsubscribe,
     };
 
     this.subscriptions.set(subscriptionId, subscription);
@@ -68,31 +79,31 @@ export class RealTimeNotificationService {
   private static subscribeToRoleCollection(
     userId: string,
     userRole: string,
-    subscriptionId: string
+    subscriptionId: string,
   ): () => void {
     let collectionPath: string;
     let subCollection: string;
 
     switch (userRole) {
-      case 'police':
-        collectionPath = 'police';
-        subCollection = 'policeReports';
+      case "police":
+        collectionPath = "police";
+        subCollection = "policeReports";
         break;
-      case 'ambulance':
-        collectionPath = 'ambulance';
-        subCollection = 'ambulanceRequests';
+      case "ambulance":
+        collectionPath = "ambulance";
+        subCollection = "ambulanceRequests";
         break;
-      case 'fireBrigade':
-        collectionPath = 'fireBrigade';
-        subCollection = 'fireIncidents';
+      case "fireBrigade":
+        collectionPath = "fireBrigade";
+        subCollection = "fireIncidents";
         break;
-      case 'hospital':
-        collectionPath = 'hospital';
-        subCollection = 'patientAdmissions';
+      case "hospital":
+        collectionPath = "hospital";
+        subCollection = "patientAdmissions";
         break;
-      case 'admin':
-        collectionPath = 'admin';
-        subCollection = 'systemLogs';
+      case "admin":
+        collectionPath = "admin";
+        subCollection = "systemLogs";
         break;
       default:
         return () => {}; // No role-specific collection for users
@@ -100,28 +111,28 @@ export class RealTimeNotificationService {
 
     const roleDocRef = doc(db, collectionPath, userId);
     const collectionRef = collection(roleDocRef, subCollection);
-    
+
     // Query for recent incidents (last 24 hours)
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const q = query(
-      collectionRef, 
-      where('timestamp', '>=', twentyFourHoursAgo),
-      orderBy('timestamp', 'desc')
+      collectionRef,
+      where("timestamp", ">=", twentyFourHoursAgo),
+      orderBy("timestamp", "desc"),
     );
 
     return onSnapshot(q, (snapshot) => {
       const notifications: NotificationData[] = [];
 
       snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
+        if (change.type === "added") {
           const data = change.doc.data();
           const notification = this.createNotificationFromData(
             change.doc.id,
             userRole,
             data,
-            subCollection
+            subCollection,
           );
-          
+
           if (notification) {
             notifications.push(notification);
           }
@@ -139,13 +150,13 @@ export class RealTimeNotificationService {
    */
   private static subscribeToGlobalNotifications(
     userRole: string,
-    subscriptionId: string
+    subscriptionId: string,
   ): () => void {
-    const notificationsRef = collection(db, 'notifications');
+    const notificationsRef = collection(db, "notifications");
     const q = query(
       notificationsRef,
-      where('targetRoles', 'array-contains', userRole),
-      orderBy('timestamp', 'desc')
+      where("targetRoles", "array-contains", userRole),
+      orderBy("timestamp", "desc"),
     );
 
     return onSnapshot(q, (snapshot) => {
@@ -155,15 +166,15 @@ export class RealTimeNotificationService {
         const data = doc.data();
         const notification: NotificationData = {
           id: doc.id,
-          type: data.type || 'emergency',
-          title: data.title || 'New Notification',
-          message: data.message || '',
-          priority: data.priority || 'medium',
+          type: data.type || "emergency",
+          title: data.title || "New Notification",
+          message: data.message || "",
+          priority: data.priority || "medium",
           timestamp: this.convertTimestamp(data.timestamp),
-          sourceId: data.sourceId || '',
+          sourceId: data.sourceId || "",
           targetRoles: data.targetRoles || [],
           isRead: data.isRead || false,
-          actionRequired: data.actionRequired || false
+          actionRequired: data.actionRequired || false,
         };
         notifications.push(notification);
       });
@@ -177,7 +188,7 @@ export class RealTimeNotificationService {
    */
   private static handleNewNotifications(
     subscriptionId: string,
-    notifications: NotificationData[]
+    notifications: NotificationData[],
   ): void {
     const callback = this.notificationCallbacks.get(subscriptionId);
     if (callback) {
@@ -186,10 +197,10 @@ export class RealTimeNotificationService {
 
     // Log analytics for notification received
     if (analytics && notifications.length > 0) {
-      logEvent(analytics, 'notifications_received', {
+      logEvent(analytics, "notifications_received", {
         subscription_id: subscriptionId,
         notification_count: notifications.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   }
@@ -201,84 +212,84 @@ export class RealTimeNotificationService {
     docId: string,
     userRole: string,
     data: any,
-    subCollection: string
+    subCollection: string,
   ): NotificationData | null {
     try {
       let notification: NotificationData;
 
       switch (subCollection) {
-        case 'policeReports':
+        case "policeReports":
           notification = {
             id: `police_${docId}`,
-            type: 'emergency',
-            title: '🚔 New Police Report',
+            type: "emergency",
+            title: "🚔 New Police Report",
             message: `New ${data.incidentType} incident reported: ${data.description?.substring(0, 100)}...`,
-            priority: data.priority || 'medium',
+            priority: data.priority || "medium",
             timestamp: this.convertTimestamp(data.timestamp),
             sourceId: data.sourceReportId || docId,
-            targetRoles: ['police'],
+            targetRoles: ["police"],
             isRead: false,
-            actionRequired: data.status === 'pending'
+            actionRequired: data.status === "pending",
           };
           break;
 
-        case 'ambulanceRequests':
+        case "ambulanceRequests":
           notification = {
             id: `ambulance_${docId}`,
-            type: 'emergency',
-            title: '🚑 New Ambulance Request',
+            type: "emergency",
+            title: "🚑 New Ambulance Request",
             message: `${data.emergencyType} emergency: ${data.description?.substring(0, 100)}...`,
-            priority: data.priority || 'high',
+            priority: data.priority || "high",
             timestamp: this.convertTimestamp(data.timestamp),
             sourceId: data.sourceReportId || docId,
-            targetRoles: ['ambulance'],
+            targetRoles: ["ambulance"],
             isRead: false,
-            actionRequired: data.status === 'pending'
+            actionRequired: data.status === "pending",
           };
           break;
 
-        case 'fireIncidents':
+        case "fireIncidents":
           notification = {
             id: `fire_${docId}`,
-            type: 'emergency',
-            title: '🔥 New Fire Incident',
+            type: "emergency",
+            title: "🔥 New Fire Incident",
             message: `${data.incidentType} incident: ${data.description?.substring(0, 100)}...`,
-            priority: data.severity || 'high',
+            priority: data.severity || "high",
             timestamp: this.convertTimestamp(data.timestamp),
             sourceId: data.sourceReportId || docId,
-            targetRoles: ['fireBrigade'],
+            targetRoles: ["fireBrigade"],
             isRead: false,
-            actionRequired: data.status === 'pending'
+            actionRequired: data.status === "pending",
           };
           break;
 
-        case 'patientAdmissions':
+        case "patientAdmissions":
           notification = {
             id: `hospital_${docId}`,
-            type: 'emergency',
-            title: '🏥 New Patient Admission',
+            type: "emergency",
+            title: "🏥 New Patient Admission",
             message: `${data.emergencyType} patient: ${data.condition?.substring(0, 100)}...`,
-            priority: data.priority || 'medium',
+            priority: data.priority || "medium",
             timestamp: this.convertTimestamp(data.admissionTime),
             sourceId: data.sourceReportId || docId,
-            targetRoles: ['hospital'],
+            targetRoles: ["hospital"],
             isRead: false,
-            actionRequired: data.status === 'admitted'
+            actionRequired: data.status === "admitted",
           };
           break;
 
-        case 'systemLogs':
+        case "systemLogs":
           notification = {
             id: `admin_${docId}`,
-            type: 'update',
-            title: '⚙️ System Alert',
+            type: "update",
+            title: "⚙️ System Alert",
             message: `${data.action}: ${data.details?.substring(0, 100)}...`,
-            priority: data.severity === 'critical' ? 'critical' : 'medium',
+            priority: data.severity === "critical" ? "critical" : "medium",
             timestamp: this.convertTimestamp(data.timestamp),
             sourceId: docId,
-            targetRoles: ['admin'],
+            targetRoles: ["admin"],
             isRead: false,
-            actionRequired: data.severity === 'critical'
+            actionRequired: data.severity === "critical",
           };
           break;
 
@@ -288,7 +299,7 @@ export class RealTimeNotificationService {
 
       return notification;
     } catch (error) {
-      console.error('Error creating notification from data:', error);
+      console.error("Error creating notification from data:", error);
       return null;
     }
   }
@@ -298,11 +309,11 @@ export class RealTimeNotificationService {
    */
   static async sendEmergencyForwardedNotification(
     emergencyReport: UserReportDisaster,
-    targetRoles: string[]
+    targetRoles: string[],
   ): Promise<void> {
     try {
-      const notification: Omit<NotificationData, 'id'> = {
-        type: 'emergency',
+      const notification: Omit<NotificationData, "id"> = {
+        type: "emergency",
         title: `🚨 New ${emergencyReport.type.toUpperCase()} Emergency`,
         message: `Emergency reported by ${emergencyReport.userName}: ${emergencyReport.description.substring(0, 150)}...`,
         priority: emergencyReport.severity,
@@ -310,27 +321,26 @@ export class RealTimeNotificationService {
         sourceId: emergencyReport.reportId,
         targetRoles,
         isRead: false,
-        actionRequired: true
+        actionRequired: true,
       };
 
       // Add to global notifications collection
-      await addDoc(collection(db, 'notifications'), {
+      await addDoc(collection(db, "notifications"), {
         ...notification,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
       });
 
       // Log analytics
       if (analytics) {
-        logEvent(analytics, 'emergency_notification_sent', {
+        logEvent(analytics, "emergency_notification_sent", {
           emergency_type: emergencyReport.type,
-          target_roles: targetRoles.join(','),
+          target_roles: targetRoles.join(","),
           priority: emergencyReport.severity,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-
     } catch (error) {
-      console.error('Error sending emergency forwarded notification:', error);
+      console.error("Error sending emergency forwarded notification:", error);
     }
   }
 
@@ -342,28 +352,27 @@ export class RealTimeNotificationService {
     newStatus: string,
     message: string,
     targetRoles: string[],
-    priority: EmergencyPriority = 'medium'
+    priority: EmergencyPriority = "medium",
   ): Promise<void> {
     try {
-      const notification: Omit<NotificationData, 'id'> = {
-        type: 'update',
-        title: '📋 Status Update',
+      const notification: Omit<NotificationData, "id"> = {
+        type: "update",
+        title: "📋 Status Update",
         message,
         priority,
         timestamp: new Date(),
         sourceId,
         targetRoles,
         isRead: false,
-        actionRequired: false
+        actionRequired: false,
       };
 
-      await addDoc(collection(db, 'notifications'), {
+      await addDoc(collection(db, "notifications"), {
         ...notification,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
       });
-
     } catch (error) {
-      console.error('Error sending status update notification:', error);
+      console.error("Error sending status update notification:", error);
     }
   }
 
@@ -372,12 +381,12 @@ export class RealTimeNotificationService {
    */
   static async markNotificationAsRead(notificationId: string): Promise<void> {
     try {
-      const notificationRef = doc(db, 'notifications', notificationId);
-      await import('firebase/firestore').then(({ updateDoc }) => 
-        updateDoc(notificationRef, { isRead: true })
+      const notificationRef = doc(db, "notifications", notificationId);
+      await import("firebase/firestore").then(({ updateDoc }) =>
+        updateDoc(notificationRef, { isRead: true }),
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   }
 
@@ -386,17 +395,19 @@ export class RealTimeNotificationService {
    */
   static async getUnreadNotificationCount(userRole: string): Promise<number> {
     try {
-      const notificationsRef = collection(db, 'notifications');
+      const notificationsRef = collection(db, "notifications");
       const q = query(
         notificationsRef,
-        where('targetRoles', 'array-contains', userRole),
-        where('isRead', '==', false)
+        where("targetRoles", "array-contains", userRole),
+        where("isRead", "==", false),
       );
 
-      const snapshot = await import('firebase/firestore').then(({ getDocs }) => getDocs(q));
+      const snapshot = await import("firebase/firestore").then(({ getDocs }) =>
+        getDocs(q),
+      );
       return snapshot.size;
     } catch (error) {
-      console.error('Error getting unread notification count:', error);
+      console.error("Error getting unread notification count:", error);
       return 0;
     }
   }
@@ -416,7 +427,7 @@ export class RealTimeNotificationService {
    * Unsubscribe from all notifications
    */
   static unsubscribeAll(): void {
-    this.subscriptions.forEach(subscription => {
+    this.subscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
     this.subscriptions.clear();
@@ -441,26 +452,27 @@ export class RealTimeNotificationService {
    */
   static async sendTestNotification(targetRoles: string[]): Promise<void> {
     try {
-      const notification: Omit<NotificationData, 'id'> = {
-        type: 'update',
-        title: '🧪 Test Notification',
-        message: 'This is a test notification to verify the real-time notification system is working.',
-        priority: 'low',
+      const notification: Omit<NotificationData, "id"> = {
+        type: "update",
+        title: "🧪 Test Notification",
+        message:
+          "This is a test notification to verify the real-time notification system is working.",
+        priority: "low",
         timestamp: new Date(),
-        sourceId: 'test',
+        sourceId: "test",
         targetRoles,
         isRead: false,
-        actionRequired: false
+        actionRequired: false,
       };
 
-      await addDoc(collection(db, 'notifications'), {
+      await addDoc(collection(db, "notifications"), {
         ...notification,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
       });
 
-      console.log('Test notification sent to roles:', targetRoles);
+      console.log("Test notification sent to roles:", targetRoles);
     } catch (error) {
-      console.error('Error sending test notification:', error);
+      console.error("Error sending test notification:", error);
     }
   }
 }
@@ -479,27 +491,32 @@ export interface UseNotificationsReturn {
  */
 export const useNotifications = (
   userId: string,
-  userRole: string
+  userRole: string,
 ): UseNotificationsReturn => {
-  const [notifications, setNotifications] = React.useState<NotificationData[]>([]);
+  const [notifications, setNotifications] = React.useState<NotificationData[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (!userId || !userRole) return;
 
-    const subscriptionId = RealTimeNotificationService.subscribeToRoleNotifications(
-      userId,
-      userRole,
-      (newNotifications) => {
-        setNotifications(prev => {
-          // Merge and deduplicate notifications
-          const existingIds = new Set(prev.map(n => n.id));
-          const uniqueNew = newNotifications.filter(n => !existingIds.has(n.id));
-          return [...uniqueNew, ...prev].slice(0, 50); // Keep only last 50 notifications
-        });
-        setIsLoading(false);
-      }
-    );
+    const subscriptionId =
+      RealTimeNotificationService.subscribeToRoleNotifications(
+        userId,
+        userRole,
+        (newNotifications) => {
+          setNotifications((prev) => {
+            // Merge and deduplicate notifications
+            const existingIds = new Set(prev.map((n) => n.id));
+            const uniqueNew = newNotifications.filter(
+              (n) => !existingIds.has(n.id),
+            );
+            return [...uniqueNew, ...prev].slice(0, 50); // Keep only last 50 notifications
+          });
+          setIsLoading(false);
+        },
+      );
 
     return () => {
       RealTimeNotificationService.unsubscribe(subscriptionId);
@@ -508,8 +525,8 @@ export const useNotifications = (
 
   const markAsRead = async (notificationId: string) => {
     await RealTimeNotificationService.markNotificationAsRead(notificationId);
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
     );
   };
 
@@ -517,16 +534,16 @@ export const useNotifications = (
     setNotifications([]);
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return {
     notifications,
     unreadCount,
     isLoading,
     markAsRead,
-    clearAll
+    clearAll,
   };
 };
 
 // Import React for the hook
-import React from 'react';
+import React from "react";

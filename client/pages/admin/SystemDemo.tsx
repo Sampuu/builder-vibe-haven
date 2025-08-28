@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import {
   Play,
   Users,
   Database,
@@ -19,16 +25,16 @@ import {
   Loader2,
   Copy,
   TestTube,
-  Settings
-} from 'lucide-react';
-import { 
-  DemoAccountService, 
-  DEMO_CREDENTIALS, 
-  setupDemoEnvironment 
-} from '@/lib/demo-account-service';
-import { EmergencyRoutingService } from '@/lib/emergency-routing-service';
-import { RealTimeNotificationService } from '@/lib/real-time-notification-service';
-import { useRoleBasedFirebase } from '@/contexts/RoleBasedFirebaseContext';
+  Settings,
+} from "lucide-react";
+import {
+  DemoAccountService,
+  DEMO_CREDENTIALS,
+  setupDemoEnvironment,
+} from "@/lib/demo-account-service";
+import { EmergencyRoutingService } from "@/lib/emergency-routing-service";
+import { RealTimeNotificationService } from "@/lib/real-time-notification-service";
+import { useRoleBasedFirebase } from "@/contexts/RoleBasedFirebaseContext";
 
 interface DemoStatus {
   accounts: {
@@ -57,14 +63,14 @@ export default function SystemDemo() {
   const [demoStatus, setDemoStatus] = useState<DemoStatus>({
     accounts: { created: false, total: 6, success: 0, failed: 0 },
     routing: { tested: false, successful: 0, failed: 0 },
-    notifications: { active: false, sent: 0, received: 0 }
+    notifications: { active: false, sent: 0, received: 0 },
   });
   const [testResults, setTestResults] = useState<any[]>([]);
 
   // Check if user has admin access
   useEffect(() => {
     if (!isAdmin()) {
-      navigate('/dashboard/user');
+      navigate("/dashboard/user");
     }
   }, [isAdmin, navigate]);
 
@@ -74,46 +80,54 @@ export default function SystemDemo() {
 
     try {
       // Step 1: Create demo accounts
-      addTestResult('Creating demo accounts...', 'info');
+      addTestResult("Creating demo accounts...", "info");
       const accountResult = await DemoAccountService.createAllDemoAccounts();
-      
-      setDemoStatus(prev => ({
+
+      setDemoStatus((prev) => ({
         ...prev,
         accounts: {
           created: accountResult.success,
           total: 6,
           success: accountResult.created.length,
-          failed: accountResult.failed.length
-        }
+          failed: accountResult.failed.length,
+        },
       }));
 
       if (accountResult.success) {
-        addTestResult(`✅ Successfully created ${accountResult.created.length} demo accounts`, 'success');
+        addTestResult(
+          `✅ Successfully created ${accountResult.created.length} demo accounts`,
+          "success",
+        );
       } else {
-        addTestResult(`⚠️ Created ${accountResult.created.length} accounts, ${accountResult.failed.length} failed`, 'warning');
+        addTestResult(
+          `⚠️ Created ${accountResult.created.length} accounts, ${accountResult.failed.length} failed`,
+          "warning",
+        );
       }
 
       // Step 2: Test emergency routing
-      addTestResult('Testing emergency routing system...', 'info');
+      addTestResult("Testing emergency routing system...", "info");
       await testEmergencyRouting();
 
       // Step 3: Test notification system
-      addTestResult('Testing notification system...', 'info');
+      addTestResult("Testing notification system...", "info");
       await testNotificationSystem();
 
       // Step 4: Final status
-      addTestResult('🎉 Demo setup completed successfully!', 'success');
+      addTestResult("🎉 Demo setup completed successfully!", "success");
       setSetupResult({
         success: true,
-        message: 'Demo environment is ready for presentation',
-        accounts: Object.values(DEMO_CREDENTIALS)
+        message: "Demo environment is ready for presentation",
+        accounts: Object.values(DEMO_CREDENTIALS),
       });
-
     } catch (error) {
-      addTestResult(`❌ Setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      addTestResult(
+        `❌ Setup failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        "error",
+      );
       setSetupResult({
         success: false,
-        message: 'Demo setup failed'
+        message: "Demo setup failed",
       });
     } finally {
       setIsSetupRunning(false);
@@ -125,91 +139,139 @@ export default function SystemDemo() {
     let failed = 0;
 
     const testCases = [
-      { type: 'fire', expectedTargets: ['fireBrigade'] },
-      { type: 'medical', expectedTargets: ['hospital', 'ambulance'] },
-      { type: 'traffic_accident', expectedTargets: ['police', 'ambulance'] },
-      { type: 'flood', expectedTargets: ['fireBrigade', 'police'] },
-      { type: 'earthquake', expectedTargets: ['police', 'fireBrigade', 'ambulance', 'hospital'] },
-      { type: 'other', expectedTargets: ['admin'] }
+      { type: "fire", expectedTargets: ["fireBrigade"] },
+      { type: "medical", expectedTargets: ["hospital", "ambulance"] },
+      { type: "traffic_accident", expectedTargets: ["police", "ambulance"] },
+      { type: "flood", expectedTargets: ["fireBrigade", "police"] },
+      {
+        type: "earthquake",
+        expectedTargets: ["police", "fireBrigade", "ambulance", "hospital"],
+      },
+      { type: "other", expectedTargets: ["admin"] },
     ];
 
     for (const testCase of testCases) {
       try {
-        const config = EmergencyRoutingService.getRoutingConfiguration(testCase.type as any);
-        const actualTargets = EmergencyRoutingService.getTargetRoles(testCase.type as any);
-        
-        const isCorrect = testCase.expectedTargets.every(target => actualTargets.includes(target));
-        
+        const config = EmergencyRoutingService.getRoutingConfiguration(
+          testCase.type as any,
+        );
+        const actualTargets = EmergencyRoutingService.getTargetRoles(
+          testCase.type as any,
+        );
+
+        const isCorrect = testCase.expectedTargets.every((target) =>
+          actualTargets.includes(target),
+        );
+
         if (isCorrect) {
           successful++;
-          addTestResult(`✅ ${testCase.type} → ${actualTargets.join(', ')}`, 'success');
+          addTestResult(
+            `✅ ${testCase.type} → ${actualTargets.join(", ")}`,
+            "success",
+          );
         } else {
           failed++;
-          addTestResult(`❌ ${testCase.type} routing mismatch`, 'error');
+          addTestResult(`❌ ${testCase.type} routing mismatch`, "error");
         }
       } catch (error) {
         failed++;
-        addTestResult(`❌ ${testCase.type} routing error`, 'error');
+        addTestResult(`❌ ${testCase.type} routing error`, "error");
       }
     }
 
-    setDemoStatus(prev => ({
+    setDemoStatus((prev) => ({
       ...prev,
-      routing: { tested: true, successful, failed }
+      routing: { tested: true, successful, failed },
     }));
 
-    addTestResult(`Emergency routing test: ${successful}/${successful + failed} passed`, successful === testCases.length ? 'success' : 'warning');
+    addTestResult(
+      `Emergency routing test: ${successful}/${successful + failed} passed`,
+      successful === testCases.length ? "success" : "warning",
+    );
   };
 
   const testNotificationSystem = async () => {
     try {
       // Send test notifications to all roles
-      const roles = ['user', 'police', 'ambulance', 'fireBrigade', 'hospital', 'admin'];
+      const roles = [
+        "user",
+        "police",
+        "ambulance",
+        "fireBrigade",
+        "hospital",
+        "admin",
+      ];
       await RealTimeNotificationService.sendTestNotification(roles);
-      
-      setDemoStatus(prev => ({
+
+      setDemoStatus((prev) => ({
         ...prev,
-        notifications: { active: true, sent: roles.length, received: 0 }
+        notifications: { active: true, sent: roles.length, received: 0 },
       }));
 
-      addTestResult(`✅ Test notifications sent to ${roles.length} roles`, 'success');
+      addTestResult(
+        `✅ Test notifications sent to ${roles.length} roles`,
+        "success",
+      );
     } catch (error) {
-      addTestResult(`❌ Notification test failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      addTestResult(
+        `❌ Notification test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        "error",
+      );
     }
   };
 
-  const addTestResult = (message: string, type: 'info' | 'success' | 'warning' | 'error') => {
-    setTestResults(prev => [...prev, {
-      id: Date.now(),
-      message,
-      type,
-      timestamp: new Date().toLocaleTimeString()
-    }]);
+  const addTestResult = (
+    message: string,
+    type: "info" | "success" | "warning" | "error",
+  ) => {
+    setTestResults((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        message,
+        type,
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
   };
 
   const copyCredentials = () => {
     const credentialsText = Object.values(DEMO_CREDENTIALS)
-      .map(cred => `${cred.role.toUpperCase()}: ${cred.email} / ${cred.password}`)
-      .join('\n');
-    
+      .map(
+        (cred) =>
+          `${cred.role.toUpperCase()}: ${cred.email} / ${cred.password}`,
+      )
+      .join("\n");
+
     navigator.clipboard.writeText(credentialsText);
-    addTestResult('📋 Demo credentials copied to clipboard', 'info');
+    addTestResult("📋 Demo credentials copied to clipboard", "info");
   };
 
   const testLogin = async (credentials: typeof DEMO_CREDENTIALS.USER) => {
     try {
-      addTestResult(`Testing login for ${credentials.role}...`, 'info');
-      const result = await DemoAccountService.testDemoLogin(credentials.email, credentials.password);
-      
+      addTestResult(`Testing login for ${credentials.role}...`, "info");
+      const result = await DemoAccountService.testDemoLogin(
+        credentials.email,
+        credentials.password,
+      );
+
       if (result.success) {
-        addTestResult(`✅ ${credentials.role} login successful`, 'success');
+        addTestResult(`✅ ${credentials.role} login successful`, "success");
         // Sign out immediately after test
-        await import('firebase/auth').then(({ signOut }) => signOut(import('../lib/firebase').then(f => f.auth)));
+        await import("firebase/auth").then(({ signOut }) =>
+          signOut(import("../lib/firebase").then((f) => f.auth)),
+        );
       } else {
-        addTestResult(`❌ ${credentials.role} login failed: ${result.error}`, 'error');
+        addTestResult(
+          `❌ ${credentials.role} login failed: ${result.error}`,
+          "error",
+        );
       }
     } catch (error) {
-      addTestResult(`❌ ${credentials.role} login error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      addTestResult(
+        `❌ ${credentials.role} login error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        "error",
+      );
     }
   };
 
@@ -224,10 +286,11 @@ export default function SystemDemo() {
               Role-Based Emergency System Demo
             </h1>
             <p className="text-slate-600">
-              Complete testing and demonstration environment for the 6-role emergency management system
+              Complete testing and demonstration environment for the 6-role
+              emergency management system
             </p>
           </div>
-          <Button 
+          <Button
             onClick={runFullDemoSetup}
             disabled={isSetupRunning}
             className="bg-blue-600 hover:bg-blue-700"
@@ -258,7 +321,9 @@ export default function SystemDemo() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold">{demoStatus.accounts.success}/{demoStatus.accounts.total}</div>
+                  <div className="text-2xl font-bold">
+                    {demoStatus.accounts.success}/{demoStatus.accounts.total}
+                  </div>
                   <div className="text-xs text-slate-500">Accounts Created</div>
                 </div>
                 {demoStatus.accounts.created ? (
@@ -280,7 +345,10 @@ export default function SystemDemo() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold">{demoStatus.routing.successful}/{demoStatus.routing.successful + demoStatus.routing.failed}</div>
+                  <div className="text-2xl font-bold">
+                    {demoStatus.routing.successful}/
+                    {demoStatus.routing.successful + demoStatus.routing.failed}
+                  </div>
                   <div className="text-xs text-slate-500">Tests Passed</div>
                 </div>
                 {demoStatus.routing.tested ? (
@@ -302,8 +370,12 @@ export default function SystemDemo() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold">{demoStatus.notifications.sent}</div>
-                  <div className="text-xs text-slate-500">Test Notifications</div>
+                  <div className="text-2xl font-bold">
+                    {demoStatus.notifications.sent}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Test Notifications
+                  </div>
                 </div>
                 {demoStatus.notifications.active ? (
                   <CheckCircle className="h-8 w-8 text-green-500" />
@@ -330,19 +402,20 @@ export default function SystemDemo() {
               <CardHeader>
                 <CardTitle>Demo Account Credentials</CardTitle>
                 <CardDescription>
-                  Use these accounts to test different role dashboards and functionality
+                  Use these accounts to test different role dashboards and
+                  functionality
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {Object.values(DEMO_CREDENTIALS).map(cred => (
+                  {Object.values(DEMO_CREDENTIALS).map((cred) => (
                     <div key={cred.role} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant="outline" className="capitalize">
-                          {cred.role.replace('Brigade', ' Brigade')}
+                          {cred.role.replace("Brigade", " Brigade")}
                         </Badge>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => testLogin(cred)}
                         >
@@ -350,13 +423,21 @@ export default function SystemDemo() {
                         </Button>
                       </div>
                       <div className="space-y-1 text-sm">
-                        <div><strong>Email:</strong> {cred.email}</div>
-                        <div><strong>Password:</strong> {cred.password}</div>
+                        <div>
+                          <strong>Email:</strong> {cred.email}
+                        </div>
+                        <div>
+                          <strong>Password:</strong> {cred.password}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button onClick={copyCredentials} variant="outline" className="w-full">
+                <Button
+                  onClick={copyCredentials}
+                  variant="outline"
+                  className="w-full"
+                >
                   <Copy className="mr-2 h-4 w-4" />
                   Copy All Credentials
                 </Button>
@@ -370,29 +451,58 @@ export default function SystemDemo() {
               <CardHeader>
                 <CardTitle>Emergency Type Routing Rules</CardTitle>
                 <CardDescription>
-                  How different emergency types are automatically routed to role collections
+                  How different emergency types are automatically routed to role
+                  collections
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { type: 'fire', icon: '🔥', targets: ['Fire Brigade'] },
-                    { type: 'medical', icon: '🚑', targets: ['Hospital', 'Ambulance'] },
-                    { type: 'traffic_accident', icon: '🚗', targets: ['Police', 'Ambulance'] },
-                    { type: 'flood', icon: '🌊', targets: ['Fire Brigade', 'Police'] },
-                    { type: 'earthquake', icon: '🌍', targets: ['Police', 'Fire Brigade', 'Ambulance', 'Hospital'] },
-                    { type: 'other', icon: '⚠️', targets: ['Admin'] }
-                  ].map(emergency => (
-                    <div key={emergency.type} className="flex items-center justify-between p-3 border rounded-lg">
+                    { type: "fire", icon: "🔥", targets: ["Fire Brigade"] },
+                    {
+                      type: "medical",
+                      icon: "🚑",
+                      targets: ["Hospital", "Ambulance"],
+                    },
+                    {
+                      type: "traffic_accident",
+                      icon: "🚗",
+                      targets: ["Police", "Ambulance"],
+                    },
+                    {
+                      type: "flood",
+                      icon: "🌊",
+                      targets: ["Fire Brigade", "Police"],
+                    },
+                    {
+                      type: "earthquake",
+                      icon: "🌍",
+                      targets: [
+                        "Police",
+                        "Fire Brigade",
+                        "Ambulance",
+                        "Hospital",
+                      ],
+                    },
+                    { type: "other", icon: "⚠️", targets: ["Admin"] },
+                  ].map((emergency) => (
+                    <div
+                      key={emergency.type}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <span className="text-2xl">{emergency.icon}</span>
                         <div>
-                          <div className="font-medium capitalize">{emergency.type.replace('_', ' ')}</div>
-                          <div className="text-sm text-slate-500">Emergency Type</div>
+                          <div className="font-medium capitalize">
+                            {emergency.type.replace("_", " ")}
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            Emergency Type
+                          </div>
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        {emergency.targets.map(target => (
+                        {emergency.targets.map((target) => (
                           <Badge key={target} variant="secondary">
                             {target}
                           </Badge>
@@ -411,13 +521,27 @@ export default function SystemDemo() {
               <Card>
                 <CardHeader>
                   <CardTitle>Database Collections</CardTitle>
-                  <CardDescription>Test role-based database access</CardDescription>
+                  <CardDescription>
+                    Test role-based database access
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {['users', 'police', 'ambulance', 'fireBrigade', 'hospital', 'admin'].map(collection => (
-                      <div key={collection} className="flex items-center justify-between p-2 border rounded">
-                        <span className="capitalize">{collection.replace('Brigade', ' Brigade')}</span>
+                    {[
+                      "users",
+                      "police",
+                      "ambulance",
+                      "fireBrigade",
+                      "hospital",
+                      "admin",
+                    ].map((collection) => (
+                      <div
+                        key={collection}
+                        className="flex items-center justify-between p-2 border rounded"
+                      >
+                        <span className="capitalize">
+                          {collection.replace("Brigade", " Brigade")}
+                        </span>
                         <Badge variant="outline">Ready</Badge>
                       </div>
                     ))}
@@ -428,21 +552,23 @@ export default function SystemDemo() {
               <Card>
                 <CardHeader>
                   <CardTitle>Real-time Features</CardTitle>
-                  <CardDescription>Test notification and live updates</CardDescription>
+                  <CardDescription>
+                    Test notification and live updates
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <Button 
-                      onClick={() => testNotificationSystem()} 
-                      variant="outline" 
+                    <Button
+                      onClick={() => testNotificationSystem()}
+                      variant="outline"
                       className="w-full"
                     >
                       <Bell className="mr-2 h-4 w-4" />
                       Send Test Notifications
                     </Button>
-                    <Button 
-                      onClick={() => testEmergencyRouting()} 
-                      variant="outline" 
+                    <Button
+                      onClick={() => testEmergencyRouting()}
+                      variant="outline"
                       className="w-full"
                     >
                       <Route className="mr-2 h-4 w-4" />
@@ -468,19 +594,29 @@ export default function SystemDemo() {
                   {testResults.length === 0 ? (
                     <div className="text-center text-slate-500 py-8">
                       <TestTube className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No test results yet. Run the demo setup to see logs.</p>
+                      <p>
+                        No test results yet. Run the demo setup to see logs.
+                      </p>
                     </div>
                   ) : (
-                    testResults.map(result => (
-                      <div key={result.id} className={`p-3 rounded-lg border-l-4 ${
-                        result.type === 'success' ? 'bg-green-50 border-green-500' :
-                        result.type === 'error' ? 'bg-red-50 border-red-500' :
-                        result.type === 'warning' ? 'bg-yellow-50 border-yellow-500' :
-                        'bg-blue-50 border-blue-500'
-                      }`}>
+                    testResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className={`p-3 rounded-lg border-l-4 ${
+                          result.type === "success"
+                            ? "bg-green-50 border-green-500"
+                            : result.type === "error"
+                              ? "bg-red-50 border-red-500"
+                              : result.type === "warning"
+                                ? "bg-yellow-50 border-yellow-500"
+                                : "bg-blue-50 border-blue-500"
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
                           <span className="text-sm">{result.message}</span>
-                          <span className="text-xs text-slate-500">{result.timestamp}</span>
+                          <span className="text-xs text-slate-500">
+                            {result.timestamp}
+                          </span>
                         </div>
                       </div>
                     ))
@@ -493,10 +629,17 @@ export default function SystemDemo() {
 
         {/* Setup Result */}
         {setupResult && (
-          <Alert className={setupResult.success ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}>
+          <Alert
+            className={
+              setupResult.success
+                ? "border-green-500 bg-green-50"
+                : "border-red-500 bg-red-50"
+            }
+          >
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>{setupResult.success ? 'Success' : 'Error'}:</strong> {setupResult.message}
+              <strong>{setupResult.success ? "Success" : "Error"}:</strong>{" "}
+              {setupResult.message}
             </AlertDescription>
           </Alert>
         )}

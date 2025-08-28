@@ -2,7 +2,7 @@
 
 export interface ReportDisaster {
   reportId: string;
-  type: 'fire' | 'accident' | 'medical' | 'flood' | 'earthquake' | 'other';
+  type: "fire" | "accident" | "medical" | "flood" | "earthquake" | "other";
   location: {
     latitude: number;
     longitude: number;
@@ -10,8 +10,8 @@ export interface ReportDisaster {
   };
   description: string;
   timestamp: Date;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'reported' | 'in_progress' | 'resolved';
+  severity: "low" | "medium" | "high" | "critical";
+  status: "reported" | "in_progress" | "resolved";
   userId: string;
   userName: string;
   contact?: string;
@@ -19,10 +19,10 @@ export interface ReportDisaster {
 
 export interface RequestHelp {
   requestId: string;
-  helpType: 'medical' | 'supplies' | 'rescue' | 'evacuation' | 'other';
+  helpType: "medical" | "supplies" | "rescue" | "evacuation" | "other";
   details: string;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+  urgency: "low" | "medium" | "high" | "critical";
+  status: "pending" | "assigned" | "in_progress" | "completed" | "cancelled";
   location: {
     latitude: number;
     longitude: number;
@@ -38,14 +38,14 @@ export interface RequestHelp {
 
 export interface ViewMapIncident {
   incidentId: string;
-  type: 'fire' | 'flood' | 'earthquake' | 'accident' | 'medical' | 'other';
+  type: "fire" | "flood" | "earthquake" | "accident" | "medical" | "other";
   location: {
     latitude: number;
     longitude: number;
     address?: string;
   };
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'active' | 'resolved' | 'monitoring';
+  severity: "low" | "medium" | "high" | "critical";
+  status: "active" | "resolved" | "monitoring";
   reportedBy: string;
   reporterName: string;
   timestamp: Date;
@@ -57,7 +57,11 @@ export interface DisasterNews {
   newsId: string;
   title: string;
   content: string;
-  category: 'emergency_alert' | 'safety_tips' | 'incident_update' | 'general_info';
+  category:
+    | "emergency_alert"
+    | "safety_tips"
+    | "incident_update"
+    | "general_info";
   timestamp: Date;
   authorId: string;
   authorName: string;
@@ -67,45 +71,45 @@ export interface DisasterNews {
     address?: string;
   };
   tags?: string[];
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
   isVerified: boolean;
   viewCount: number;
 }
 
 // Form interfaces for creating new documents
 export interface CreateReportDisasterForm {
-  type: ReportDisaster['type'];
-  location: ReportDisaster['location'];
+  type: ReportDisaster["type"];
+  location: ReportDisaster["location"];
   description: string;
-  severity: ReportDisaster['severity'];
+  severity: ReportDisaster["severity"];
   contact?: string;
 }
 
 export interface CreateRequestHelpForm {
-  helpType: RequestHelp['helpType'];
+  helpType: RequestHelp["helpType"];
   details: string;
-  urgency: RequestHelp['urgency'];
-  location: RequestHelp['location'];
+  urgency: RequestHelp["urgency"];
+  location: RequestHelp["location"];
   contact: string;
 }
 
 export interface CreateDisasterNewsForm {
   title: string;
   content: string;
-  category: DisasterNews['category'];
-  location?: DisasterNews['location'];
+  category: DisasterNews["category"];
+  location?: DisasterNews["location"];
   tags?: string[];
-  priority: DisasterNews['priority'];
+  priority: DisasterNews["priority"];
 }
 
 // Analytics event types
-export type UserDashboardAnalyticsEvent = 
-  | 'report_disaster_created'
-  | 'help_request_created'
-  | 'map_viewed'
-  | 'news_viewed'
-  | 'news_created'
-  | 'dashboard_accessed';
+export type UserDashboardAnalyticsEvent =
+  | "report_disaster_created"
+  | "help_request_created"
+  | "map_viewed"
+  | "news_viewed"
+  | "news_created"
+  | "dashboard_accessed";
 
 export interface AnalyticsEventData {
   userId: string;

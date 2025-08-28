@@ -1,11 +1,13 @@
 # User Dashboard Firebase Integration
 
 ## Overview
+
 This document outlines the Firebase Firestore integration specifically for the user role dashboard features in the Rescue System web application. The integration implements four separate user-specific sub-collections as requested, with comprehensive analytics tracking and role-based security.
 
 ## 🔥 Firebase Configuration
 
 ### Setup
+
 ```typescript
 // Firebase Configuration (client/lib/firebase.ts)
 const firebaseConfig = {
@@ -15,7 +17,7 @@ const firebaseConfig = {
   storageBucket: "rescue-system-com.firebasestorage.app",
   messagingSenderId: "700167192144",
   appId: "1:700167192144:web:3ab567e5ca28a6a7a3db55",
-  measurementId: "G-PETD5ZZLFG"
+  measurementId: "G-PETD5ZZLFG",
 };
 
 // Initialize Firebase services
@@ -28,13 +30,15 @@ const analytics = getAnalytics(app);
 ## 📊 User Dashboard Sub-Collections Structure
 
 ### 1. `/users/{userId}/reportDisaster` Collection
+
 **Purpose**: Store user-submitted disaster reports
 
 **Schema**:
+
 ```typescript
 interface ReportDisaster {
   reportId: string;
-  type: 'fire' | 'accident' | 'medical' | 'flood' | 'earthquake' | 'other';
+  type: "fire" | "accident" | "medical" | "flood" | "earthquake" | "other";
   location: {
     latitude: number;
     longitude: number;
@@ -42,8 +46,8 @@ interface ReportDisaster {
   };
   description: string;
   timestamp: Date;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'reported' | 'in_progress' | 'resolved';
+  severity: "low" | "medium" | "high" | "critical";
+  status: "reported" | "in_progress" | "resolved";
   userId: string;
   userName: string;
   contact?: string;
@@ -53,16 +57,18 @@ interface ReportDisaster {
 **Connected Dashboard Feature**: "Report Disaster" button → `/user/report` page
 
 ### 2. `/users/{userId}/requestHelp` Collection
+
 **Purpose**: Store medical help and supplies requests
 
 **Schema**:
+
 ```typescript
 interface RequestHelp {
   requestId: string;
-  helpType: 'medical' | 'supplies' | 'rescue' | 'evacuation' | 'other';
+  helpType: "medical" | "supplies" | "rescue" | "evacuation" | "other";
   details: string;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+  urgency: "low" | "medium" | "high" | "critical";
+  status: "pending" | "assigned" | "in_progress" | "completed" | "cancelled";
   location: {
     latitude: number;
     longitude: number;
@@ -80,20 +86,22 @@ interface RequestHelp {
 **Connected Dashboard Feature**: "Request Help" button ��� `/user/help` page
 
 ### 3. `/users/{userId}/viewMap` Collection (Read-Only)
+
 **Purpose**: Read-only collection of incident markers for map viewing
 
 **Schema**:
+
 ```typescript
 interface ViewMapIncident {
   incidentId: string;
-  type: 'fire' | 'flood' | 'earthquake' | 'accident' | 'medical' | 'other';
+  type: "fire" | "flood" | "earthquake" | "accident" | "medical" | "other";
   location: {
     latitude: number;
     longitude: number;
     address?: string;
   };
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'active' | 'resolved' | 'monitoring';
+  severity: "low" | "medium" | "high" | "critical";
+  status: "active" | "resolved" | "monitoring";
   reportedBy: string;
   reporterName: string;
   timestamp: Date;
@@ -105,15 +113,21 @@ interface ViewMapIncident {
 **Connected Dashboard Feature**: "View Map" button → `/user/map` page
 
 ### 4. `/users/{userId}/disasterNews` Collection
+
 **Purpose**: User-submitted disaster news posts
 
 **Schema**:
+
 ```typescript
 interface DisasterNews {
   newsId: string;
   title: string;
   content: string;
-  category: 'emergency_alert' | 'safety_tips' | 'incident_update' | 'general_info';
+  category:
+    | "emergency_alert"
+    | "safety_tips"
+    | "incident_update"
+    | "general_info";
   timestamp: Date;
   authorId: string;
   authorName: string;
@@ -123,7 +137,7 @@ interface DisasterNews {
     address?: string;
   };
   tags?: string[];
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: "low" | "medium" | "high" | "urgent";
   isVerified: boolean;
   viewCount: number;
 }
@@ -134,6 +148,7 @@ interface DisasterNews {
 ## 🔒 Firestore Security Rules
 
 ### User-Specific Access Control
+
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -148,7 +163,7 @@ service cloud.firestore {
         allow delete: if request.auth.uid == userId || isAdmin();
       }
 
-      // Request Help sub-collection  
+      // Request Help sub-collection
       match /requestHelp/{requestId} {
         allow create, read: if request.auth.uid == userId;
         allow update: if request.auth.uid == userId;
@@ -175,13 +190,16 @@ service cloud.firestore {
 ## 📱 Dashboard Integration
 
 ### UserDashboard Component Updates
+
 The dashboard now includes:
+
 - **Real-time Firebase connectivity status**
 - **Analytics tracking** for each button interaction
 - **User-specific welcome message**
 - **Firebase integration status indicator**
 
 ### Button Actions Connected to Database:
+
 1. **"Report Now"** → Creates documents in `reportDisaster` collection
 2. **"Get Help"** → Creates documents in `requestHelp` collection
 3. **"Open Map"** → Reads from `viewMap` collection + tracks analytics
@@ -190,9 +208,11 @@ The dashboard now includes:
 ## 🚀 Database Service Implementation
 
 ### UserDashboardService Class
+
 Located in `client/lib/user-dashboard-db.ts`, provides methods for each collection:
 
 #### Report Disaster Methods:
+
 ```typescript
 static async createDisasterReport(userId: string, reportData: CreateReportDisasterForm, userName: string): Promise<string>
 static async getUserDisasterReports(userId: string): Promise<ReportDisaster[]>
@@ -200,6 +220,7 @@ static async updateDisasterReport(userId: string, reportId: string, updateData: 
 ```
 
 #### Request Help Methods:
+
 ```typescript
 static async createHelpRequest(userId: string, requestData: CreateRequestHelpForm, userName: string): Promise<string>
 static async getUserHelpRequests(userId: string): Promise<RequestHelp[]>
@@ -207,12 +228,14 @@ static async updateHelpRequest(userId: string, requestId: string, updateData: Pa
 ```
 
 #### View Map Methods:
+
 ```typescript
 static async getAllMapIncidents(): Promise<ViewMapIncident[]>
 static async trackMapView(userId: string): Promise<void>
 ```
 
 #### Disaster News Methods:
+
 ```typescript
 static async createDisasterNews(userId: string, newsData: CreateDisasterNewsForm, authorName: string): Promise<string>
 static async getUserDisasterNews(userId: string): Promise<DisasterNews[]>
@@ -223,6 +246,7 @@ static async incrementNewsViewCount(userId: string, newsId: string): Promise<voi
 ## 📊 Analytics Integration
 
 ### Firebase Analytics Events Tracked:
+
 - `report_disaster_created` - When user submits disaster report
 - `help_request_created` - When user requests help
 - `map_viewed` - When user opens map
@@ -231,13 +255,18 @@ static async incrementNewsViewCount(userId: string, newsId: string): Promise<voi
 - `dashboard_accessed` - When user visits dashboard
 
 ### Analytics Implementation:
+
 ```typescript
-const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata?: Record<string, any>) => {
+const trackEvent = (
+  event: UserDashboardAnalyticsEvent,
+  userId: string,
+  metadata?: Record<string, any>,
+) => {
   if (analytics) {
     logEvent(analytics, event, {
       user_id: userId,
       timestamp: new Date().toISOString(),
-      ...metadata
+      ...metadata,
     });
   }
 };
@@ -246,6 +275,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 ## 🎯 User Experience Features
 
 ### 1. Report Disaster Page (`/user/report`)
+
 - **Form validation** with error handling
 - **Location services** integration (GPS coordinates)
 - **Firebase submission** with success feedback
@@ -253,6 +283,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 - **Real-time validation** and status updates
 
 ### 2. Request Help Page (`/user/help`)
+
 - **Help type selection** (medical, supplies, rescue, etc.)
 - **Urgency level** setting
 - **Firebase storage** in user's sub-collection
@@ -260,6 +291,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 - **Contact information** management
 
 ### 3. View Map Page (`/user/map`)
+
 - **Read-only incident viewing** from Firebase
 - **Interactive map simulation** with incident markers
 - **Filtering capabilities** by type and status
@@ -267,6 +299,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 - **Analytics tracking** for map views
 
 ### 4. Disaster News Page (`/user/news`)
+
 - **Create news articles** with rich form
 - **Category and priority** selection
 - **Tag management** system
@@ -276,6 +309,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 ## 🔧 Technical Implementation Details
 
 ### Data Flow:
+
 1. **User Action** → Dashboard button click
 2. **Navigation** → Route to specific feature page
 3. **Firebase Operation** → Create/Read/Update data in user's sub-collection
@@ -283,12 +317,14 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 5. **UI Feedback** → Success/error messages to user
 
 ### Error Handling:
+
 - Comprehensive error catching in all database operations
 - User-friendly error messages
 - Graceful fallbacks for offline scenarios
 - Form validation before Firebase submissions
 
 ### Security Features:
+
 - **User-specific data isolation** - Users can only access their own sub-collections
 - **Read-only map collection** - Users cannot write to viewMap collection
 - **Admin override permissions** - Admins can access all collections
@@ -297,12 +333,14 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 ## 🚀 Deployment and Production
 
 ### Firebase Console Setup Required:
+
 1. **Authentication** - Enable Email/Password authentication
 2. **Firestore** - Deploy security rules from `firestore.rules`
 3. **Analytics** - Configure Analytics for event tracking
 4. **Indexes** - Create composite indexes for complex queries
 
 ### Performance Optimizations:
+
 - **Paginated queries** for large datasets
 - **Cached results** where appropriate
 - **Optimistic updates** for better UX
@@ -311,12 +349,14 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 ## 📈 Monitoring and Maintenance
 
 ### Key Metrics to Monitor:
+
 - User engagement with each dashboard feature
 - Firebase read/write operations usage
 - Error rates in database operations
 - Popular content categories in news section
 
 ### Regular Maintenance Tasks:
+
 1. **Security rules review** - Ensure rules remain secure
 2. **Analytics review** - Analyze user behavior patterns
 3. **Performance monitoring** - Check query performance
@@ -326,6 +366,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 ## ✅ Testing and Validation
 
 ### Implemented Tests:
+
 - ✅ Firebase configuration initialization
 - ✅ User authentication flow
 - ✅ Sub-collection CRUD operations
@@ -334,6 +375,7 @@ const trackEvent = (event: UserDashboardAnalyticsEvent, userId: string, metadata
 - ✅ Error handling scenarios
 
 ### Manual Testing Completed:
+
 - ✅ Dashboard button functionality
 - ✅ Form submissions to Firebase
 - ✅ Data retrieval and display

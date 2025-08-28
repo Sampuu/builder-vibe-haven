@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth, UserRole } from '@/hooks/use-auth';
+import { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth, UserRole } from "@/hooks/use-auth";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -8,10 +8,10 @@ interface ProtectedRouteProps {
   requiredRole?: UserRole;
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  allowedRoles, 
-  requiredRole 
+export default function ProtectedRoute({
+  children,
+  allowedRoles,
+  requiredRole,
 }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
   const location = useLocation();
@@ -33,8 +33,8 @@ export default function ProtectedRoute({
   }
 
   // Check if user has required role (handle legacy 'fire' role mapping)
-  const userRole = user.role === 'fireBrigade' ? 'fire' : user.role;
-  const checkRole = requiredRole === 'fire' ? 'fireBrigade' : requiredRole;
+  const userRole = user.role === "fireBrigade" ? "fire" : user.role;
+  const checkRole = requiredRole === "fire" ? "fireBrigade" : requiredRole;
 
   if (requiredRole && user.role !== checkRole && userRole !== requiredRole) {
     return <Navigate to="/login" replace />;
