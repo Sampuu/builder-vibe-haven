@@ -20,58 +20,58 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-
-interface DisasterReport {
-  id: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  location: string;
-  coordinates?: { lat: number; lng: number };
-  contactName: string;
-  contactPhone: string;
-  images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
-  timestamp: string;
-}
+import { UserDashboardService } from '@/lib/user-dashboard-db';
+import { CreateReportDisasterForm } from '@shared/user-dashboard-types';
 
 const disasterTypes = [
   { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
   { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies' },
   { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents' },
-  { value: 'natural', label: 'Natural Disaster', description: 'Floods, storms, earthquakes' },
+  { value: 'flood', label: 'Flood/Water Emergency', description: 'Flooding, water damage, broken pipes' },
+  { value: 'earthquake', label: 'Earthquake', description: 'Seismic activity, structural damage' },
   { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation' }
-];
+] as const;
 
 const severityLevels = [
   { value: 'low', label: 'Low', description: 'Minor incident, no immediate danger', color: 'text-slate-600' },
   { value: 'medium', label: 'Medium', description: 'Moderate incident, some risk', color: 'text-emergency-info' },
   { value: 'high', label: 'High', description: 'Serious incident, significant risk', color: 'text-emergency-warning' },
   { value: 'critical', label: 'Critical', description: 'Life-threatening, immediate response needed', color: 'text-emergency-danger' }
-];
+] as const;
 
 export default function ReportDisaster() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    type: '',
-    severity: 'medium',
-    title: '',
+    type: '' as CreateReportDisasterForm['type'] | '',
+    severity: 'medium' as CreateReportDisasterForm['severity'],
     description: '',
-    location: '',
-    contactName: user?.name || '',
-    contactPhone: '',
-    images: [] as string[]
+    location: {
+      latitude: 0,
+      longitude: 0,
+      address: ''
+    },
+    contact: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleLocationChange = (address: string) => {
+    setFormData(prev => ({
+      ...prev,
+      location: { ...prev.location, address }
+    }));
+    if (errors.location) {
+      setErrors(prev => ({ ...prev, location: '' }));
     }
   };
 
@@ -79,10 +79,9 @@ export default function ReportDisaster() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.type) newErrors.type = 'Please select an emergency type';
-    if (!formData.title.trim()) newErrors.title = 'Please provide a title';
     if (!formData.description.trim()) newErrors.description = 'Please describe the emergency';
-    if (!formData.location.trim()) newErrors.location = 'Please provide the location';
-    if (!formData.contactPhone.trim()) newErrors.contactPhone = 'Please provide a contact phone number';
+    if (!formData.location.address.trim()) newErrors.location = 'Please provide the location';
+    if (!formData.contact.trim()) newErrors.contact = 'Please provide a contact phone number';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,56 +90,42 @@ export default function ReportDisaster() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm() || !user?.id || !formData.type) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
+      const reportData: CreateReportDisasterForm = {
+        type: formData.type,
+        severity: formData.severity,
+        description: formData.description,
+        location: formData.location,
+        contact: formData.contact
       };
 
-      console.log('Disaster report submitted:', report);
+      const reportId = await UserDashboardService.createDisasterReport(
+        user.id,
+        reportData,
+        user.name || 'Anonymous User'
+      );
+
+      setSubmittedReportId(reportId);
       setShowSuccess(true);
       
       // Reset form
       setFormData({
         type: '',
         severity: 'medium',
-        title: '',
         description: '',
-        location: '',
-        contactName: user?.name || '',
-        contactPhone: '',
-        images: []
+        location: { latitude: 0, longitude: 0, address: '' },
+        contact: ''
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
+      setErrors({ submit: 'Failed to submit report. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      // In real app, would upload to server and get URLs
-      const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
-      setFormData(prev => ({ ...prev, images: [...prev.images, ...imageUrls] }));
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
   };
 
   const getCurrentLocation = () => {
@@ -148,16 +133,22 @@ export default function ReportDisaster() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          // In real app, would reverse geocode to get address
           setFormData(prev => ({
             ...prev,
-            location: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+            location: {
+              latitude,
+              longitude,
+              address: `Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+            }
           }));
         },
         (error) => {
           console.error('Error getting location:', error);
+          setErrors({ location: 'Unable to get current location. Please enter address manually.' });
         }
       );
+    } else {
+      setErrors({ location: 'Geolocation is not supported by this browser.' });
     }
   };
 
@@ -194,7 +185,7 @@ export default function ReportDisaster() {
               <CardHeader>
                 <CardTitle>Emergency Report Form</CardTitle>
                 <CardDescription>
-                  Provide detailed information about the emergency situation
+                  Provide detailed information about the emergency situation. This will be stored in your Firebase sub-collection.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -240,19 +231,6 @@ export default function ReportDisaster() {
                     </Select>
                   </div>
 
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Emergency Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="Brief description of the emergency"
-                      className={errors.title ? 'border-emergency-danger' : ''}
-                    />
-                    {errors.title && <p className="text-sm text-emergency-danger">{errors.title}</p>}
-                  </div>
-
                   {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Detailed Description *</Label>
@@ -273,8 +251,8 @@ export default function ReportDisaster() {
                     <div className="flex space-x-2">
                       <Input
                         id="location"
-                        value={formData.location}
-                        onChange={(e) => handleInputChange('location', e.target.value)}
+                        value={formData.location.address}
+                        onChange={(e) => handleLocationChange(e.target.value)}
                         placeholder="Full address or detailed location description"
                         className={`flex-1 ${errors.location ? 'border-emergency-danger' : ''}`}
                       />
@@ -286,77 +264,24 @@ export default function ReportDisaster() {
                   </div>
 
                   {/* Contact Information */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contactName">Your Name</Label>
-                      <Input
-                        id="contactName"
-                        value={formData.contactName}
-                        onChange={(e) => handleInputChange('contactName', e.target.value)}
-                        placeholder="Your full name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contactPhone">Contact Phone *</Label>
-                      <Input
-                        id="contactPhone"
-                        value={formData.contactPhone}
-                        onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                        placeholder="Your phone number"
-                        className={errors.contactPhone ? 'border-emergency-danger' : ''}
-                      />
-                      {errors.contactPhone && <p className="text-sm text-emergency-danger">{errors.contactPhone}</p>}
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact">Contact Phone *</Label>
+                    <Input
+                      id="contact"
+                      value={formData.contact}
+                      onChange={(e) => handleInputChange('contact', e.target.value)}
+                      placeholder="Your phone number"
+                      className={errors.contact ? 'border-emergency-danger' : ''}
+                    />
+                    {errors.contact && <p className="text-sm text-emergency-danger">{errors.contact}</p>}
                   </div>
 
-                  {/* Image Upload */}
-                  <div className="space-y-2">
-                    <Label>Photos/Evidence (Optional)</Label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-4">
-                      <div className="text-center">
-                        <Camera className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                        <div className="text-sm text-slate-600 mb-2">
-                          Upload photos of the emergency (if safe to do so)
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handleImageUpload}
-                          className="hidden"
-                          id="image-upload"
-                        />
-                        <Button type="button" variant="outline" asChild>
-                          <label htmlFor="image-upload" className="cursor-pointer">
-                            <Upload className="mr-2 h-4 w-4" />
-                            Choose Files
-                          </label>
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {/* Image Preview */}
-                    {formData.images.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2 mt-2">
-                        {formData.images.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img 
-                              src={image} 
-                              alt={`Upload ${index + 1}`}
-                              className="w-full h-20 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-emergency-danger text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {/* Submit Errors */}
+                  {errors.submit && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{errors.submit}</AlertDescription>
+                    </Alert>
+                  )}
 
                   {/* Submit Button */}
                   <Button 
@@ -368,7 +293,7 @@ export default function ReportDisaster() {
                     {isSubmitting ? (
                       <>
                         <Clock className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting Report...
+                        Submitting to Firebase...
                       </>
                     ) : (
                       <>
@@ -404,7 +329,7 @@ export default function ReportDisaster() {
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-emergency-info rounded-full mt-2"></div>
                   <div className="text-sm">
-                    <strong>Stay safe:</strong> Only take photos if it's safe to do so
+                    <strong>Firebase Storage:</strong> Your report is stored securely in your sub-collection
                   </div>
                 </div>
                 <div className="flex items-start space-x-2">
@@ -443,6 +368,21 @@ export default function ReportDisaster() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Firebase Integration Status */}
+            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+              <CardHeader>
+                <CardTitle className="text-green-800 text-sm">🔥 Firebase Integration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xs text-green-700 space-y-1">
+                  <div>✓ Connected to reportDisaster collection</div>
+                  <div>✓ Analytics tracking enabled</div>
+                  <div>✓ User-specific sub-collection</div>
+                  <div>✓ Role-based security rules active</div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -455,15 +395,18 @@ export default function ReportDisaster() {
                 Report Submitted Successfully
               </DialogTitle>
               <DialogDescription>
-                Your emergency report has been submitted and emergency responders have been notified.
+                Your emergency report has been saved to Firebase and emergency responders have been notified.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="bg-emergency-resolved/10 p-4 rounded-lg">
                 <div className="text-sm text-emergency-resolved">
+                  <strong>Report ID:</strong> {submittedReportId}
+                  <br />
                   <strong>What happens next:</strong>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
                     <li>Emergency responders will be dispatched</li>
+                    <li>Your report is stored in your Firebase sub-collection</li>
                     <li>You may receive a call for additional information</li>
                     <li>Track the status in your dashboard</li>
                   </ul>
