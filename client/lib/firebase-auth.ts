@@ -113,9 +113,15 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, "signup");
-      const errorInfo = FirebaseErrorHandler.parseError(error);
-      return { success: false, error: errorInfo.userFriendlyMessage };
+      console.error('Signup error:', error);
+      try {
+        FirebaseErrorHandler.logError(error, "signup");
+        const errorInfo = FirebaseErrorHandler.parseError(error);
+        return { success: false, error: errorInfo.userFriendlyMessage };
+      } catch (handlerError) {
+        console.error('Error handler failed:', handlerError);
+        return { success: false, error: error.message || 'Failed to create account' };
+      }
     }
   },
 
@@ -152,9 +158,36 @@ export const firebaseAuth = {
 
       return { success: true, data: user };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, "login");
-      const errorInfo = FirebaseErrorHandler.parseError(error);
-      return { success: false, error: errorInfo.userFriendlyMessage };
+      console.error('Login error:', error);
+      try {
+        FirebaseErrorHandler.logError(error, "login");
+        const errorInfo = FirebaseErrorHandler.parseError(error);
+        return { success: false, error: errorInfo.userFriendlyMessage };
+      } catch (handlerError) {
+        console.error('Error handler failed:', handlerError);
+        // Fallback error handling
+        let errorMessage = "Login failed";
+        if (error.code) {
+          switch (error.code) {
+            case "auth/user-not-found":
+              errorMessage = "No account found with this email";
+              break;
+            case "auth/wrong-password":
+            case "auth/invalid-credential":
+              errorMessage = "Incorrect email or password";
+              break;
+            case "auth/invalid-email":
+              errorMessage = "Invalid email address";
+              break;
+            case "auth/network-request-failed":
+              errorMessage = "Network error. Please check your connection and try again.";
+              break;
+            default:
+              errorMessage = error.message || "Login failed";
+          }
+        }
+        return { success: false, error: errorMessage };
+      }
     }
   },
 
@@ -164,9 +197,15 @@ export const firebaseAuth = {
       await signOut(auth);
       return { success: true };
     } catch (error: any) {
-      FirebaseErrorHandler.logError(error, "logout");
-      const errorInfo = FirebaseErrorHandler.parseError(error);
-      return { success: false, error: errorInfo.userFriendlyMessage };
+      console.error('Logout error:', error);
+      try {
+        FirebaseErrorHandler.logError(error, "logout");
+        const errorInfo = FirebaseErrorHandler.parseError(error);
+        return { success: false, error: errorInfo.userFriendlyMessage };
+      } catch (handlerError) {
+        console.error('Error handler failed:', handlerError);
+        return { success: false, error: error.message || 'Failed to sign out' };
+      }
     }
   },
 
