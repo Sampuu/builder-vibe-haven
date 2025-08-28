@@ -85,7 +85,7 @@ const getDepartmentRouting = (category: Incident['category'], urgency: Incident[
 
 export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const { addTargetedNotification, addNotification } = useNotifications();
+  const { addTargetedNotification, addNotification, addNewsNotification } = useNotifications();
   const { user } = useAuth();
 
   const submitIncident = async (incidentData: Omit<Incident, 'id' | 'assignedDepartments' | 'status' | 'timestamps'>): Promise<string> => {
