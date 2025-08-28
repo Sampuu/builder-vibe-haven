@@ -495,17 +495,29 @@ export default function ReportDisaster() {
                 Report Submitted Successfully
               </DialogTitle>
               <DialogDescription>
-                Your emergency report has been submitted and emergency responders have been notified.
+                Your emergency report has been submitted and the appropriate emergency departments have been automatically notified based on the incident type and severity.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="bg-emergency-resolved/10 p-4 rounded-lg">
                 <div className="text-sm text-emergency-resolved">
+                  <strong>Emergency teams notified:</strong>
+                  <ul className="mt-2 space-y-1 list-disc list-inside">
+                    <li>Police Department - for coordination and safety</li>
+                    <li>Fire Department - for fire and rescue operations</li>
+                    <li>Medical Teams - for emergency medical response</li>
+                    <li>Emergency Management - for overall coordination</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="bg-emergency-info/10 p-4 rounded-lg">
+                <div className="text-sm text-emergency-info">
                   <strong>What happens next:</strong>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>Emergency responders will be dispatched</li>
-                    <li>You may receive a call for additional information</li>
-                    <li>Track the status in your dashboard</li>
+                    <li>Emergency responders are being dispatched to your location</li>
+                    <li>You may receive a call at {formData.contactPhone} for additional information</li>
+                    <li>Track response status in your dashboard</li>
+                    <li>Stay safe and follow instructions from first responders</li>
                   </ul>
                 </div>
               </div>
