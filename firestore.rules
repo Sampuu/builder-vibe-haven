@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check user role
+    function hasRole(role) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection - users can read/write their own profile, admins can read/write all
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Police Reports - only police and admin can create/read/update
+    match /policeReports/{reportId} {
+      allow create, read: if hasRole('police') || isAdmin();
+      allow update: if (hasRole('police') && resource.data.officerId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Ambulance Requests - ambulance, hospital, and admin can read/write
+    match /ambulanceRequests/{requestId} {
+      allow create: if hasRole('user') || hasRole('ambulance') || hasRole('hospital') || isAdmin();
+      allow read, update: if hasRole('ambulance') || hasRole('hospital') || isAdmin() || 
+                          (hasRole('user') && resource.data.requestedBy == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+    
+    // Fire Brigade Reports - only fire brigade and admin can create/read/update
+    match /fireBrigadeReports/{reportId} {
+      allow create, read: if hasRole('fireBrigade') || isAdmin();
+      allow update: if (hasRole('fireBrigade') && resource.data.fireStationId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Hospital Records - hospitals and admin can read/write, others can read for emergencies
+    match /hospitalRecords/{recordId} {
+      allow create, update, delete: if hasRole('hospital') || isAdmin();
+      allow read: if hasRole('hospital') || hasRole('ambulance') || hasRole('police') || 
+                     hasRole('fireBrigade') || isAdmin();
+    }
+    
+    // Emergency Requests - users can create, all emergency services can read/update, admin full access
+    match /emergencyRequests/{requestId} {
+      allow create: if hasRole('user') || isAdmin();
+      allow read: if hasRole('police') || hasRole('ambulance') || hasRole('fireBrigade') || 
+                     hasRole('hospital') || isAdmin() || 
+                     (hasRole('user') && resource.data.userId == request.auth.uid);
+      allow update: if hasRole('police') || hasRole('ambulance') || hasRole('fireBrigade') || 
+                       hasRole('hospital') || isAdmin();
+      allow delete: if isAdmin() || (hasRole('user') && resource.data.userId == request.auth.uid);
+    }
+    
+    // Admin Logs - only admins can read/write
+    match /adminLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
