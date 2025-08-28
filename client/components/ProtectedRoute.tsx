@@ -32,8 +32,11 @@ export default function ProtectedRoute({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user has required role
-  if (requiredRole && user.role !== requiredRole) {
+  // Check if user has required role (handle legacy 'fire' role mapping)
+  const userRole = user.role === 'fireBrigade' ? 'fire' : user.role;
+  const checkRole = requiredRole === 'fire' ? 'fireBrigade' : requiredRole;
+
+  if (requiredRole && user.role !== checkRole && userRole !== requiredRole) {
     return <Navigate to="/login" replace />;
   }
 
