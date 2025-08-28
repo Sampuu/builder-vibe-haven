@@ -1,9 +1,9 @@
 // Fallback authentication system using localStorage
 // Used when Firebase is not configured
-import { UserRole, User } from '@/hooks/use-auth';
+import { UserRole, User } from "@/hooks/use-auth";
 
-const STORAGE_KEY = 'emergency-auth-user';
-const USERS_KEY = 'emergency-auth-users';
+const STORAGE_KEY = "emergency-auth-user";
+const USERS_KEY = "emergency-auth-users";
 
 export interface StoredUser {
   id: string;
@@ -38,18 +38,20 @@ const saveStoredUsers = (users: StoredUser[]): void => {
  * Create a new user account (fallback mode)
  */
 export const createFallbackAccount = async (
-  email: string, 
-  password: string, 
-  name: string, 
-  role: UserRole
+  email: string,
+  password: string,
+  name: string,
+  role: UserRole,
 ): Promise<User> => {
   try {
     const users = getStoredUsers();
-    
+
     // Check if user already exists
-    const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const existingUser = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
     if (existingUser) {
-      throw new Error('An account with this email already exists');
+      throw new Error("An account with this email already exists");
     }
 
     // Create new user
@@ -60,7 +62,7 @@ export const createFallbackAccount = async (
       role,
       password, // In real system, this would be hashed
       createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      lastLogin: new Date().toISOString(),
     };
 
     // Save to localStorage
@@ -72,34 +74,39 @@ export const createFallbackAccount = async (
       id: newUser.id,
       email: newUser.email,
       name: newUser.name,
-      role: newUser.role
+      role: newUser.role,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userSession));
 
     return userSession;
   } catch (error: any) {
-    console.error('Error creating fallback account:', error);
-    throw new Error(error.message || 'Failed to create account');
+    console.error("Error creating fallback account:", error);
+    throw new Error(error.message || "Failed to create account");
   }
 };
 
 /**
  * Sign in user (fallback mode)
  */
-export const signInFallback = async (email: string, password: string): Promise<User> => {
+export const signInFallback = async (
+  email: string,
+  password: string,
+): Promise<User> => {
   try {
     const users = getStoredUsers();
-    
+
     // Find user by email
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const user = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
     if (!user) {
-      throw new Error('No account found with this email address');
+      throw new Error("No account found with this email address");
     }
 
     // Check password (in real system, compare hashed passwords)
     if (user.password !== password) {
-      throw new Error('Invalid password');
+      throw new Error("Invalid password");
     }
 
     // Update last login
@@ -111,15 +118,15 @@ export const signInFallback = async (email: string, password: string): Promise<U
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role
+      role: user.role,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userSession));
 
     return userSession;
   } catch (error: any) {
-    console.error('Error signing in fallback:', error);
-    throw new Error(error.message || 'Failed to sign in');
+    console.error("Error signing in fallback:", error);
+    throw new Error(error.message || "Failed to sign in");
   }
 };
 
@@ -145,7 +152,9 @@ export const getCurrentFallbackUser = (): User | null => {
 /**
  * Listen to storage changes for auth state
  */
-export const onFallbackAuthStateChange = (callback: (user: User | null) => void) => {
+export const onFallbackAuthStateChange = (
+  callback: (user: User | null) => void,
+) => {
   // Initial check
   callback(getCurrentFallbackUser());
 
@@ -161,11 +170,11 @@ export const onFallbackAuthStateChange = (callback: (user: User | null) => void)
     }
   };
 
-  window.addEventListener('storage', handleStorageChange);
+  window.addEventListener("storage", handleStorageChange);
 
   // Return cleanup function
   return () => {
-    window.removeEventListener('storage', handleStorageChange);
+    window.removeEventListener("storage", handleStorageChange);
   };
 };
 
@@ -173,11 +182,11 @@ export const onFallbackAuthStateChange = (callback: (user: User | null) => void)
  * Debug function to see stored users
  */
 export const debugFallbackAuth = () => {
-  console.log('Fallback Auth Debug:');
-  console.log('Current User:', getCurrentFallbackUser());
-  console.log('All Users:', getStoredUsers());
-  console.log('Storage Keys:', {
+  console.log("Fallback Auth Debug:");
+  console.log("Current User:", getCurrentFallbackUser());
+  console.log("All Users:", getStoredUsers());
+  console.log("Storage Keys:", {
     currentUser: !!localStorage.getItem(STORAGE_KEY),
-    allUsers: !!localStorage.getItem(USERS_KEY)
+    allUsers: !!localStorage.getItem(USERS_KEY),
   });
 };

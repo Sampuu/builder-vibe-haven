@@ -4,8 +4,8 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
-  updateProfile
-} from 'firebase/auth';
+  updateProfile,
+} from "firebase/auth";
 import {
   doc,
   setDoc,
@@ -13,16 +13,16 @@ import {
   collection,
   query,
   where,
-  getDocs
-} from 'firebase/firestore';
-import { auth, db, isFirebaseAvailable } from './firebase';
+  getDocs,
+} from "firebase/firestore";
+import { auth, db, isFirebaseAvailable } from "./firebase";
 import {
   createFallbackAccount,
   signInFallback,
   signOutFallback,
-  onFallbackAuthStateChange
-} from './fallback-auth';
-import { UserRole, User } from '@/hooks/use-auth';
+  onFallbackAuthStateChange,
+} from "./fallback-auth";
+import { UserRole, User } from "@/hooks/use-auth";
 
 // User data interface for Firestore
 export interface UserData {
@@ -42,22 +42,26 @@ export const createUserAccount = async (
   email: string,
   password: string,
   name: string,
-  role: UserRole
+  role: UserRole,
 ): Promise<User> => {
   // Use fallback authentication if Firebase is not available
   if (!isFirebaseAvailable()) {
-    console.log('📱 Using fallback authentication for account creation');
+    console.log("📱 Using fallback authentication for account creation");
     return await createFallbackAccount(email, password, name, role);
   }
 
   try {
     // Create user with Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const firebaseUser = userCredential.user;
 
     // Update the user's display name
     await updateProfile(firebaseUser, {
-      displayName: name
+      displayName: name,
     });
 
     // Create user data for Firestore
@@ -67,24 +71,24 @@ export const createUserAccount = async (
       name,
       role,
       createdAt: new Date(),
-      lastLogin: new Date()
+      lastLogin: new Date(),
     };
 
     // Store user data in Firestore
-    await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+    await setDoc(doc(db, "users", firebaseUser.uid), userData);
 
-    console.log('🔥 Firebase account created successfully');
+    console.log("🔥 Firebase account created successfully");
 
     // Return the user object for our app
     return {
       id: firebaseUser.uid,
       email: firebaseUser.email!,
       name,
-      role
+      role,
     };
   } catch (error: any) {
-    console.error('Error creating Firebase user account:', error);
-    console.log('📱 Falling back to local storage authentication');
+    console.error("Error creating Firebase user account:", error);
+    console.log("📱 Falling back to local storage authentication");
 
     // Fallback to localStorage on Firebase error
     return await createFallbackAccount(email, password, name, role);
@@ -95,43 +99,54 @@ export const createUserAccount = async (
  * Sign in user with email and password
  * Falls back to localStorage if Firebase is not configured
  */
-export const signInUser = async (email: string, password: string): Promise<User> => {
+export const signInUser = async (
+  email: string,
+  password: string,
+): Promise<User> => {
   // Use fallback authentication if Firebase is not available
   if (!isFirebaseAvailable()) {
-    console.log('📱 Using fallback authentication for sign in');
+    console.log("📱 Using fallback authentication for sign in");
     return await signInFallback(email, password);
   }
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const firebaseUser = userCredential.user;
 
     // Get user data from Firestore
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
 
     if (!userDoc.exists()) {
-      throw new Error('User data not found');
+      throw new Error("User data not found");
     }
 
     const userData = userDoc.data() as UserData;
 
     // Update last login time
-    await setDoc(doc(db, 'users', firebaseUser.uid), {
-      ...userData,
-      lastLogin: new Date()
-    }, { merge: true });
+    await setDoc(
+      doc(db, "users", firebaseUser.uid),
+      {
+        ...userData,
+        lastLogin: new Date(),
+      },
+      { merge: true },
+    );
 
-    console.log('🔥 Firebase sign in successful');
+    console.log("🔥 Firebase sign in successful");
 
     return {
       id: firebaseUser.uid,
       email: firebaseUser.email!,
       name: userData.name,
-      role: userData.role
+      role: userData.role,
     };
   } catch (error: any) {
-    console.error('Error signing in with Firebase:', error);
-    console.log('📱 Falling back to local storage authentication');
+    console.error("Error signing in with Firebase:", error);
+    console.log("📱 Falling back to local storage authentication");
 
     // Fallback to localStorage on Firebase error
     return await signInFallback(email, password);
@@ -145,16 +160,16 @@ export const signInUser = async (email: string, password: string): Promise<User>
 export const signOutUser = async (): Promise<void> => {
   // Use fallback authentication if Firebase is not available
   if (!isFirebaseAvailable()) {
-    console.log('📱 Using fallback authentication for sign out');
+    console.log("📱 Using fallback authentication for sign out");
     return await signOutFallback();
   }
 
   try {
     await signOut(auth);
-    console.log('🔥 Firebase sign out successful');
+    console.log("🔥 Firebase sign out successful");
   } catch (error: any) {
-    console.error('Error signing out with Firebase:', error);
-    console.log('📱 Falling back to local storage sign out');
+    console.error("Error signing out with Firebase:", error);
+    console.log("📱 Falling back to local storage sign out");
 
     // Fallback to localStorage on Firebase error
     await signOutFallback();
@@ -164,24 +179,26 @@ export const signOutUser = async (): Promise<void> => {
 /**
  * Get user data from Firestore by Firebase user
  */
-export const getUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
+export const getUserData = async (
+  firebaseUser: FirebaseUser,
+): Promise<User | null> => {
   try {
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-    
+    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+
     if (!userDoc.exists()) {
       return null;
     }
 
     const userData = userDoc.data() as UserData;
-    
+
     return {
       id: firebaseUser.uid,
       email: firebaseUser.email!,
       name: userData.name,
-      role: userData.role
+      role: userData.role,
     };
   } catch (error) {
-    console.error('Error getting user data:', error);
+    console.error("Error getting user data:", error);
     return null;
   }
 };
@@ -193,7 +210,7 @@ export const getUserData = async (firebaseUser: FirebaseUser): Promise<User | nu
 export const onAuthStateChange = (callback: (user: User | null) => void) => {
   // Use fallback authentication if Firebase is not available
   if (!isFirebaseAvailable()) {
-    console.log('📱 Using fallback authentication state listener');
+    console.log("📱 Using fallback authentication state listener");
     return onFallbackAuthStateChange(callback);
   }
 
@@ -207,8 +224,8 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
       }
     });
   } catch (error: any) {
-    console.error('Error setting up Firebase auth state listener:', error);
-    console.log('📱 Falling back to local storage auth state listener');
+    console.error("Error setting up Firebase auth state listener:", error);
+    console.log("📱 Falling back to local storage auth state listener");
 
     // Fallback to localStorage on Firebase error
     return onFallbackAuthStateChange(callback);
@@ -220,13 +237,13 @@ export const onAuthStateChange = (callback: (user: User | null) => void) => {
  */
 export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', email));
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
-    
+
     return !querySnapshot.empty;
   } catch (error) {
-    console.error('Error checking email:', error);
+    console.error("Error checking email:", error);
     return false;
   }
 };

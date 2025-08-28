@@ -1,12 +1,24 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import {
   signInUser,
   signOutUser,
   onAuthStateChange,
-  createUserAccount
-} from '@/lib/auth';
+  createUserAccount,
+} from "@/lib/auth";
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface User {
   id: string;
@@ -18,7 +30,12 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<boolean>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    role: UserRole,
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -28,7 +45,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -61,13 +78,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
       return true;
     } catch (error: any) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
       setIsLoading(false);
       return false;
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<boolean> => {
+  const signup = async (
+    email: string,
+    password: string,
+    name: string,
+    role: UserRole,
+  ): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -76,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
       return true;
     } catch (error: any) {
-      console.error('Signup failed:', error);
+      console.error("Signup failed:", error);
       setIsLoading(false);
       return false;
     }
@@ -87,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await signOutUser();
       setUser(null);
     } catch (error: any) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       throw error;
     }
   };

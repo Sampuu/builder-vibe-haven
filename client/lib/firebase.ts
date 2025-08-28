@@ -1,7 +1,7 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { firebaseConfig, isFirebaseConfigured } from './firebase-config';
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { firebaseConfig, isFirebaseConfigured } from "./firebase-config";
 
 // Only initialize Firebase if properly configured
 let app: any = null;
@@ -19,14 +19,14 @@ if (isFirebaseConfigured()) {
     // Initialize Cloud Firestore and get a reference to the service
     db = getFirestore(app);
 
-    console.log('🔥 Firebase initialized successfully');
+    console.log("🔥 Firebase initialized successfully");
   } catch (error) {
-    console.warn('🚫 Firebase initialization failed:', error);
-    console.log('📱 Falling back to local storage authentication');
+    console.warn("🚫 Firebase initialization failed:", error);
+    console.log("📱 Falling back to local storage authentication");
   }
 } else {
-  console.log('⚠️ Firebase not configured, using local storage fallback');
-  console.log('💡 To use Firebase, add your Firebase config to .env file');
+  console.log("⚠️ Firebase not configured, using local storage fallback");
+  console.log("💡 To use Firebase, add your Firebase config to .env file");
 }
 
 export { auth, db, app };

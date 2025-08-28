@@ -9,7 +9,7 @@ Your signup functionality has been successfully integrated with Firebase Authent
 ✅ **Firestore database integration**  
 ✅ **Signup page connected to Firebase**  
 ✅ **Login page connected to Firebase**  
-✅ **User data stored in Firestore**  
+✅ **User data stored in Firestore**
 
 ## What's Working Now
 
@@ -68,7 +68,7 @@ Replace the values with your actual Firebase config values.
 ## Testing the Integration
 
 1. **Create Environment File**: Add your Firebase credentials
-2. **Restart Dev Server**: Run `pnpm dev` 
+2. **Restart Dev Server**: Run `pnpm dev`
 3. **Test Signup**: Go to `/signup` and create a new account
 4. **Check Firebase**: Verify user appears in Firebase Auth console
 5. **Check Firestore**: Verify user data in Firestore console
@@ -87,7 +87,7 @@ User data is stored in Firestore with this structure:
 // Document ID: user.uid
 {
   uid: "firebase_user_id",
-  email: "user@example.com", 
+  email: "user@example.com",
   name: "User Name",
   role: "user", // or "police", "fire", "ambulance", "hospital", "admin"
   createdAt: "2024-01-01T00:00:00.000Z",
