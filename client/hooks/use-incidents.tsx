@@ -155,13 +155,14 @@ export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) 
     // Notify the reporter that their incident has been acknowledged
     const incident = incidents.find(i => i.id === incidentId);
     if (incident) {
-      addNotification({
+      // Send targeted notification to the reporter's role only
+      addTargetedNotification({
         title: 'Incident Acknowledged',
         message: `Your ${incident.type === 'help_request' ? 'help request' : 'emergency report'} has been acknowledged by ${department}`,
         type: 'success',
         priority: 'medium',
         category: 'update'
-      });
+      }, [incident.reporter.role]);
     }
   };
 
