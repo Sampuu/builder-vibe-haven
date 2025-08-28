@@ -2,6 +2,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { UserRole } from '@/hooks/use-auth';
+import { checkFirebaseAvailability } from './serviceDetector';
+import { offlineDemoService } from './offlineStorage';
 
 export interface DemoAccount {
   email: string;
@@ -107,11 +109,20 @@ export const createDemoAccount = async (account: DemoAccount): Promise<boolean> 
 
 export const setupDemoAccounts = async (): Promise<void> => {
   console.log('Setting up demo accounts...');
-  
+
+  const isFirebaseAvailable = await checkFirebaseAvailability();
+
+  if (!isFirebaseAvailable) {
+    // Use offline demo setup
+    await offlineDemoService.setupDemoAccounts();
+    return;
+  }
+
+  // Use Firebase demo setup
   for (const account of demoAccounts) {
     await createDemoAccount(account);
   }
-  
+
   console.log('Demo accounts setup completed');
 };
 
