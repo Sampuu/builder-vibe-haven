@@ -230,5 +230,26 @@ export const calculateRoute: RequestHandler = async (req, res) => {
   }
 };
 
+export const geocodeLocation: RequestHandler = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const coordinates = await RoutingService.geocodeLocation(query);
+
+    if (!coordinates) {
+      return res.status(404).json({ error: 'Location not found' });
+    }
+
+    res.json({ coordinates, query });
+  } catch (error) {
+    console.error('Error geocoding location:', error);
+    res.status(500).json({ error: 'Failed to geocode location' });
+  }
+};
+
 // Export storage for other modules
 export { accidentZones, trackedEntities };
