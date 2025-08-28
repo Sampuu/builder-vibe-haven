@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import NotificationDropdown from '@/components/NotificationDropdown';
