@@ -39,7 +39,8 @@ const roleColors = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
-  
+  const { isConnected } = useWebSocket(); // Initialize WebSocket connection
+
   if (!user) return null;
 
   const RoleIcon = roleIcons[user.role];
