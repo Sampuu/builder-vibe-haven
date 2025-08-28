@@ -12,7 +12,8 @@ import {
   deleteAccidentZone,
   getTrackedEntities,
   updateEntityLocation,
-  calculateRoute
+  calculateRoute,
+  geocodeLocation
 } from "./routes/accident-zones";
 import { setupWebSocket } from "./websocket";
 
