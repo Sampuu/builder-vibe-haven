@@ -146,6 +146,14 @@ export default function RequestHelp() {
           </AlertDescription>
         </Alert>
 
+        {error && (
+          <Alert className="border-emergency-danger bg-emergency-danger/5">
+            <AlertDescription className="text-emergency-danger font-medium">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
