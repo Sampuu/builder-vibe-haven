@@ -13,17 +13,38 @@ import {
   offlineHelpService,
   offlineNotificationService
 } from './offlineStorage';
+import {
+  backendDisasterService,
+  backendHelpService,
+  testBackend
+} from './backendService';
 
 // Adaptive disaster reports service
 export const adaptiveDisasterService = {
   async create(report: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
-      return firebaseDisasterService.create(report);
-    } else {
-      return offlineDisasterService.create(report);
+      try {
+        return await firebaseDisasterService.create(report);
+      } catch (error) {
+        console.warn('Firebase failed, trying backend API:', error);
+        // Fall back to backend API if Firebase fails
+      }
     }
+
+    // Try backend API
+    const isBackendAvailable = await testBackend();
+    if (isBackendAvailable) {
+      try {
+        return await backendDisasterService.create(report);
+      } catch (error) {
+        console.warn('Backend API failed, using offline mode:', error);
+      }
+    }
+
+    // Final fallback to offline storage
+    return offlineDisasterService.create(report);
   },
 
   async getAll(): Promise<DisasterReport[]> {
@@ -78,12 +99,27 @@ export const adaptiveDisasterService = {
 export const adaptiveHelpService = {
   async create(request: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
-      return firebaseHelpService.create(request);
-    } else {
-      return offlineHelpService.create(request);
+      try {
+        return await firebaseHelpService.create(request);
+      } catch (error) {
+        console.warn('Firebase failed, trying backend API:', error);
+      }
     }
+
+    // Try backend API
+    const isBackendAvailable = await testBackend();
+    if (isBackendAvailable) {
+      try {
+        return await backendHelpService.create(request);
+      } catch (error) {
+        console.warn('Backend API failed, using offline mode:', error);
+      }
+    }
+
+    // Final fallback to offline storage
+    return offlineHelpService.create(request);
   },
 
   async getAll(): Promise<HelpRequest[]> {
