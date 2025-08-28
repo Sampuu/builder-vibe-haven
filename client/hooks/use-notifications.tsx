@@ -132,23 +132,27 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
+    setAllNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(n => ({ ...n, read: true }))
+    // Only mark as read the notifications that the current user can see
+    const visibleNotificationIds = notifications.map(n => n.id);
+    setAllNotifications(prev =>
+      prev.map(n => visibleNotificationIds.includes(n.id) ? { ...n, read: true } : n)
     );
   };
 
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setAllNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   const clearAll = () => {
-    setNotifications([]);
+    // Only clear notifications that the current user can see
+    const visibleNotificationIds = notifications.map(n => n.id);
+    setAllNotifications(prev => prev.filter(n => !visibleNotificationIds.includes(n.id)));
   };
 
   // Initialize with sample notifications on mount
