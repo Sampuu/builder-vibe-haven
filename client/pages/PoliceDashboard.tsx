@@ -55,12 +55,22 @@ export default function PoliceDashboard() {
                 Monitor all incidents and coordinate emergency response across all departments.
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-emergency-danger">24/7</div>
-              <div className="text-sm text-slate-500">Active Monitoring</div>
+            <div className="flex items-center space-x-4">
+              <NotificationBell department="police" />
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emergency-danger">24/7</div>
+                <div className="text-sm text-slate-500">Active Monitoring</div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Emergency Notifications */}
+        <NotificationCenter
+          department="police"
+          showUnreadOnly={false}
+          maxHeight="300px"
+        />
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6">
