@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import IncidentManagement from '@/components/IncidentManagement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, MapPin, Package } from 'lucide-react';
@@ -58,13 +59,11 @@ export default function HospitalDashboard() {
           </Card>
         </div>
 
-        <Card>
-          <CardContent className="p-12 text-center text-slate-500">
-            <Building2 className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium mb-2">Hospital Dashboard</p>
-            <p>Medical supply management and dispatch will be implemented here</p>
-          </CardContent>
-        </Card>
+        <IncidentManagement
+          department="hospital"
+          title="Medical Supply & Emergency Management"
+          description="Manage medical equipment requests and emergency response"
+        />
       </div>
     </DashboardLayout>
   );
