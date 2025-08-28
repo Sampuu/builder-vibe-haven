@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
+import { NotificationProvider } from "@/hooks/use-notifications";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
