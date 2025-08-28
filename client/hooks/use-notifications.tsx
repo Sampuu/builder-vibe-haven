@@ -200,6 +200,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     notifications,
     unreadCount,
     addNotification,
+    addTargetedNotification,
+    addNewsNotification,
     markAsRead,
     markAllAsRead,
     removeNotification,
