@@ -1,25 +1,39 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { firebaseConfig, isFirebaseConfigured } from './firebase-config';
 
-// Firebase configuration
-// You'll need to replace these with your actual Firebase project config
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "emergency-response-demo.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "emergency-response-demo",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "emergency-response-demo.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
+// Only initialize Firebase if properly configured
+let app: any = null;
+let auth: any = null;
+let db: any = null;
+
+if (isFirebaseConfigured()) {
+  try {
+    // Initialize Firebase
+    app = initializeApp(firebaseConfig);
+
+    // Initialize Firebase Authentication and get a reference to the service
+    auth = getAuth(app);
+
+    // Initialize Cloud Firestore and get a reference to the service
+    db = getFirestore(app);
+
+    console.log('🔥 Firebase initialized successfully');
+  } catch (error) {
+    console.warn('🚫 Firebase initialization failed:', error);
+    console.log('📱 Falling back to local storage authentication');
+  }
+} else {
+  console.log('⚠️ Firebase not configured, using local storage fallback');
+  console.log('💡 To use Firebase, add your Firebase config to .env file');
+}
+
+export { auth, db, app };
+
+// Export Firebase status
+export const isFirebaseAvailable = (): boolean => {
+  return auth !== null && db !== null;
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
-
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
 
 export default app;
