@@ -43,6 +43,19 @@ export function createServer() {
   app.patch("/api/notifications/:id", updateNotification);
   app.post("/api/notifications/mark-all-read", markAllAsRead);
 
+  // Map and Accident Zones API routes
+  app.get("/api/accident-zones", getAccidentZones);
+  app.post("/api/accident-zones", createAccidentZone);
+  app.patch("/api/accident-zones/:id", updateAccidentZone);
+  app.delete("/api/accident-zones/:id", deleteAccidentZone);
+
+  // Entity Tracking API routes
+  app.get("/api/entities", getTrackedEntities);
+  app.patch("/api/entities/:id/location", updateEntityLocation);
+
+  // Routing API routes
+  app.post("/api/routes/calculate", calculateRoute);
+
   // Setup WebSocket
   setupWebSocket(server);
 
