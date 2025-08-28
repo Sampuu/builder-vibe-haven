@@ -195,13 +195,17 @@ export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) 
     // Notify relevant parties about status updates
     const incident = incidents.find(i => i.id === incidentId);
     if (incident) {
-      addNotification({
+      // Notify the reporter and assigned departments about status changes
+      const targetRoles = [incident.reporter.role, ...incident.assignedDepartments];
+      const uniqueRoles = [...new Set(targetRoles)]; // Remove duplicates
+
+      addTargetedNotification({
         title: 'Incident Status Updated',
         message: `Incident "${incident.title}" status changed to: ${status.replace('_', ' ')}`,
         type: status === 'resolved' ? 'success' : 'info',
         priority: 'medium',
         category: 'update'
-      });
+      }, uniqueRoles);
     }
   };
 
