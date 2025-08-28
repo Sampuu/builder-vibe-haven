@@ -22,6 +22,7 @@ import FirebaseAuthTest from "@/components/FirebaseAuthTest";
 import HelpRequestsManager from "@/components/HelpRequestsManager";
 import NotificationManager from "@/components/NotificationManager";
 import NotificationDemo from "@/components/NotificationDemo";
+import NotificationSystemSummary from "@/components/NotificationSystemSummary";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
