@@ -19,14 +19,14 @@ export const checkFirebaseAvailability = async (): Promise<boolean> => {
       // Check if we're using demo credentials
       const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
       const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-      
-      if (projectId === 'demo-project' || apiKey === 'demo-api-key') {
-        console.log('Using demo Firebase credentials - switching to offline mode');
+
+      if (projectId === 'demo-project' || apiKey === 'demo-api-key' || !projectId || !apiKey) {
+        console.log('Using demo/missing Firebase credentials - switching to offline mode');
         isFirebaseAvailable = false;
         return false;
       }
 
-      // Try to make a simple request to Firebase Auth REST API
+      // Try to make a simple request to Firebase Auth REST API to verify connectivity
       const response = await fetch(
         `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
         {
@@ -36,12 +36,17 @@ export const checkFirebaseAvailability = async (): Promise<boolean> => {
         }
       );
 
-      // If we get any response (even an error), Firebase is reachable
-      isFirebaseAvailable = true;
-      console.log('Firebase is available - using Firebase services');
-      return true;
+      // If we get any response (even an error like 400), Firebase is reachable
+      // A 400 error is expected since we're sending an invalid token
+      if (response.status === 400 || response.status === 200) {
+        isFirebaseAvailable = true;
+        console.log('Firebase is available - using Firebase services');
+        return true;
+      } else {
+        throw new Error(`Unexpected status: ${response.status}`);
+      }
     } catch (error) {
-      console.log('Firebase is not available - using offline services');
+      console.log('Firebase is not available - using offline services', error);
       isFirebaseAvailable = false;
       return false;
     }

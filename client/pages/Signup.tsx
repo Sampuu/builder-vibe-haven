@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, ArrowLeft, UserPlus, Play } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import FirebaseStatus from '@/components/FirebaseStatus';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -223,17 +224,20 @@ export default function Signup() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-slate-600">
-                Already have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/login')}
-                  className="p-0 h-auto text-emergency-info hover:text-emergency-info/80"
-                >
-                  Login here
-                </Button>
-              </p>
+            <div className="mt-6 space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-slate-600">
+                  Already have an account?{' '}
+                  <Button
+                    variant="link"
+                    onClick={() => navigate('/login')}
+                    className="p-0 h-auto text-emergency-info hover:text-emergency-info/80"
+                  >
+                    Login here
+                  </Button>
+                </p>
+              </div>
+              <FirebaseStatus />
             </div>
           </CardContent>
         </Card>

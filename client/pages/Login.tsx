@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, ArrowLeft, Shield, Flame, Truck, Building2, User, Settings, Play } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import FirebaseStatus from '@/components/FirebaseStatus';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -232,17 +233,20 @@ export default function Login() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-slate-600">
-                Don't have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/signup')}
-                  className="p-0 h-auto text-emergency-danger hover:text-emergency-danger/80"
-                >
-                  Sign up here
-                </Button>
-              </p>
+            <div className="mt-6 space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-slate-600">
+                  Don't have an account?{' '}
+                  <Button
+                    variant="link"
+                    onClick={() => navigate('/signup')}
+                    className="p-0 h-auto text-emergency-danger hover:text-emergency-danger/80"
+                  >
+                    Sign up here
+                  </Button>
+                </p>
+              </div>
+              <FirebaseStatus />
             </div>
           </CardContent>
         </Card>
