@@ -14,16 +14,56 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-const mockIncidents = [
-  { id: 1, type: 'fire', location: 'Downtown Plaza', severity: 'high', distance: '0.8 miles' },
-  { id: 2, type: 'accident', location: 'Highway 101', severity: 'medium', distance: '2.1 miles' },
-  { id: 3, type: 'medical', location: 'Oak Street', severity: 'high', distance: '1.5 miles' },
-];
-
 export default function ViewMap() {
   const navigate = useNavigate();
-  const [selectedIncident, setSelectedIncident] = useState<number | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const { user } = useAuth();
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
+
+  // Fetch incidents
+  const fetchIncidents = async () => {
+    try {
+      const response = await fetch('/api/incidents', {
+        headers: {
+          'x-user-id': user?.id || '',
+          'x-user-role': user?.role || 'user'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIncidents(data.incidents || []);
+      } else {
+        console.error('Failed to fetch incidents');
+      }
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncidents();
+    // Set up polling for real-time updates
+    const interval = setInterval(fetchIncidents, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const getIncidentDistance = (incident: Incident): string => {
+    // Mock distance calculation - in production, use user's location
+    return `${(Math.random() * 5 + 0.5).toFixed(1)} miles`;
+  };
+
+  const getTimeAgo = (timestamp: string): string => {
+    const now = new Date();
+    const incidentTime = new Date(timestamp);
+    const diffMinutes = Math.floor((now.getTime() - incidentTime.getTime()) / (1000 * 60));
+
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${Math.floor(diffHours / 24)}d ago`;
+  };
 
   return (
     <DashboardLayout>
