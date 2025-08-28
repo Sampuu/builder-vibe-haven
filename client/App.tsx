@@ -52,6 +52,25 @@ import SupplyRequests from "./pages/hospital/SupplyRequests";
 const queryClient = new QueryClient();
 
 function App() {
+  // Initialize notification service
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      try {
+        await NotificationService.initialize();
+        console.log('✅ Notification service initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize notification service:', error);
+      }
+    };
+
+    initializeNotifications();
+
+    // Cleanup on unmount
+    return () => {
+      NotificationService.cleanup();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
