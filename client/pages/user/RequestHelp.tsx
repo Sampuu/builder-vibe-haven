@@ -23,9 +23,10 @@ import {
 
 export default function RequestHelp() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     type: '',
-    urgency: 'medium',
+    urgency: 'medium' as const,
     description: '',
     location: '',
     contactPhone: '',
@@ -33,13 +34,73 @@ export default function RequestHelp() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setIsSubmitting(false);
+    setError('');
+
+    try {
+      // Validate form
+      if (!formData.type || !formData.description || !formData.location || !formData.contactPhone) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Prepare incident data
+      const incidentData: CreateIncidentRequest = {
+        type: formData.type as CreateIncidentRequest['type'],
+        title: `${formData.type === 'medical' ? 'Medical' : formData.type === 'supplies' ? 'Supply' : formData.type === 'transport' ? 'Transport' : 'Other'} Help Request`,
+        description: `${formData.description}${formData.specialRequests ? `\n\nSpecial Requests: ${formData.specialRequests}` : ''}`,
+        location: formData.location,
+        urgency: formData.urgency,
+        contactName: user?.name || 'Unknown',
+        contactPhone: formData.contactPhone
+      };
+
+      // Submit to server
+      const response = await fetch('/api/incidents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || 'unknown',
+          'x-user-role': user?.role || 'user'
+        },
+        body: JSON.stringify(incidentData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit help request');
+      }
+
+      const result: CreateIncidentResponse = await response.json();
+
+      console.log('Help request submitted successfully:', result);
+
+      // Show success toast
+      toast({
+        title: 'Help Request Submitted',
+        description: 'Emergency responders have been notified and are on their way.',
+        variant: 'default',
+        duration: 5000,
+      });
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Error submitting help request:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit help request';
+      setError(errorMessage);
+
+      toast({
+        title: 'Submission Failed',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
