@@ -255,6 +255,7 @@ export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) 
     assignIncident,
     getIncidentsForDepartment,
     getUserIncidents,
+    broadcastNews,
   };
 
   return (
