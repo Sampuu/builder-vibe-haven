@@ -35,6 +35,7 @@ import ReportDisaster from "./pages/user/ReportDisaster";
 import RequestHelp from "./pages/user/RequestHelp";
 import ViewMap from "./pages/user/ViewMap";
 import News from "./pages/user/News";
+import Notifications from "./pages/Notifications";
 
 // Police Pages
 import AllIncidents from "./pages/police/AllIncidents";
