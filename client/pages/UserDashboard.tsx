@@ -57,6 +57,9 @@ export default function UserDashboard() {
           </p>
         </div>
 
+        {/* Notification System Overview */}
+        <NotificationSystemSummary />
+
         {/* Help Requests Status Alert */}
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4">
