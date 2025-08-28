@@ -306,6 +306,11 @@ export default function Login() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Temporary Debug Component */}
+        <div className="mt-8">
+          <FirebaseDebug />
+        </div>
       </div>
     </div>
   );
