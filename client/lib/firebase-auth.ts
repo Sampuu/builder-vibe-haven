@@ -63,27 +63,16 @@ const createUserProfile = async (
 
 // Firebase Authentication Service
 export const firebaseAuth = {
-  // Check network connectivity
-  async checkNetworkConnectivity(): Promise<boolean> {
-    try {
-      // Try to make a simple request to check connectivity
-      const response = await fetch("https://www.google.com/favicon.ico", {
-        method: "HEAD",
-        mode: "no-cors",
-        cache: "no-cache",
-      });
-      return true;
-    } catch {
-      return navigator.onLine;
-    }
+  // Check basic network connectivity
+  checkNetworkConnectivity(): boolean {
+    return navigator.onLine;
   },
 
   // Sign up new user with enhanced error handling
   async signup(data: SignupData): Promise<DatabaseResponse<User>> {
     try {
-      // Check network connectivity first
-      const isOnline = await this.checkNetworkConnectivity();
-      if (!isOnline) {
+      // Check basic network connectivity
+      if (!this.checkNetworkConnectivity()) {
         return {
           success: false,
           error:
@@ -133,15 +122,7 @@ export const firebaseAuth = {
   // Sign in existing user with enhanced error handling
   async login(data: LoginData): Promise<DatabaseResponse<User>> {
     try {
-      // Check network connectivity first
-      const isOnline = await this.checkNetworkConnectivity();
-      if (!isOnline) {
-        return {
-          success: false,
-          error:
-            "No internet connection. Please check your network and try again.",
-        };
-      }
+      console.log('Starting login process for:', data.email);
 
       const userCredential = await signInWithEmailAndPassword(
         auth,
@@ -149,12 +130,24 @@ export const firebaseAuth = {
         data.password,
       );
       const firebaseUser = userCredential.user;
+      console.log('Firebase auth successful for user:', firebaseUser.uid);
 
       // Get user profile from Firestore
       const user = await createUserProfile(firebaseUser);
+      console.log('User profile retrieved:', user);
 
       if (!user) {
-        throw new Error("User profile not found");
+        // If no profile exists, create a basic one
+        const basicUser: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || data.email,
+          name: firebaseUser.displayName || 'User',
+          role: 'user' as UserRole,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        console.log('Created basic user profile:', basicUser);
+        return { success: true, data: basicUser };
       }
 
       return { success: true, data: user };
