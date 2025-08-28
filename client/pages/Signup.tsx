@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
+import { useFirebase } from '@/contexts/FirebaseContext';
+import { UserRole } from '@shared/firebase-types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    contact: '',
     password: '',
     confirmPassword: '',
     role: 'user' as UserRole,
@@ -20,8 +23,16 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { user } = useAuth();
+  const { signUp } = useFirebase();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(`/dashboard/${user.role === 'fireBrigade' ? 'fire' : user.role}`);
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -33,7 +44,7 @@ export default function Signup() {
     setIsSubmitting(true);
 
     // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.name || !formData.email || !formData.contact || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
@@ -51,14 +62,11 @@ export default function Signup() {
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${formData.role}`);
-    } else {
-      setError('Failed to create account. Please try again.');
+    try {
+      await signUp(formData.email, formData.password, formData.name, formData.role, formData.contact);
+      // The redirect will happen automatically via useEffect when user state updates
+    } catch (error: any) {
+      setError(error.message || 'Failed to create account. Please try again.');
     }
     
     setIsSubmitting(false);
@@ -67,7 +75,7 @@ export default function Signup() {
   const roleOptions = [
     { value: 'user', label: 'User', description: 'Report disasters & request help' },
     { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
+    { value: 'fireBrigade', label: 'Fire Brigade', description: 'Handle fire emergencies' },
     { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
     { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
     { value: 'admin', label: 'Admin', description: 'Full system access' },
@@ -126,6 +134,18 @@ export default function Signup() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact">Contact Number</Label>
+                <Input
+                  id="contact"
+                  type="tel"
+                  value={formData.contact}
+                  onChange={(e) => handleInputChange('contact', e.target.value)}
+                  placeholder="Enter your contact number"
                   required
                 />
               </div>
