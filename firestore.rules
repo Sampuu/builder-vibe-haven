@@ -28,6 +28,35 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if isOwner(userId) || isAdmin();
       allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // User-specific sub-collections for dashboard features
+      
+      // Report Disaster sub-collection
+      match /reportDisaster/{reportId} {
+        allow create, read: if request.auth.uid == userId;
+        allow update: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId || isAdmin();
+      }
+
+      // Request Help sub-collection  
+      match /requestHelp/{requestId} {
+        allow create, read: if request.auth.uid == userId;
+        allow update: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId || isAdmin();
+      }
+
+      // View Map sub-collection (read-only for authenticated users)
+      match /viewMap/{incidentId} {
+        allow read: if request.auth != null;
+        allow write: if false; // Read-only collection
+      }
+
+      // Disaster News sub-collection
+      match /disasterNews/{newsId} {
+        allow create, read: if request.auth.uid == userId;
+        allow update: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId || isAdmin();
+      }
     }
     
     // Police Reports - only police and admin can create/read/update
@@ -73,6 +102,12 @@ service cloud.firestore {
     // Admin Logs - only admins can read/write
     match /adminLogs/{logId} {
       allow read, write: if isAdmin();
+    }
+    
+    // Global incidents collection for map viewing (aggregated from user reports)
+    match /globalIncidents/{incidentId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only system can write to this collection
     }
     
     // Default deny all other access
