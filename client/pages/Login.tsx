@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import AuthModeIndicator from '@/components/AuthModeIndicator';
 
 export default function Login() {
   const [email, setEmail] = useState('');
