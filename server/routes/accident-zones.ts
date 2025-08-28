@@ -1,12 +1,13 @@
 import { RequestHandler } from "express";
-import { 
-  AccidentZone, 
-  CreateAccidentZoneRequest, 
+import {
+  AccidentZone,
+  CreateAccidentZoneRequest,
   TrackedEntity,
   UpdateEntityLocationRequest,
   RouteRequest,
   RouteResponse
 } from "@shared/api";
+import { RoutingService } from "../services/routing";
 
 // In-memory storage (in production, use a database)
 const accidentZones: AccidentZone[] = [
