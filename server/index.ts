@@ -5,6 +5,15 @@ import { createServer as createHttpServer } from "http";
 import { handleDemo } from "./routes/demo";
 import { createIncident, getIncidents, updateIncidentStatus } from "./routes/incidents";
 import { getNotifications, updateNotification, markAllAsRead } from "./routes/notifications";
+import {
+  getAccidentZones,
+  createAccidentZone,
+  updateAccidentZone,
+  deleteAccidentZone,
+  getTrackedEntities,
+  updateEntityLocation,
+  calculateRoute
+} from "./routes/accident-zones";
 import { setupWebSocket } from "./websocket";
 
 export function createServer() {
