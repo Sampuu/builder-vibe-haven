@@ -56,7 +56,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <FirebaseProvider>
+    <RoleBasedFirebaseProvider>
       <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -240,7 +240,7 @@ const App = () => (
         </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
-    </FirebaseProvider>
+    </RoleBasedFirebaseProvider>
   </QueryClientProvider>
 );
 
