@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { 
-  TestTube, 
-  AlertTriangle, 
+import {
+  TestTube,
+  AlertTriangle,
   CheckCircle,
   Clock,
   Bell,
-  Fire,
+  Flame,
   Truck,
   Shield,
   Building2
