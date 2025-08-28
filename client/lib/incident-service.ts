@@ -101,6 +101,32 @@ let localIncidents: Incident[] = [];
 let localHelpRequests: HelpRequest[] = [];
 
 /**
+ * Clean object of undefined values for Firebase compatibility
+ * Firestore doesn't accept undefined values, so we remove them
+ */
+const cleanObjectForFirebase = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(cleanObjectForFirebase);
+  }
+
+  if (typeof obj === 'object') {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        cleaned[key] = cleanObjectForFirebase(value);
+      }
+    }
+    return cleaned;
+  }
+
+  return obj;
+};
+
+/**
  * Create a new incident report
  */
 export const createIncident = async (incidentData: Omit<Incident, 'id' | 'timestamps' | 'updates' | 'notificationsSent' | 'assignedDepartments'>): Promise<Incident> => {
