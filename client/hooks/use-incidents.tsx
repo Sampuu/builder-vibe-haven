@@ -44,6 +44,7 @@ interface IncidentContextType {
   assignIncident: (incidentId: string, departments: UserRole[]) => void;
   getIncidentsForDepartment: (department: UserRole) => Incident[];
   getUserIncidents: (userId: string) => Incident[];
+  broadcastNews: (title: string, message: string, type: 'emergency' | 'warning' | 'info' | 'success', priority: 'high' | 'medium' | 'low') => void;
 }
 
 const IncidentContext = createContext<IncidentContextType | undefined>(undefined);
