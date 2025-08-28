@@ -192,6 +192,10 @@ export const updateIncidentStatus: RequestHandler = (req, res) => {
 
     notifications.push(updateNotification);
 
+    // Broadcast update to all relevant parties
+    broadcastNotification(updateNotification);
+    broadcastIncidentUpdate(incident.id, { status, assignedTo }, incident.targetRoles);
+
     res.json({ incident, notification: updateNotification });
   } catch (error) {
     console.error('Error updating incident:', error);
