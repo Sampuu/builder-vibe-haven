@@ -12,11 +12,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login } = useAuth();
+
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,23 +23,35 @@ export default function Login() {
     setError('');
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
-    } else {
-      setError('Invalid credentials. Please try again.');
+    try {
+      const success = await login(email, password);
+
+      if (success) {
+        // The navigation will be handled by the auth state change
+        // But we can also navigate here as a fallback
+      } else {
+        setError('Invalid credentials. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.message || 'Invalid credentials. Please try again.');
     }
-    
+
     setIsSubmitting(false);
   };
+
+  // Redirect if user is already logged in
+  React.useEffect(() => {
+    if (user) {
+      navigate(`/dashboard/${user.role}`);
+    }
+  }, [user, navigate]);
 
   const roleOptions = [
     { value: 'user', label: 'User', description: 'Report disasters & request help' },
