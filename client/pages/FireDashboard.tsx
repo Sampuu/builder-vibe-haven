@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Flame, MapPin, AlertTriangle } from 'lucide-react';
+import { Flame, MapPin, AlertTriangle, Bell } from 'lucide-react';
+import NotificationCenter, { NotificationBell } from '@/components/NotificationCenter';
 
 export default function FireDashboard() {
   const navigate = useNavigate();
