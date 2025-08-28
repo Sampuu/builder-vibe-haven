@@ -15,9 +15,11 @@ import {
   Plus,
   Newspaper,
   Map,
+  Database,
 } from "lucide-react";
 import FirebaseTest from "@/components/FirebaseTest";
 import FirebaseAuthTest from "@/components/FirebaseAuthTest";
+import HelpRequestsManager from "@/components/HelpRequestsManager";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -203,6 +205,9 @@ export default function UserDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Help Requests Data Management */}
+        <HelpRequestsManager />
 
         {/* Firebase Integration Test */}
         <FirebaseTest />
