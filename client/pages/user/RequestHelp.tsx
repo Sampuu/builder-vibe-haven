@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Phone, 
+import {
+  Phone,
   ArrowLeft,
   Heart,
   Package,
@@ -17,6 +17,9 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { createHelpRequest } from '@/lib/incident-service';
+import { sendHelpRequestNotification, DEPARTMENT_CONTACTS, getHelpRequestRouting } from '@/lib/notification-service';
 
 export default function RequestHelp() {
   const navigate = useNavigate();
