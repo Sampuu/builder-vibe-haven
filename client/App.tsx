@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationProvider } from "@/hooks/use-notifications";
+import { IncidentProvider } from "@/hooks/use-incidents";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
