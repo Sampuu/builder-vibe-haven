@@ -459,14 +459,16 @@ export const sendStatusUpdateNotification = async (
 
   if (isFirebaseAvailable() && db) {
     try {
-      const docRef = await addDoc(collection(db, 'notifications'), {
+      const cleanNotificationForFirebase = cleanObjectForFirebase({
         ...notification,
         timestamps: {
           created: serverTimestamp(),
           sent: serverTimestamp()
         }
       });
-      
+
+      const docRef = await addDoc(collection(db, 'notifications'), cleanNotificationForFirebase);
+
       return { ...notification, id: docRef.id };
     } catch (error) {
       console.error('Failed to send status update notification:', error);
