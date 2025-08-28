@@ -13,6 +13,7 @@ import {
 import { AlertTriangle, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { firebaseAuth, LoginData } from "@/lib/firebase-auth";
+import FirebaseDebug from "@/components/FirebaseDebug";
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginData>({
