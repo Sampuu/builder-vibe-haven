@@ -2,16 +2,16 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  AlertTriangle, 
-  LogOut, 
-  Shield, 
-  Flame, 
-  Truck, 
-  Building2, 
-  User, 
-  Settings,
-  Bell
+import NotificationDropdown from '@/components/NotificationDropdown';
+import {
+  AlertTriangle,
+  LogOut,
+  Shield,
+  Flame,
+  Truck,
+  Building2,
+  User,
+  Settings
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
