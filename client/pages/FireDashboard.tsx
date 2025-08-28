@@ -11,12 +11,24 @@ export default function FireDashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
-            <Flame className="mr-3 h-8 w-8 text-emergency-warning" />
-            Fire Brigade Command
-          </h2>
-          <p className="text-slate-600">Monitor and respond to fire-related emergencies.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
+                <Flame className="mr-3 h-8 w-8 text-emergency-warning" />
+                Fire Brigade Command
+              </h2>
+              <p className="text-slate-600">Monitor and respond to fire-related emergencies.</p>
+            </div>
+            <NotificationBell department="fire" />
+          </div>
         </div>
+
+        {/* Emergency Notifications */}
+        <NotificationCenter
+          department="fire"
+          showUnreadOnly={false}
+          maxHeight="300px"
+        />
 
         <div className="grid md:grid-cols-3 gap-6">
           <Card>
