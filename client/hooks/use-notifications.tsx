@@ -17,6 +17,8 @@ interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  addTargetedNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>, targetRoles: string[]) => void;
+  addNewsNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read' | 'category'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
