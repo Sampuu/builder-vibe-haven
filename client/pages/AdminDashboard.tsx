@@ -12,12 +12,24 @@ export default function AdminDashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
-            <Settings className="mr-3 h-8 w-8 text-slate-700" />
-            System Administration Center
-          </h2>
-          <p className="text-slate-600">Full system access and management controls.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
+                <Settings className="mr-3 h-8 w-8 text-slate-700" />
+                System Administration Center
+              </h2>
+              <p className="text-slate-600">Full system access and management controls.</p>
+            </div>
+            <NotificationBell department="admin" />
+          </div>
         </div>
+
+        {/* Emergency Notifications */}
+        <NotificationCenter
+          department="admin"
+          showUnreadOnly={false}
+          maxHeight="300px"
+        />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
