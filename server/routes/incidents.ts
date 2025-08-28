@@ -1,11 +1,12 @@
 import { RequestHandler } from "express";
-import { 
-  CreateIncidentRequest, 
-  CreateIncidentResponse, 
-  Incident, 
-  Notification, 
-  User 
+import {
+  CreateIncidentRequest,
+  CreateIncidentResponse,
+  Incident,
+  Notification,
+  User
 } from "@shared/api";
+import { broadcastNotification, broadcastIncidentUpdate } from "../websocket";
 
 // In-memory storage (in production, use a database)
 const incidents: Incident[] = [];
