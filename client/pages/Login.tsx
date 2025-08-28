@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -24,22 +23,21 @@ export default function Login() {
     setError('');
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       setError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
+    const success = await login(email, password);
+
     if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
+      // Navigation will be handled by auth state change
+      // User will be redirected based on their stored role
     } else {
       setError('Invalid credentials. Please try again.');
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const roleOptions = [
@@ -84,24 +82,6 @@ export default function Login() {
                 </Alert>
               )}
               
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roleOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -127,14 +107,6 @@ export default function Login() {
                 />
               </div>
 
-              {(role === 'police' || role === 'admin') && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This role requires enhanced security authentication in production.
-                  </AlertDescription>
-                </Alert>
-              )}
 
               <Button 
                 type="submit" 
