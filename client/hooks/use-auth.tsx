@@ -1,4 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { 
+  User as FirebaseUser,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 
 export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
 
@@ -7,12 +16,14 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  firebaseUser?: FirebaseUser;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<boolean>;
+  logout: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -35,55 +46,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on app load
-    const storedUser = localStorage.getItem('disaster-auth-user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('disaster-auth-user');
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call - in real app this would be a server request
-    try {
-      // Simple validation for demo purposes
-      if (email && password.length >= 6) {
-        const user: User = {
-          id: `${role}-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
-          role,
-        };
-        
-        setUser(user);
-        localStorage.setItem('disaster-auth-user', JSON.stringify(user));
-        setIsLoading(false);
-        return true;
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Get user data from Firestore
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUser({
+              id: firebaseUser.uid,
+              email: firebaseUser.email!,
+              name: userData.name,
+              role: userData.role,
+              firebaseUser
+            });
+          } else {
+            // Handle case where Firestore document doesn't exist
+            console.error('User document not found in Firestore');
+            await signOut(auth);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          await signOut(auth);
+        }
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
-      return false;
-    } catch (error) {
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // User state will be updated via onAuthStateChanged
+      return true;
+    } catch (error: any) {
       console.error('Login failed:', error);
       setIsLoading(false);
       return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('disaster-auth-user');
+  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      // Create Firebase user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Save additional user data to Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        name,
+        email,
+        role,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      });
+
+      // User state will be updated via onAuthStateChanged
+      return true;
+    } catch (error: any) {
+      console.error('Signup failed:', error);
+      setIsLoading(false);
+      return false;
+    }
   };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await signOut(auth);
+      // User state will be updated via onAuthStateChanged
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Update last login when user logs in
+  useEffect(() => {
+    if (user && user.firebaseUser) {
+      updateDoc(doc(db, 'users', user.id), {
+        lastLogin: new Date().toISOString()
+      }).catch(console.error);
+    }
+  }, [user]);
 
   const value: AuthContextType = {
     user,
     login,
+    signup,
     logout,
     isLoading,
   };
