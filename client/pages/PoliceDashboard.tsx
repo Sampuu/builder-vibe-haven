@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
+import NotificationCenter, { NotificationBell } from '@/components/NotificationCenter';
 
 export default function PoliceDashboard() {
   const navigate = useNavigate();
