@@ -69,7 +69,8 @@ const App = () => {
 
   return (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+    <AuthErrorBoundary>
+      <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -253,7 +254,8 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </AuthErrorBoundary>
   </QueryClientProvider>
   );
 };
