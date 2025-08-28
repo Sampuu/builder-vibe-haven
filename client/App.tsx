@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
 import { FirebaseProvider } from "@/contexts/FirebaseContext";
+import { RoleBasedFirebaseProvider } from "@/contexts/RoleBasedFirebaseContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
