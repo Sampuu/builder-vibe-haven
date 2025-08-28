@@ -7,7 +7,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { getFirebaseAuth, getFirebaseFirestore, isFirebaseAvailable } from '@/lib/firebase';
 import { checkFirebaseAvailability } from '@/lib/serviceDetector';
 import { offlineUserService } from '@/lib/offlineStorage';
 
@@ -63,11 +63,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         // Use Firebase mode
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        const firebaseAuth = getFirebaseAuth();
+        if (!firebaseAuth) {
+          console.log('Firebase Auth not available, falling back to offline mode');
+          setIsOfflineMode(true);
+          const currentUser = offlineUserService.getCurrentUser();
+          setUser(currentUser);
+          setIsLoading(false);
+          return;
+        }
+
+        const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
           try {
             if (firebaseUser) {
               // Get user data from Firestore
-              const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+            const firebaseDb = getFirebaseFirestore();
+            if (!firebaseDb) {
+              throw new Error('Firestore not available');
+            }
+            const userDoc = await getDoc(doc(firebaseDb, 'users', firebaseUser.uid));
               if (userDoc.exists()) {
                 const userData = userDoc.data();
                 setUser({
@@ -80,7 +94,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               } else {
                 // Handle case where Firestore document doesn't exist
                 console.error('User document not found in Firestore');
-                await signOut(auth);
+                if (firebaseAuth) {
+                  await signOut(firebaseAuth);
+                }
               }
             } else {
               setUser(null);
@@ -130,7 +146,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } else {
         // Use Firebase authentication
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const firebaseAuth = getFirebaseAuth();
+        if (!firebaseAuth) {
+          throw new Error('Firebase Auth not available');
+        }
+        const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
         // User state will be updated via onAuthStateChanged
         return true;
       }
@@ -159,10 +179,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return true;
       } else {
         // Create Firebase user
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseAuth = getFirebaseAuth();
+        const firebaseDb = getFirebaseFirestore();
+
+        if (!firebaseAuth || !firebaseDb) {
+          throw new Error('Firebase Auth or Firestore not available');
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
 
         // Save additional user data to Firestore
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
+        await setDoc(doc(firebaseDb, 'users', userCredential.user.uid), {
           name,
           email,
           role,
@@ -186,8 +213,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await offlineUserService.signOut();
         setUser(null);
       } else {
-        await signOut(auth);
-        // User state will be updated via onAuthStateChanged
+        const firebaseAuth = getFirebaseAuth();
+        if (firebaseAuth) {
+          await signOut(firebaseAuth);
+          // User state will be updated via onAuthStateChanged
+        } else {
+          setUser(null);
+        }
       }
     } catch (error) {
       console.error('Logout failed:', error);
@@ -196,12 +228,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Update last login when user logs in
   useEffect(() => {
-    if (user && user.firebaseUser) {
-      updateDoc(doc(db, 'users', user.id), {
-        lastLogin: new Date().toISOString()
-      }).catch(console.error);
+    if (user && user.firebaseUser && !isOfflineMode) {
+      const firebaseDb = getFirebaseFirestore();
+      if (firebaseDb) {
+        updateDoc(doc(firebaseDb, 'users', user.id), {
+          lastLogin: new Date().toISOString()
+        }).catch(console.error);
+      }
     }
-  }, [user]);
+  }, [user, isOfflineMode]);
 
   const value: AuthContextType = {
     user,

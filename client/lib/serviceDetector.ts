@@ -16,17 +16,17 @@ export const checkFirebaseAvailability = async (): Promise<boolean> => {
 
   checkPromise = (async () => {
     try {
-      // Check if we're using demo credentials
-      const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-      const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+      // First check if we have valid credentials using the Firebase module
+      const { isFirebaseAvailable: hasValidCreds } = await import('@/lib/firebase');
 
-      if (projectId === 'demo-project' || apiKey === 'demo-api-key' || !projectId || !apiKey) {
+      if (!hasValidCreds()) {
         console.log('Using demo/missing Firebase credentials - switching to offline mode');
         isFirebaseAvailable = false;
         return false;
       }
 
-      // Try to make a simple request to Firebase Auth REST API to verify connectivity
+      // If we have valid credentials, try to verify connectivity
+      const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
       const response = await fetch(
         `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
         {
