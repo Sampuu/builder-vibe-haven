@@ -9,8 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  AlertTriangle, 
+import { useAuth } from '@/hooks/use-auth';
+import { toast } from '@/hooks/use-toast';
+import { CreateIncidentRequest, CreateIncidentResponse } from '@shared/api';
+import {
+  AlertTriangle,
   ArrowLeft,
   MapPin,
   Phone,
@@ -19,7 +22,6 @@ import {
   Upload,
   Camera
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 
 interface DisasterReport {
   id: string;
