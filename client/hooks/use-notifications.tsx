@@ -9,7 +9,8 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
   priority: 'high' | 'medium' | 'low';
-  category: 'incident' | 'system' | 'update' | 'alert';
+  category: 'incident' | 'system' | 'update' | 'alert' | 'news';
+  targetRoles?: string[]; // If undefined, notification goes to all users
 }
 
 interface NotificationContextType {
