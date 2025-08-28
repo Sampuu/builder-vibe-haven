@@ -107,33 +107,31 @@ export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) 
 
     setIncidents(prev => [newIncident, ...prev]);
 
-    // Notify assigned departments
-    assignedDepartments.forEach(department => {
-      const notificationTitle = incidentData.type === 'help_request' 
-        ? 'New Help Request' 
-        : 'New Emergency Report';
-      
-      const notificationMessage = `${incidentData.category.toUpperCase()}: ${incidentData.title} at ${incidentData.location}`;
-      
-      addNotification({
-        title: notificationTitle,
-        message: notificationMessage,
-        type: incidentData.urgency === 'critical' ? 'emergency' : 
-              incidentData.urgency === 'high' ? 'warning' : 'info',
-        priority: incidentData.urgency === 'critical' || incidentData.urgency === 'high' ? 'high' : 'medium',
-        category: 'incident'
-      });
-    });
+    // Send targeted notification to assigned departments only
+    const notificationTitle = incidentData.type === 'help_request'
+      ? 'New Help Request'
+      : 'New Emergency Report';
 
-    // Also notify admin for high priority incidents
+    const notificationMessage = `${incidentData.category.toUpperCase()}: ${incidentData.title} at ${incidentData.location}`;
+
+    addTargetedNotification({
+      title: notificationTitle,
+      message: notificationMessage,
+      type: incidentData.urgency === 'critical' ? 'emergency' :
+            incidentData.urgency === 'high' ? 'warning' : 'info',
+      priority: incidentData.urgency === 'critical' || incidentData.urgency === 'high' ? 'high' : 'medium',
+      category: 'incident'
+    }, assignedDepartments);
+
+    // Send separate admin notification for high priority incidents (admin sees all notifications anyway)
     if (incidentData.urgency === 'critical' || incidentData.urgency === 'high') {
-      addNotification({
+      addTargetedNotification({
         title: `${incidentData.urgency.toUpperCase()} Incident Reported`,
         message: `${incidentData.category.toUpperCase()}: ${incidentData.title} - Departments notified: ${assignedDepartments.join(', ')}`,
         type: 'emergency',
         priority: 'high',
         category: 'incident'
-      });
+      }, ['admin']);
     }
 
     return incidentId;
