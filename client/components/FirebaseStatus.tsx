@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, CloudOff, Settings, ExternalLink } from 'lucide-react';
 import { checkFirebaseAvailability, getFirebaseAvailability } from '@/lib/serviceDetector';
+import FirebaseConfigTool from './FirebaseConfigTool';
 
 export default function FirebaseStatus() {
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
@@ -67,15 +68,17 @@ export default function FirebaseStatus() {
                 <li>Update environment variables</li>
                 <li>Restart the server</li>
               </ol>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.open('/FIREBASE_SETUP.md', '_blank')}
-                className="mt-2"
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Setup Guide
-              </Button>
+              <div className="flex space-x-2 mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/FIREBASE_SETUP.md', '_blank')}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Setup Guide
+                </Button>
+                <FirebaseConfigTool />
+              </div>
             </div>
           </AlertDescription>
         </Alert>
