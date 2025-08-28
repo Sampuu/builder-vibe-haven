@@ -36,13 +36,20 @@ export interface UserData {
 
 /**
  * Create a new user account with Firebase Auth and store user data in Firestore
+ * Falls back to localStorage if Firebase is not configured
  */
 export const createUserAccount = async (
-  email: string, 
-  password: string, 
-  name: string, 
+  email: string,
+  password: string,
+  name: string,
   role: UserRole
 ): Promise<User> => {
+  // Use fallback authentication if Firebase is not available
+  if (!isFirebaseAvailable()) {
+    console.log('📱 Using fallback authentication for account creation');
+    return await createFallbackAccount(email, password, name, role);
+  }
+
   try {
     // Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -66,6 +73,8 @@ export const createUserAccount = async (
     // Store user data in Firestore
     await setDoc(doc(db, 'users', firebaseUser.uid), userData);
 
+    console.log('🔥 Firebase account created successfully');
+
     // Return the user object for our app
     return {
       id: firebaseUser.uid,
@@ -74,8 +83,11 @@ export const createUserAccount = async (
       role
     };
   } catch (error: any) {
-    console.error('Error creating user account:', error);
-    throw new Error(error.message || 'Failed to create account');
+    console.error('Error creating Firebase user account:', error);
+    console.log('📱 Falling back to local storage authentication');
+
+    // Fallback to localStorage on Firebase error
+    return await createFallbackAccount(email, password, name, role);
   }
 };
 
