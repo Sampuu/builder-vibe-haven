@@ -1,16 +1,28 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useAuth } from '@/hooks/use-auth';
-import { toast } from '@/hooks/use-toast';
-import { CreateIncidentRequest, CreateIncidentResponse } from '@shared/api';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "@/hooks/use-toast";
+import { CreateIncidentRequest, CreateIncidentResponse } from "@shared/api";
 import {
   Phone,
   ArrowLeft,
@@ -19,84 +31,91 @@ import {
   Truck,
   CheckCircle,
   Clock,
-  Flame
-} from 'lucide-react';
+  Flame,
+} from "lucide-react";
 
 export default function RequestHelp() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    type: '',
-    urgency: 'medium' as const,
-    description: '',
-    location: '',
-    contactPhone: '',
-    specialRequests: ''
+    type: "",
+    urgency: "medium" as const,
+    description: "",
+    location: "",
+    contactPhone: "",
+    specialRequests: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       // Validate form
-      if (!formData.type || !formData.description || !formData.location || !formData.contactPhone) {
-        throw new Error('Please fill in all required fields');
+      if (
+        !formData.type ||
+        !formData.description ||
+        !formData.location ||
+        !formData.contactPhone
+      ) {
+        throw new Error("Please fill in all required fields");
       }
 
       // Prepare incident data
       const incidentData: CreateIncidentRequest = {
-        type: formData.type as CreateIncidentRequest['type'],
-        title: `${formData.type === 'medical' ? 'Medical' : formData.type === 'fire' ? 'Fire Emergency' : formData.type === 'supplies' ? 'Supply' : formData.type === 'transport' ? 'Transport' : 'Other'} Help Request`,
-        description: `${formData.description}${formData.specialRequests ? `\n\nSpecial Requests: ${formData.specialRequests}` : ''}`,
+        type: formData.type as CreateIncidentRequest["type"],
+        title: `${formData.type === "medical" ? "Medical" : formData.type === "fire" ? "Fire Emergency" : formData.type === "supplies" ? "Supply" : formData.type === "transport" ? "Transport" : "Other"} Help Request`,
+        description: `${formData.description}${formData.specialRequests ? `\n\nSpecial Requests: ${formData.specialRequests}` : ""}`,
         location: formData.location,
         urgency: formData.urgency,
-        contactName: user?.name || 'Unknown',
-        contactPhone: formData.contactPhone
+        contactName: user?.name || "Unknown",
+        contactPhone: formData.contactPhone,
       };
 
       // Submit to server
-      const response = await fetch('/api/incidents', {
-        method: 'POST',
+      const response = await fetch("/api/incidents", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id || 'unknown',
-          'x-user-role': user?.role || 'user'
+          "Content-Type": "application/json",
+          "x-user-id": user?.id || "unknown",
+          "x-user-role": user?.role || "user",
         },
-        body: JSON.stringify(incidentData)
+        body: JSON.stringify(incidentData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit help request');
+        throw new Error(errorData.error || "Failed to submit help request");
       }
 
       const result: CreateIncidentResponse = await response.json();
 
-      console.log('Help request submitted successfully:', result);
+      console.log("Help request submitted successfully:", result);
 
       // Show success toast
       toast({
-        title: 'Help Request Submitted',
-        description: 'Emergency responders have been notified and are on their way.',
-        variant: 'default',
+        title: "Help Request Submitted",
+        description:
+          "Emergency responders have been notified and are on their way.",
+        variant: "default",
         duration: 5000,
       });
 
       setSubmitted(true);
     } catch (err) {
-      console.error('Error submitting help request:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit help request';
+      console.error("Error submitting help request:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to submit help request";
       setError(errorMessage);
 
       toast({
-        title: 'Submission Failed',
+        title: "Submission Failed",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
         duration: 5000,
       });
     } finally {
@@ -111,17 +130,23 @@ export default function RequestHelp() {
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle className="h-16 w-16 text-emergency-resolved mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted Successfully</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">
+                Help Request Submitted Successfully
+              </h2>
               <p className="text-slate-600 mb-6">
-                Emergency responders have been automatically notified based on your request type.
-                They should contact you shortly at {formData.contactPhone}.
+                Emergency responders have been automatically notified based on
+                your request type. They should contact you shortly at{" "}
+                {formData.contactPhone}.
               </p>
               <div className="text-sm text-slate-500 mb-6">
                 <p>• Medical teams have been alerted</p>
                 <p>• Police and emergency coordinators notified</p>
                 <p>• Your location: {formData.location}</p>
               </div>
-              <Button onClick={() => navigate('/dashboard/user')} className="w-full">
+              <Button
+                onClick={() => navigate("/dashboard/user")}
+                className="w-full"
+              >
                 Back to Dashboard
               </Button>
             </CardContent>
@@ -135,7 +160,7 @@ export default function RequestHelp() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/user')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/user")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
@@ -144,7 +169,9 @@ export default function RequestHelp() {
               <Phone className="mr-3 h-8 w-8 text-emergency-resolved" />
               Request Medical Help
             </h1>
-            <p className="text-slate-600">Request medical assistance and emergency supplies</p>
+            <p className="text-slate-600">
+              Request medical assistance and emergency supplies
+            </p>
           </div>
         </div>
 
@@ -167,21 +194,34 @@ export default function RequestHelp() {
           <Card>
             <CardHeader>
               <CardTitle>Help Request Form</CardTitle>
-              <CardDescription>Request medical assistance or emergency supplies</CardDescription>
+              <CardDescription>
+                Request medical assistance or emergency supplies
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="type">Type of Help Needed</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, type: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select help type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="medical">Medical Assistance</SelectItem>
+                      <SelectItem value="medical">
+                        Medical Assistance
+                      </SelectItem>
                       <SelectItem value="fire">Fire Emergency</SelectItem>
-                      <SelectItem value="supplies">Emergency Supplies</SelectItem>
-                      <SelectItem value="transport">Medical Transport</SelectItem>
+                      <SelectItem value="supplies">
+                        Emergency Supplies
+                      </SelectItem>
+                      <SelectItem value="transport">
+                        Medical Transport
+                      </SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -189,15 +229,24 @@ export default function RequestHelp() {
 
                 <div className="space-y-2">
                   <Label htmlFor="urgency">Urgency Level</Label>
-                  <Select value={formData.urgency} onValueChange={(value) => setFormData({...formData, urgency: value})}>
+                  <Select
+                    value={formData.urgency}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, urgency: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">Low - Can wait</SelectItem>
-                      <SelectItem value="medium">Medium - Needed soon</SelectItem>
+                      <SelectItem value="medium">
+                        Medium - Needed soon
+                      </SelectItem>
                       <SelectItem value="high">High - Urgent</SelectItem>
-                      <SelectItem value="critical">Critical - Emergency</SelectItem>
+                      <SelectItem value="critical">
+                        Critical - Emergency
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -207,7 +256,9 @@ export default function RequestHelp() {
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     placeholder="Describe what help you need..."
                     rows={3}
                   />
@@ -218,7 +269,9 @@ export default function RequestHelp() {
                   <Input
                     id="location"
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     placeholder="Your current address"
                   />
                 </div>
@@ -228,12 +281,19 @@ export default function RequestHelp() {
                   <Input
                     id="contactPhone"
                     value={formData.contactPhone}
-                    onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactPhone: e.target.value })
+                    }
                     placeholder="Your phone number"
                   />
                 </div>
 
-                <Button type="submit" className="w-full" variant="success" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  variant="success"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Clock className="mr-2 h-4 w-4 animate-spin" />
@@ -312,11 +372,15 @@ export default function RequestHelp() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Emergency Services</span>
-                  <Button size="sm" variant="danger">911</Button>
+                  <Button size="sm" variant="danger">
+                    911
+                  </Button>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Poison Control</span>
-                  <Button size="sm" variant="outline">1-800-222-1222</Button>
+                  <Button size="sm" variant="outline">
+                    1-800-222-1222
+                  </Button>
                 </div>
               </CardContent>
             </Card>

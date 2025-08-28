@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { Notification, User } from '@shared/api';
-import { useAuth } from './use-auth';
-import { toast } from './use-toast';
+import { useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { Notification, User } from "@shared/api";
+import { useAuth } from "./use-auth";
+import { toast } from "./use-toast";
 
 interface UseWebSocketReturn {
   isConnected: boolean;
@@ -20,72 +20,78 @@ export function useWebSocket(): UseWebSocketReturn {
     if (!user) return;
 
     // Connect to WebSocket server
-    const socket = io('/', {
-      transports: ['websocket', 'polling']
+    const socket = io("/", {
+      transports: ["websocket", "polling"],
     });
 
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       setIsConnected(true);
-      console.log('WebSocket connected');
+      console.log("WebSocket connected");
 
       // Authenticate with server
-      socket.emit('authenticate', {
+      socket.emit("authenticate", {
         userId: user.id,
-        userRole: user.role
+        userRole: user.role,
       });
     });
 
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       setIsConnected(false);
-      console.log('WebSocket disconnected');
+      console.log("WebSocket disconnected");
     });
 
     // Listen for real-time notifications
-    socket.on('notification', (notification: Notification) => {
-      console.log('Received notification:', notification);
-      
+    socket.on("notification", (notification: Notification) => {
+      console.log("Received notification:", notification);
+
       // Add to local notifications list
-      setNotifications(prev => [notification, ...prev]);
+      setNotifications((prev) => [notification, ...prev]);
 
       // Show toast notification
       toast({
         title: notification.title,
         description: notification.message,
         variant: getToastVariant(notification.priority),
-        duration: notification.priority === 'critical' ? 10000 : 5000,
+        duration: notification.priority === "critical" ? 10000 : 5000,
       });
     });
 
     // Listen for incident updates
-    socket.on('incident_update', (data: { incidentId: string; update: any }) => {
-      console.log('Incident update:', data);
-      
-      // Show toast for incident updates
-      toast({
-        title: 'Incident Updated',
-        description: `Incident ${data.incidentId} has been updated`,
-        variant: 'default',
-        duration: 3000,
-      });
-    });
+    socket.on(
+      "incident_update",
+      (data: { incidentId: string; update: any }) => {
+        console.log("Incident update:", data);
+
+        // Show toast for incident updates
+        toast({
+          title: "Incident Updated",
+          description: `Incident ${data.incidentId} has been updated`,
+          variant: "default",
+          duration: 3000,
+        });
+      },
+    );
 
     // Listen for user-specific notifications
-    socket.on('user_notification', (data: { targetUserId: string; notification: Notification }) => {
-      if (data.targetUserId === user.id) {
-        console.log('User-specific notification:', data.notification);
-        
-        setNotifications(prev => [data.notification, ...prev]);
-        
-        toast({
-          title: data.notification.title,
-          description: data.notification.message,
-          variant: getToastVariant(data.notification.priority),
-          duration: 5000,
-        });
-      }
-    });
+    socket.on(
+      "user_notification",
+      (data: { targetUserId: string; notification: Notification }) => {
+        if (data.targetUserId === user.id) {
+          console.log("User-specific notification:", data.notification);
+
+          setNotifications((prev) => [data.notification, ...prev]);
+
+          toast({
+            title: data.notification.title,
+            description: data.notification.message,
+            variant: getToastVariant(data.notification.priority),
+            duration: 5000,
+          });
+        }
+      },
+    );
 
     return () => {
       socket.disconnect();
@@ -99,16 +105,16 @@ export function useWebSocket(): UseWebSocketReturn {
   return {
     isConnected,
     notifications,
-    clearNotifications
+    clearNotifications,
   };
 }
 
-function getToastVariant(priority: string): 'default' | 'destructive' {
+function getToastVariant(priority: string): "default" | "destructive" {
   switch (priority) {
-    case 'critical':
-    case 'high':
-      return 'destructive';
+    case "critical":
+    case "high":
+      return "destructive";
     default:
-      return 'default';
+      return "default";
   }
 }

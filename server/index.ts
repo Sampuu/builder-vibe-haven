@@ -3,8 +3,16 @@ import express from "express";
 import cors from "cors";
 import { createServer as createHttpServer } from "http";
 import { handleDemo } from "./routes/demo";
-import { createIncident, getIncidents, updateIncidentStatus } from "./routes/incidents";
-import { getNotifications, updateNotification, markAllAsRead } from "./routes/notifications";
+import {
+  createIncident,
+  getIncidents,
+  updateIncidentStatus,
+} from "./routes/incidents";
+import {
+  getNotifications,
+  updateNotification,
+  markAllAsRead,
+} from "./routes/notifications";
 import {
   getAccidentZones,
   createAccidentZone,
@@ -13,7 +21,7 @@ import {
   getTrackedEntities,
   updateEntityLocation,
   calculateRoute,
-  geocodeLocation
+  geocodeLocation,
 } from "./routes/accident-zones";
 import { setupWebSocket } from "./websocket";
 

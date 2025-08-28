@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import MapSystem from '@/components/MapSystem';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/use-auth';
-import { Incident } from '@shared/api';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import MapSystem from "@/components/MapSystem";
+import { Button } from "@/components/ui/button";
 import {
-  Map,
-  ArrowLeft,
-  MapPin,
-  AlertTriangle
-} from 'lucide-react';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
+import { Incident } from "@shared/api";
+import { Map, ArrowLeft, MapPin, AlertTriangle } from "lucide-react";
 
 export default function ViewMap() {
   const navigate = useNavigate();
@@ -23,21 +24,21 @@ export default function ViewMap() {
   // Fetch incidents
   const fetchIncidents = async () => {
     try {
-      const response = await fetch('/api/incidents', {
+      const response = await fetch("/api/incidents", {
         headers: {
-          'x-user-id': user?.id || '',
-          'x-user-role': user?.role || 'user'
-        }
+          "x-user-id": user?.id || "",
+          "x-user-role": user?.role || "user",
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
         setIncidents(data.incidents || []);
       } else {
-        console.error('Failed to fetch incidents');
+        console.error("Failed to fetch incidents");
       }
     } catch (error) {
-      console.error('Error fetching incidents:', error);
+      console.error("Error fetching incidents:", error);
     }
   };
 
@@ -56,9 +57,11 @@ export default function ViewMap() {
   const getTimeAgo = (timestamp: string): string => {
     const now = new Date();
     const incidentTime = new Date(timestamp);
-    const diffMinutes = Math.floor((now.getTime() - incidentTime.getTime()) / (1000 * 60));
+    const diffMinutes = Math.floor(
+      (now.getTime() - incidentTime.getTime()) / (1000 * 60),
+    );
 
-    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 1) return "Just now";
     if (diffMinutes < 60) return `${diffMinutes}m ago`;
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -70,7 +73,7 @@ export default function ViewMap() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard/user')}>
+            <Button variant="ghost" onClick={() => navigate("/dashboard/user")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Button>
@@ -79,7 +82,10 @@ export default function ViewMap() {
                 <Map className="mr-3 h-8 w-8 text-emergency-info" />
                 Emergency Map
               </h1>
-              <p className="text-slate-600">View danger zones, navigate safely, and track emergency response units</p>
+              <p className="text-slate-600">
+                View danger zones, navigate safely, and track emergency response
+                units
+              </p>
             </div>
           </div>
         </div>
@@ -116,22 +122,37 @@ export default function ViewMap() {
                       <div
                         key={incident.id}
                         className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedIncident === incident.id ? 'border-emergency-info bg-emergency-info/5' : 'border-slate-200 hover:bg-slate-50'
+                          selectedIncident === incident.id
+                            ? "border-emergency-info bg-emergency-info/5"
+                            : "border-slate-200 hover:bg-slate-50"
                         }`}
                         onClick={() => setSelectedIncident(incident.id)}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <AlertTriangle className={`h-4 w-4 ${
-                              incident.type === 'fire' ? 'text-emergency-danger' :
-                              incident.type === 'accident' ? 'text-emergency-warning' :
-                              incident.type === 'medical' ? 'text-emergency-info' : 'text-slate-500'
-                            }`} />
-                            <span className="text-sm font-medium capitalize">{incident.type}</span>
+                            <AlertTriangle
+                              className={`h-4 w-4 ${
+                                incident.type === "fire"
+                                  ? "text-emergency-danger"
+                                  : incident.type === "accident"
+                                    ? "text-emergency-warning"
+                                    : incident.type === "medical"
+                                      ? "text-emergency-info"
+                                      : "text-slate-500"
+                              }`}
+                            />
+                            <span className="text-sm font-medium capitalize">
+                              {incident.type}
+                            </span>
                           </div>
-                          <Badge variant={
-                            incident.urgency === 'critical' || incident.urgency === 'high' ? 'destructive' : 'secondary'
-                          }>
+                          <Badge
+                            variant={
+                              incident.urgency === "critical" ||
+                              incident.urgency === "high"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                          >
                             {incident.urgency}
                           </Badge>
                         </div>
@@ -143,10 +164,10 @@ export default function ViewMap() {
                           <span>{getIncidentDistance(incident)} away</span>
                           <span>{getTimeAgo(incident.timestamp)}</span>
                         </div>
-                        {incident.status !== 'submitted' && (
+                        {incident.status !== "submitted" && (
                           <div className="mt-2">
                             <Badge variant="outline" className="text-xs">
-                              {incident.status.replace('-', ' ')}
+                              {incident.status.replace("-", " ")}
                             </Badge>
                           </div>
                         )}
@@ -163,7 +184,9 @@ export default function ViewMap() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="text-sm font-medium text-slate-700 mb-2">Danger Zones</div>
+                  <div className="text-sm font-medium text-slate-700 mb-2">
+                    Danger Zones
+                  </div>
                   <div className="space-y-2 ml-2">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 border-2 border-red-500 bg-red-500/30 rounded-full"></div>
@@ -179,7 +202,9 @@ export default function ViewMap() {
                     </div>
                   </div>
 
-                  <div className="text-sm font-medium text-slate-700 mb-2 mt-4">Response Units</div>
+                  <div className="text-sm font-medium text-slate-700 mb-2 mt-4">
+                    Response Units
+                  </div>
                   <div className="space-y-2 ml-2">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-3 bg-red-600 rounded-full"></div>
@@ -211,7 +236,7 @@ export default function ViewMap() {
                   variant="destructive"
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate('/user/report')}
+                  onClick={() => navigate("/user/report")}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Report Emergency
@@ -220,7 +245,7 @@ export default function ViewMap() {
                   variant="default"
                   size="sm"
                   className="w-full bg-green-600 hover:bg-green-700"
-                  onClick={() => navigate('/user/help')}
+                  onClick={() => navigate("/user/help")}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   Request Help

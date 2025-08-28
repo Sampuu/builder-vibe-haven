@@ -5,38 +5,49 @@ export interface DemoResponse {
 export interface User {
   id: string;
   name: string;
-  role: 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+  role: "user" | "police" | "fire" | "ambulance" | "hospital" | "admin";
 }
 
 export interface Incident {
   id: string;
-  type: 'medical' | 'fire' | 'accident' | 'natural' | 'supplies' | 'transport' | 'other';
+  type:
+    | "medical"
+    | "fire"
+    | "accident"
+    | "natural"
+    | "supplies"
+    | "transport"
+    | "other";
   title: string;
   description: string;
   location: string;
   coordinates?: { lat: number; lng: number };
-  urgency: 'low' | 'medium' | 'high' | 'critical';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  urgency: "low" | "medium" | "high" | "critical";
+  severity: "low" | "medium" | "high" | "critical";
   contactName: string;
   contactPhone: string;
   reportedBy: string; // user ID
-  reportedByRole: User['role'];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
+  reportedByRole: User["role"];
+  status: "submitted" | "acknowledged" | "in-progress" | "resolved";
   assignedTo?: string; // responder ID
   timestamp: string;
   images?: string[];
-  targetRoles: User['role'][];
+  targetRoles: User["role"][];
 }
 
 export interface Notification {
   id: string;
   incidentId: string;
-  targetRole: User['role'];
+  targetRole: User["role"];
   targetUserId?: string;
-  type: 'incident_created' | 'incident_assigned' | 'incident_updated' | 'help_request';
+  type:
+    | "incident_created"
+    | "incident_assigned"
+    | "incident_updated"
+    | "help_request";
   title: string;
   message: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: "low" | "medium" | "high" | "critical";
   read: boolean;
   acknowledged: boolean;
   timestamp: string;
@@ -50,8 +61,8 @@ export interface AccidentZone {
   latitude: number;
   longitude: number;
   radius: number; // in meters
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  type: 'accident' | 'fire' | 'flood' | 'construction' | 'chemical' | 'other';
+  severity: "low" | "medium" | "high" | "critical";
+  type: "accident" | "fire" | "flood" | "construction" | "chemical" | "other";
   isActive: boolean;
   createdBy: string; // user ID
   createdAt: string;
@@ -62,12 +73,12 @@ export interface AccidentZone {
 export interface TrackedEntity {
   id: string;
   name: string;
-  type: 'police' | 'fire' | 'ambulance' | 'hospital' | 'user';
+  type: "police" | "fire" | "ambulance" | "hospital" | "user";
   latitude: number;
   longitude: number;
   heading?: number; // direction in degrees
   speed?: number; // speed in km/h
-  status: 'idle' | 'responding' | 'busy' | 'offline';
+  status: "idle" | "responding" | "busy" | "offline";
   lastUpdate: string;
   assignedIncidentId?: string;
 }
@@ -76,8 +87,8 @@ export interface RouteRequest {
   start: { lat: number; lng: number };
   end: { lat: number; lng: number };
   avoidZones?: boolean;
-  entityType?: TrackedEntity['type'];
-  priority?: 'normal' | 'emergency';
+  entityType?: TrackedEntity["type"];
+  priority?: "normal" | "emergency";
 }
 
 export interface RouteResponse {
@@ -92,17 +103,17 @@ export interface RouteResponse {
     }>;
   };
   avoidedZones: AccidentZone[];
-  alternativeRoutes?: RouteResponse['route'][];
+  alternativeRoutes?: RouteResponse["route"][];
 }
 
 export interface CreateIncidentRequest {
-  type: Incident['type'];
+  type: Incident["type"];
   title: string;
   description: string;
   location: string;
   coordinates?: { lat: number; lng: number };
-  urgency: Incident['urgency'];
-  severity?: Incident['severity'];
+  urgency: Incident["urgency"];
+  severity?: Incident["severity"];
   contactName: string;
   contactPhone: string;
   images?: string[];
@@ -129,8 +140,8 @@ export interface CreateAccidentZoneRequest {
   latitude: number;
   longitude: number;
   radius: number;
-  severity: AccidentZone['severity'];
-  type: AccidentZone['type'];
+  severity: AccidentZone["severity"];
+  type: AccidentZone["type"];
   expiresAt?: string;
 }
 
@@ -139,5 +150,5 @@ export interface UpdateEntityLocationRequest {
   longitude: number;
   heading?: number;
   speed?: number;
-  status?: TrackedEntity['status'];
+  status?: TrackedEntity["status"];
 }
