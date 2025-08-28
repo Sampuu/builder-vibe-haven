@@ -23,27 +23,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { createIncident, IncidentType, IncidentSeverity } from '@/lib/incident-service';
 import { sendIncidentNotification, DEPARTMENT_CONTACTS, getNotificationRouting } from '@/lib/notification-service';
 
-interface DisasterReport {
-  id: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  location: string;
-  coordinates?: { lat: number; lng: number };
-  contactName: string;
-  contactPhone: string;
-  images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
-  timestamp: string;
-}
-
 const disasterTypes = [
-  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
-  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies' },
-  { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents' },
-  { value: 'natural', label: 'Natural Disaster', description: 'Floods, storms, earthquakes' },
-  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation' }
+  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions', departments: ['fire', 'admin'] },
+  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies', departments: ['ambulance', 'hospital', 'admin'] },
+  { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents', departments: ['police', 'ambulance', 'admin'] },
+  { value: 'natural', label: 'Natural Disaster', description: 'Floods, storms, earthquakes', departments: ['fire', 'police', 'ambulance', 'admin'] },
+  { value: 'police', label: 'Police Emergency', description: 'Criminal activities, public safety issues', departments: ['police', 'admin'] },
+  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation', departments: ['admin'] }
 ];
 
 const severityLevels = [
