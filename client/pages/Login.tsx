@@ -226,8 +226,14 @@ export default function Login() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Your role and permissions are determined by your account.
-                  Contact your administrator if you need role changes.
+                  <div>
+                    <div>Your role and permissions are determined by your account.</div>
+                    <div className="mt-2 text-xs">
+                      <strong>Test Account:</strong><br/>
+                      Email: test@rescue.com<br/>
+                      Password: test123
+                    </div>
+                  </div>
                 </AlertDescription>
               </Alert>
 
