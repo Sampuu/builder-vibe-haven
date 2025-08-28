@@ -239,6 +239,9 @@ export default function UserDashboard() {
         {/* Notification System Management */}
         <NotificationManager />
 
+        {/* Notification System Demo */}
+        <NotificationDemo />
+
         {/* Firebase Integration Test */}
         <FirebaseTest />
 
