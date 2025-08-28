@@ -50,7 +50,7 @@ export default function RequestHelp() {
       // Prepare incident data
       const incidentData: CreateIncidentRequest = {
         type: formData.type as CreateIncidentRequest['type'],
-        title: `${formData.type === 'medical' ? 'Medical' : formData.type === 'supplies' ? 'Supply' : formData.type === 'transport' ? 'Transport' : 'Other'} Help Request`,
+        title: `${formData.type === 'medical' ? 'Medical' : formData.type === 'fire' ? 'Fire Emergency' : formData.type === 'supplies' ? 'Supply' : formData.type === 'transport' ? 'Transport' : 'Other'} Help Request`,
         description: `${formData.description}${formData.specialRequests ? `\n\nSpecial Requests: ${formData.specialRequests}` : ''}`,
         location: formData.location,
         urgency: formData.urgency,
