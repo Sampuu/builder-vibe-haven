@@ -20,6 +20,7 @@ import {
 import FirebaseTest from "@/components/FirebaseTest";
 import FirebaseAuthTest from "@/components/FirebaseAuthTest";
 import HelpRequestsManager from "@/components/HelpRequestsManager";
+import NotificationManager from "@/components/NotificationManager";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
