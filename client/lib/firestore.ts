@@ -13,7 +13,7 @@ import {
   serverTimestamp,
   Timestamp 
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { getFirebaseFirestore } from './firebase';
 
 // Types for database collections
 export interface DisasterReport {
@@ -79,7 +79,11 @@ export interface Notification {
 export const disasterReportsService = {
   // Create a new disaster report
   async create(report: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'disasterReports'), {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
+    const docRef = await addDoc(collection(firebaseDb, 'disasterReports'), {
       ...report,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -89,17 +93,25 @@ export const disasterReportsService = {
 
   // Get all disaster reports
   async getAll(): Promise<DisasterReport[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
-      query(collection(db, 'disasterReports'), orderBy('createdAt', 'desc'))
+      query(collection(firebaseDb, 'disasterReports'), orderBy('createdAt', 'desc'))
     );
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DisasterReport));
   },
 
   // Get disaster reports by user
   async getByUser(userId: string): Promise<DisasterReport[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
       query(
-        collection(db, 'disasterReports'), 
+        collection(firebaseDb, 'disasterReports'),
         where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       )
@@ -109,9 +121,13 @@ export const disasterReportsService = {
 
   // Get disaster reports by type
   async getByType(type: string): Promise<DisasterReport[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
       query(
-        collection(db, 'disasterReports'), 
+        collection(firebaseDb, 'disasterReports'),
         where('type', '==', type),
         orderBy('createdAt', 'desc')
       )
@@ -121,24 +137,32 @@ export const disasterReportsService = {
 
   // Update disaster report status
   async updateStatus(id: string, status: DisasterReport['status'], assignedTo?: string): Promise<void> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const updateData: any = {
       status,
       updatedAt: serverTimestamp(),
     };
     if (assignedTo) updateData.assignedTo = assignedTo;
     if (status === 'resolved') updateData.resolvedAt = serverTimestamp();
-    
-    await updateDoc(doc(db, 'disasterReports', id), updateData);
+
+    await updateDoc(doc(firebaseDb, 'disasterReports', id), updateData);
   },
 
   // Listen to real-time updates
   onSnapshot(callback: (reports: DisasterReport[]) => void) {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     return onSnapshot(
-      query(collection(db, 'disasterReports'), orderBy('createdAt', 'desc')),
+      query(collection(firebaseDb, 'disasterReports'), orderBy('createdAt', 'desc')),
       (querySnapshot) => {
-        const reports = querySnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
+        const reports = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         } as DisasterReport));
         callback(reports);
       }

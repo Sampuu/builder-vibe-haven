@@ -1,6 +1,6 @@
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { getFirebaseAuth, getFirebaseFirestore } from './firebase';
 import { UserRole } from '@/hooks/use-auth';
 import { checkFirebaseAvailability } from './serviceDetector';
 import { offlineDemoService } from './offlineStorage';
@@ -53,20 +53,28 @@ export const demoAccounts: DemoAccount[] = [
 
 export const createDemoAccount = async (account: DemoAccount): Promise<boolean> => {
   try {
+    const firebaseAuth = getFirebaseAuth();
+    const firebaseDb = getFirebaseFirestore();
+
+    if (!firebaseAuth || !firebaseDb) {
+      console.log(`Firebase not available, skipping demo account creation for ${account.email}`);
+      return false;
+    }
+
     // Check if account already exists in Firestore
-    const userDocRef = doc(db, 'demoUsers', account.email);
+    const userDocRef = doc(firebaseDb, 'demoUsers', account.email);
     const userDoc = await getDoc(userDocRef);
-    
+
     if (userDoc.exists()) {
       console.log(`Demo account ${account.email} already exists`);
       return true;
     }
 
     // Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, account.email, account.password);
-    
+    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, account.email, account.password);
+
     // Save user data to Firestore
-    await setDoc(doc(db, 'users', userCredential.user.uid), {
+    await setDoc(doc(firebaseDb, 'users', userCredential.user.uid), {
       name: account.name,
       email: account.email,
       role: account.role,
@@ -90,14 +98,17 @@ export const createDemoAccount = async (account: DemoAccount): Promise<boolean> 
       console.log(`Demo account ${account.email} already exists in Firebase Auth`);
       
       // Still mark as created in demo tracking if not already marked
-      const userDocRef = doc(db, 'demoUsers', account.email);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          created: true,
-          createdAt: new Date().toISOString(),
-          existedBefore: true
-        });
+      const firebaseDb = getFirebaseFirestore();
+      if (firebaseDb) {
+        const userDocRef = doc(firebaseDb, 'demoUsers', account.email);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            created: true,
+            createdAt: new Date().toISOString(),
+            existedBefore: true
+          });
+        }
       }
       return true;
     }
