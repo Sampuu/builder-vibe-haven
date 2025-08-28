@@ -66,9 +66,62 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       read: false,
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
+    setAllNotifications(prev => [newNotification, ...prev]);
 
-    // Show toast for high priority notifications
+    // Show toast for high priority notifications, but only if user should see this notification
+    if (notification.priority === 'high') {
+      const shouldShowToast = !notification.targetRoles ||
+                             user?.role === 'admin' ||
+                             (user?.role && notification.targetRoles.includes(user.role));
+
+      if (shouldShowToast) {
+        toast({
+          title: notification.title,
+          description: notification.message,
+          variant: notification.type === 'emergency' ? 'destructive' : 'default',
+        });
+      }
+    }
+  };
+
+  const addTargetedNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>, targetRoles: string[]) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notification-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      read: false,
+      targetRoles,
+    };
+
+    setAllNotifications(prev => [newNotification, ...prev]);
+
+    // Show toast only to targeted users for high priority notifications
+    if (notification.priority === 'high') {
+      const shouldShowToast = user?.role === 'admin' || (user?.role && targetRoles.includes(user.role));
+
+      if (shouldShowToast) {
+        toast({
+          title: notification.title,
+          description: notification.message,
+          variant: notification.type === 'emergency' ? 'destructive' : 'default',
+        });
+      }
+    }
+  };
+
+  const addNewsNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read' | 'category'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      category: 'news',
+      id: `notification-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      read: false,
+      // No targetRoles means it goes to all users
+    };
+
+    setAllNotifications(prev => [newNotification, ...prev]);
+
+    // Show toast for high priority news to all users
     if (notification.priority === 'high') {
       toast({
         title: notification.title,
