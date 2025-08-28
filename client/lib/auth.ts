@@ -1,21 +1,27 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile
 } from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
+import {
+  doc,
+  setDoc,
+  getDoc,
   collection,
   query,
   where,
   getDocs
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db, isFirebaseAvailable } from './firebase';
+import {
+  createFallbackAccount,
+  signInFallback,
+  signOutFallback,
+  onFallbackAuthStateChange
+} from './fallback-auth';
 import { UserRole, User } from '@/hooks/use-auth';
 
 // User data interface for Firestore
