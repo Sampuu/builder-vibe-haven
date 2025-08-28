@@ -11,8 +11,8 @@ import {
   Building2,
   User,
   Settings,
-  Bell,
 } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -91,10 +91,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-emergency-danger rounded-full"></div>
-              </Button>
+              <NotificationBell />
 
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
