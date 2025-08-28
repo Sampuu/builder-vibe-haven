@@ -178,6 +178,7 @@ export default function RequestHelp() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="medical">Medical Assistance</SelectItem>
+                      <SelectItem value="fire">Fire Emergency</SelectItem>
                       <SelectItem value="supplies">Emergency Supplies</SelectItem>
                       <SelectItem value="transport">Medical Transport</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
