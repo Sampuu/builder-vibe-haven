@@ -1,0 +1,176 @@
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  User as FirebaseUser,
+  updateProfile
+} from 'firebase/auth';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection,
+  query,
+  where,
+  getDocs
+} from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { UserRole, User } from '@/hooks/use-auth';
+
+// User data interface for Firestore
+export interface UserData {
+  uid: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  createdAt: Date;
+  lastLogin?: Date;
+}
+
+/**
+ * Create a new user account with Firebase Auth and store user data in Firestore
+ */
+export const createUserAccount = async (
+  email: string, 
+  password: string, 
+  name: string, 
+  role: UserRole
+): Promise<User> => {
+  try {
+    // Create user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const firebaseUser = userCredential.user;
+
+    // Update the user's display name
+    await updateProfile(firebaseUser, {
+      displayName: name
+    });
+
+    // Create user data for Firestore
+    const userData: UserData = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email!,
+      name,
+      role,
+      createdAt: new Date(),
+      lastLogin: new Date()
+    };
+
+    // Store user data in Firestore
+    await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+
+    // Return the user object for our app
+    return {
+      id: firebaseUser.uid,
+      email: firebaseUser.email!,
+      name,
+      role
+    };
+  } catch (error: any) {
+    console.error('Error creating user account:', error);
+    throw new Error(error.message || 'Failed to create account');
+  }
+};
+
+/**
+ * Sign in user with email and password
+ */
+export const signInUser = async (email: string, password: string): Promise<User> => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const firebaseUser = userCredential.user;
+
+    // Get user data from Firestore
+    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+    
+    if (!userDoc.exists()) {
+      throw new Error('User data not found');
+    }
+
+    const userData = userDoc.data() as UserData;
+
+    // Update last login time
+    await setDoc(doc(db, 'users', firebaseUser.uid), {
+      ...userData,
+      lastLogin: new Date()
+    }, { merge: true });
+
+    return {
+      id: firebaseUser.uid,
+      email: firebaseUser.email!,
+      name: userData.name,
+      role: userData.role
+    };
+  } catch (error: any) {
+    console.error('Error signing in:', error);
+    throw new Error(error.message || 'Failed to sign in');
+  }
+};
+
+/**
+ * Sign out the current user
+ */
+export const signOutUser = async (): Promise<void> => {
+  try {
+    await signOut(auth);
+  } catch (error: any) {
+    console.error('Error signing out:', error);
+    throw new Error(error.message || 'Failed to sign out');
+  }
+};
+
+/**
+ * Get user data from Firestore by Firebase user
+ */
+export const getUserData = async (firebaseUser: FirebaseUser): Promise<User | null> => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+    
+    if (!userDoc.exists()) {
+      return null;
+    }
+
+    const userData = userDoc.data() as UserData;
+    
+    return {
+      id: firebaseUser.uid,
+      email: firebaseUser.email!,
+      name: userData.name,
+      role: userData.role
+    };
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    return null;
+  }
+};
+
+/**
+ * Listen to authentication state changes
+ */
+export const onAuthStateChange = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      const userData = await getUserData(firebaseUser);
+      callback(userData);
+    } else {
+      callback(null);
+    }
+  });
+};
+
+/**
+ * Check if email is already registered
+ */
+export const checkEmailExists = async (email: string): Promise<boolean> => {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+    
+    return !querySnapshot.empty;
+  } catch (error) {
+    console.error('Error checking email:', error);
+    return false;
+  }
+};
