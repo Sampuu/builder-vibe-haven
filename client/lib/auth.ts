@@ -188,16 +188,31 @@ export const getUserData = async (firebaseUser: FirebaseUser): Promise<User | nu
 
 /**
  * Listen to authentication state changes
+ * Falls back to localStorage if Firebase is not configured
  */
 export const onAuthStateChange = (callback: (user: User | null) => void) => {
-  return onAuthStateChanged(auth, async (firebaseUser) => {
-    if (firebaseUser) {
-      const userData = await getUserData(firebaseUser);
-      callback(userData);
-    } else {
-      callback(null);
-    }
-  });
+  // Use fallback authentication if Firebase is not available
+  if (!isFirebaseAvailable()) {
+    console.log('📱 Using fallback authentication state listener');
+    return onFallbackAuthStateChange(callback);
+  }
+
+  try {
+    return onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userData = await getUserData(firebaseUser);
+        callback(userData);
+      } else {
+        callback(null);
+      }
+    });
+  } catch (error: any) {
+    console.error('Error setting up Firebase auth state listener:', error);
+    console.log('📱 Falling back to local storage auth state listener');
+
+    // Fallback to localStorage on Firebase error
+    return onFallbackAuthStateChange(callback);
+  }
 };
 
 /**
