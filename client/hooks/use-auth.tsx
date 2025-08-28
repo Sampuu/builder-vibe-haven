@@ -44,6 +44,12 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  // Defensive check to ensure React hooks are available
+  if (typeof useState !== 'function') {
+    console.error('React hooks not available');
+    return <div>Loading...</div>;
+  }
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOfflineMode, setIsOfflineMode] = useState(false);

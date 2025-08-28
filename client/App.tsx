@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AuthRedirect from "@/components/AuthRedirect";
+import AuthErrorBoundary from "@/components/AuthErrorBoundary";
 
 // Demo setup
 import { setupDemoAccounts, isDemoMode } from "@/lib/demoSetup";
