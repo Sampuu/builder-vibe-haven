@@ -149,7 +149,19 @@ let localNotifications: Notification[] = [];
  */
 export const sendIncidentNotification = async (incident: Incident): Promise<Notification> => {
   const targetDepartments = getNotificationRouting(incident.type, incident.severity);
-  
+
+  // Create data object and only include coordinates if they exist
+  const notificationData: any = {
+    incidentType: incident.type,
+    location: incident.location,
+    contactPhone: incident.reporterPhone
+  };
+
+  // Only add coordinates if they exist (avoid undefined values in Firestore)
+  if (incident.coordinates) {
+    notificationData.coordinates = incident.coordinates;
+  }
+
   const notification: Omit<Notification, 'id'> = {
     type: 'incident',
     incidentId: incident.id,
@@ -162,12 +174,7 @@ export const sendIncidentNotification = async (incident: Incident): Promise<Noti
       name: incident.reporterName,
       role: 'user'
     },
-    data: {
-      incidentType: incident.type,
-      location: incident.location,
-      contactPhone: incident.reporterPhone,
-      coordinates: incident.coordinates
-    },
+    data: notificationData,
     timestamps: {
       created: new Date(),
       sent: new Date()
@@ -179,13 +186,16 @@ export const sendIncidentNotification = async (incident: Incident): Promise<Noti
 
   if (isFirebaseAvailable() && db) {
     try {
-      const docRef = await addDoc(collection(db, 'notifications'), {
+      // Create a clean version for Firebase (remove any undefined values)
+      const cleanNotificationForFirebase = JSON.parse(JSON.stringify({
         ...notification,
         timestamps: {
           created: serverTimestamp(),
           sent: serverTimestamp()
         }
-      });
+      }));
+
+      const docRef = await addDoc(collection(db, 'notifications'), cleanNotificationForFirebase);
       
       const createdNotification = { ...notification, id: docRef.id };
       console.log('🔥 Notification sent via Firebase to:', targetDepartments.join(', '));
