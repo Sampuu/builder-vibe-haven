@@ -123,10 +123,41 @@ export default function AdminDashboard() {
           </Card>
 
           <Card>
-            <CardContent className="p-12 text-center text-slate-500">
-              <Settings className="h-16 w-16 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium mb-2">Admin Dashboard</p>
-              <p>Advanced system management tools will be implemented here</p>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Bell className="mr-2 h-5 w-5" />
+                Notification System Test
+              </CardTitle>
+              <CardDescription>
+                Test the targeted notification system vs broadcast news
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-emergency-info/10 rounded-lg">
+                <h4 className="font-medium text-emergency-info mb-2">Broadcast News (All Users)</h4>
+                <p className="text-sm text-slate-600 mb-3">
+                  Sends disaster news and system-wide alerts to all departments and users.
+                </p>
+                <Button onClick={handleBroadcastNews} variant="info" size="sm">
+                  <Megaphone className="mr-2 h-4 w-4" />
+                  Send Weather Alert
+                </Button>
+              </div>
+
+              <div className="p-4 bg-emergency-warning/10 rounded-lg">
+                <h4 className="font-medium text-emergency-warning mb-2">Targeted Notification</h4>
+                <p className="text-sm text-slate-600 mb-3">
+                  Sends notifications only to specific departments (Fire Department in this example).
+                </p>
+                <Button onClick={handleTargetedNotification} variant="warning" size="sm">
+                  <Bell className="mr-2 h-4 w-4" />
+                  Send Fire Dept. Alert
+                </Button>
+              </div>
+
+              <div className="text-xs text-slate-500 mt-3">
+                💡 Switch between different user roles (login as fire, police, etc.) to see how notifications are filtered.
+              </div>
             </CardContent>
           </Card>
         </div>
