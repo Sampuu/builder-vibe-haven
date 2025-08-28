@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Shield, Users, MapPin } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Shield, Users, MapPin, Play, User, Flame, Truck, Building2, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Index() {
@@ -39,19 +41,19 @@ export default function Index() {
           </p>
           
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              size="lg" 
-              variant="danger" 
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button
+              size="lg"
+              variant="danger"
               onClick={handleSignUp}
               className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Users className="mr-2 h-5 w-5" />
               Sign Up
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               onClick={handleLogin}
               className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2"
             >
@@ -59,6 +61,53 @@ export default function Index() {
               Login
             </Button>
           </div>
+
+          {/* Demo Section */}
+          <Card className="max-w-2xl mx-auto mb-16 bg-emergency-info/5 border-emergency-info/20">
+            <CardHeader className="text-center">
+              <div className="flex justify-center items-center mb-3">
+                <Play className="h-5 w-5 text-emergency-info mr-2" />
+                <Badge variant="secondary" className="bg-emergency-info/10 text-emergency-info border-emergency-info/20">
+                  Try Demo
+                </Badge>
+              </div>
+              <CardTitle className="text-2xl text-slate-900">
+                Test Drive the System
+              </CardTitle>
+              <CardDescription className="text-lg">
+                Experience different roles with pre-configured demo accounts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                {[
+                  { icon: User, name: 'Citizen', role: 'user', color: 'text-emergency-info' },
+                  { icon: Shield, name: 'Police', role: 'police', color: 'text-emergency-danger' },
+                  { icon: Flame, name: 'Fire Dept', role: 'fire', color: 'text-emergency-warning' },
+                  { icon: Truck, name: 'Ambulance', role: 'ambulance', color: 'text-emergency-resolved' },
+                  { icon: Building2, name: 'Hospital', role: 'hospital', color: 'text-emergency-info' },
+                  { icon: Settings, name: 'Admin', role: 'admin', color: 'text-slate-700' }
+                ].map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <div key={item.role} className="flex flex-col items-center p-3 bg-white rounded-lg border border-slate-200">
+                      <IconComponent className={`h-6 w-6 ${item.color} mb-2`} />
+                      <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="text-center">
+                <Button onClick={handleLogin} variant="outline" className="border-emergency-info text-emergency-info hover:bg-emergency-info hover:text-white">
+                  <Play className="mr-2 h-4 w-4" />
+                  Try Demo Accounts
+                </Button>
+                <p className="text-sm text-slate-500 mt-2">
+                  All demo accounts use password: <code className="bg-slate-100 px-1 rounded text-xs">demo123</code>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
         {/* Feature Cards */}
