@@ -43,6 +43,58 @@ export interface Notification {
   data?: Record<string, any>;
 }
 
+export interface AccidentZone {
+  id: string;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  radius: number; // in meters
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  type: 'accident' | 'fire' | 'flood' | 'construction' | 'chemical' | 'other';
+  isActive: boolean;
+  createdBy: string; // user ID
+  createdAt: string;
+  expiresAt?: string; // optional expiration
+  affectedRoutes?: string[]; // route IDs that should avoid this zone
+}
+
+export interface TrackedEntity {
+  id: string;
+  name: string;
+  type: 'police' | 'fire' | 'ambulance' | 'hospital' | 'user';
+  latitude: number;
+  longitude: number;
+  heading?: number; // direction in degrees
+  speed?: number; // speed in km/h
+  status: 'idle' | 'responding' | 'busy' | 'offline';
+  lastUpdate: string;
+  assignedIncidentId?: string;
+}
+
+export interface RouteRequest {
+  start: { lat: number; lng: number };
+  end: { lat: number; lng: number };
+  avoidZones?: boolean;
+  entityType?: TrackedEntity['type'];
+  priority?: 'normal' | 'emergency';
+}
+
+export interface RouteResponse {
+  route: {
+    coordinates: Array<[number, number]>; // [lng, lat] format for GeoJSON
+    distance: number; // in meters
+    duration: number; // in seconds
+    instructions: Array<{
+      instruction: string;
+      distance: number;
+      time: number;
+    }>;
+  };
+  avoidedZones: AccidentZone[];
+  alternativeRoutes?: RouteResponse['route'][];
+}
+
 export interface CreateIncidentRequest {
   type: Incident['type'];
   title: string;
@@ -69,4 +121,23 @@ export interface GetNotificationsResponse {
 export interface UpdateNotificationRequest {
   read?: boolean;
   acknowledged?: boolean;
+}
+
+export interface CreateAccidentZoneRequest {
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  radius: number;
+  severity: AccidentZone['severity'];
+  type: AccidentZone['type'];
+  expiresAt?: string;
+}
+
+export interface UpdateEntityLocationRequest {
+  latitude: number;
+  longitude: number;
+  heading?: number;
+  speed?: number;
+  status?: TrackedEntity['status'];
 }
