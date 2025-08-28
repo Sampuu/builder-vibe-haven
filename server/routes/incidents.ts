@@ -117,6 +117,11 @@ export const createIncident: RequestHandler = (req, res) => {
     const newNotifications = createNotifications(incident);
     notifications.push(...newNotifications);
 
+    // Broadcast notifications via WebSocket
+    newNotifications.forEach(notification => {
+      broadcastNotification(notification);
+    });
+
     console.log(`Created incident ${incident.id} for roles:`, incident.targetRoles);
     console.log(`Created ${newNotifications.length} notifications`);
 
