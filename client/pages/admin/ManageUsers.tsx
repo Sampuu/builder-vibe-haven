@@ -179,9 +179,9 @@ export default function ManageUsers() {
   };
 
   const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(user => 
-      user.id === userId 
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
+    const updatedUsers = users.map(user =>
+      user.id === userId
+        ? { ...user, status: (user.status === 'active' ? 'inactive' : 'active') as 'active' | 'inactive' }
         : user
     );
     setUsers(updatedUsers);
