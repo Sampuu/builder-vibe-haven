@@ -116,7 +116,7 @@ export interface PoliceReport {
   sourceReportId?: string; // If forwarded from user report
 }
 
-export interface PoliceCase Update {
+export interface PoliceCaseUpdate {
   updateId: string;
   reportId: string;
   officerId: string;
