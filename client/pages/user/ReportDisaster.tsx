@@ -473,11 +473,18 @@ export default function ReportDisaster() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              <div className="bg-emergency-info/10 p-4 rounded-lg">
+                <p className="text-sm text-emergency-info">
+                  <strong>Report ID:</strong> {submittedIncidentId}
+                </p>
+              </div>
+
               <div className="bg-emergency-resolved/10 p-4 rounded-lg">
                 <div className="text-sm text-emergency-resolved">
                   <strong>What happens next:</strong>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>Emergency responders will be dispatched</li>
+                    <li>Appropriate emergency departments have been automatically notified</li>
+                    <li>Emergency responders will be dispatched based on urgency</li>
                     <li>You may receive a call for additional information</li>
                     <li>Track the status in your dashboard</li>
                   </ul>
