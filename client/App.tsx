@@ -9,7 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
 // Auth
-import { AuthProvider } from "@/hooks/use-auth-minimal";
+import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AuthRedirect from "@/components/AuthRedirect";
 

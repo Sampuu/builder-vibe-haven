@@ -50,51 +50,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const firebaseAvailable = await checkFirebaseAvailability();
-      setIsOfflineMode(!firebaseAvailable);
+      try {
+        const firebaseAvailable = await checkFirebaseAvailability();
+        setIsOfflineMode(!firebaseAvailable);
 
-      if (!firebaseAvailable) {
-        // Use offline mode
-        const currentUser = offlineUserService.getCurrentUser();
-        setUser(currentUser);
-        setIsLoading(false);
-        return;
-      }
+        if (!firebaseAvailable) {
+          // Use offline mode
+          const currentUser = offlineUserService.getCurrentUser();
+          setUser(currentUser);
+          setIsLoading(false);
+          return;
+        }
 
-      // Use Firebase mode
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (firebaseUser) {
+        // Use Firebase mode
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           try {
-            // Get user data from Firestore
-            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              setUser({
-                id: firebaseUser.uid,
-                email: firebaseUser.email!,
-                name: userData.name,
-                role: userData.role,
-                firebaseUser
-              });
+            if (firebaseUser) {
+              // Get user data from Firestore
+              const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                setUser({
+                  id: firebaseUser.uid,
+                  email: firebaseUser.email!,
+                  name: userData.name,
+                  role: userData.role,
+                  firebaseUser
+                });
+              } else {
+                // Handle case where Firestore document doesn't exist
+                console.error('User document not found in Firestore');
+                await signOut(auth);
+              }
             } else {
-              // Handle case where Firestore document doesn't exist
-              console.error('User document not found in Firestore');
-              await signOut(auth);
+              setUser(null);
             }
           } catch (error) {
-            console.error('Error fetching user data:', error);
-            await signOut(auth);
+            console.error('Error in auth state change:', error);
+            setUser(null);
+          } finally {
+            setIsLoading(false);
           }
-        } else {
-          setUser(null);
-        }
-        setIsLoading(false);
-      });
+        });
 
-      return () => unsubscribe();
+        return () => {
+          if (unsubscribe) {
+            unsubscribe();
+          }
+        };
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        setIsLoading(false);
+      }
     };
 
-    initAuth();
+    initAuth().catch(console.error);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
