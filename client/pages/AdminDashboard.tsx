@@ -3,6 +3,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Users, Activity, FileText, Shield } from 'lucide-react';
+import NotificationCenter, { NotificationBell } from '@/components/NotificationCenter';
+import NotificationSystemTest from '@/components/NotificationSystemTest';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
