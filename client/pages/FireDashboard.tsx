@@ -1,8 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Flame, MapPin, AlertTriangle } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import IncidentManagement from "@/components/IncidentManagement";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Flame, MapPin, AlertTriangle } from "lucide-react";
 
 export default function FireDashboard() {
   const navigate = useNavigate();
@@ -14,7 +21,9 @@ export default function FireDashboard() {
             <Flame className="mr-3 h-8 w-8 text-emergency-warning" />
             Fire Brigade Command
           </h2>
-          <p className="text-slate-600">Monitor and respond to fire-related emergencies.</p>
+          <p className="text-slate-600">
+            Monitor and respond to fire-related emergencies.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -24,10 +33,18 @@ export default function FireDashboard() {
                 <Flame className="h-8 w-8 text-emergency-warning" />
               </div>
               <CardTitle>Fire Incidents</CardTitle>
-              <CardDescription>View fire-related incidents only</CardDescription>
+              <CardDescription>
+                View fire-related incidents only
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning" onClick={() => navigate('/fire/incidents')}>View Incidents</Button>
+              <Button
+                className="w-full"
+                variant="warning"
+                onClick={() => navigate("/fire/incidents")}
+              >
+                View Incidents
+              </Button>
             </CardContent>
           </Card>
 
@@ -40,7 +57,13 @@ export default function FireDashboard() {
               <CardDescription>Navigate to fire locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info" onClick={() => navigate('/fire/incidents')}>Open Map</Button>
+              <Button
+                className="w-full"
+                variant="info"
+                onClick={() => navigate("/fire/incidents")}
+              >
+                Open Map
+              </Button>
             </CardContent>
           </Card>
 
@@ -50,21 +73,23 @@ export default function FireDashboard() {
                 <AlertTriangle className="h-8 w-8 text-emergency-resolved" />
               </div>
               <CardTitle>Update Status</CardTitle>
-              <CardDescription>Dispatched / Active / Controlled</CardDescription>
+              <CardDescription>
+                Dispatched / Active / Controlled
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success">Update Status</Button>
+              <Button className="w-full" variant="success">
+                Update Status
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardContent className="p-12 text-center text-slate-500">
-            <Flame className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium mb-2">Fire Brigade Dashboard</p>
-            <p>Detailed fire incident management will be implemented here</p>
-          </CardContent>
-        </Card>
+        <IncidentManagement
+          department="fire"
+          title="Fire Incident Management"
+          description="Monitor and respond to fire-related emergencies"
+        />
       </div>
     </DashboardLayout>
   );

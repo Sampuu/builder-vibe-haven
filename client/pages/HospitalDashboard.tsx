@@ -1,8 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, MapPin, Package } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import IncidentManagement from "@/components/IncidentManagement";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Building2, MapPin, Package } from "lucide-react";
 
 export default function HospitalDashboard() {
   const navigate = useNavigate();
@@ -14,7 +21,9 @@ export default function HospitalDashboard() {
             <Building2 className="mr-3 h-8 w-8 text-emergency-info" />
             Hospital Management Center
           </h2>
-          <p className="text-slate-600">Manage medical equipment requests and dispatch services.</p>
+          <p className="text-slate-600">
+            Manage medical equipment requests and dispatch services.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -24,10 +33,18 @@ export default function HospitalDashboard() {
                 <Package className="h-8 w-8 text-emergency-info" />
               </div>
               <CardTitle>Supply Requests</CardTitle>
-              <CardDescription>Medical equipment/supplies requests</CardDescription>
+              <CardDescription>
+                Medical equipment/supplies requests
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info" onClick={() => navigate('/hospital/supplies')}>View Requests</Button>
+              <Button
+                className="w-full"
+                variant="info"
+                onClick={() => navigate("/hospital/supplies")}
+              >
+                View Requests
+              </Button>
             </CardContent>
           </Card>
 
@@ -40,7 +57,13 @@ export default function HospitalDashboard() {
               <CardDescription>Assign ambulance for delivery</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success" onClick={() => navigate('/hospital/supplies')}>Assign Vehicle</Button>
+              <Button
+                className="w-full"
+                variant="success"
+                onClick={() => navigate("/hospital/supplies")}
+              >
+                Assign Vehicle
+              </Button>
             </CardContent>
           </Card>
 
@@ -53,18 +76,22 @@ export default function HospitalDashboard() {
               <CardDescription>View supply request locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning" onClick={() => navigate('/hospital/supplies')}>View Map</Button>
+              <Button
+                className="w-full"
+                variant="warning"
+                onClick={() => navigate("/hospital/supplies")}
+              >
+                View Map
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardContent className="p-12 text-center text-slate-500">
-            <Building2 className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium mb-2">Hospital Dashboard</p>
-            <p>Medical supply management and dispatch will be implemented here</p>
-          </CardContent>
-        </Card>
+        <IncidentManagement
+          department="hospital"
+          title="Medical Supply & Emergency Management"
+          description="Manage medical equipment requests and emergency response"
+        />
       </div>
     </DashboardLayout>
   );
