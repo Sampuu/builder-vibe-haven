@@ -230,7 +230,9 @@ export default function UserDashboard() {
         </Card>
 
         {/* Help Requests Data Management */}
-        <HelpRequestsManager />
+        <div id="help-requests-manager">
+          <HelpRequestsManager />
+        </div>
 
         {/* Firebase Integration Test */}
         <FirebaseTest />
