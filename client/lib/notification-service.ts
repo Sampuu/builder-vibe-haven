@@ -83,7 +83,7 @@ export const DEPARTMENT_CONTACTS = {
   },
   admin: {
     name: 'Emergency Coordination',
-    icon: '📋',
+    icon: '���',
     color: 'slate-600',
     phone: 'Coordination Center',
     description: 'Overall emergency management and coordination'
@@ -213,13 +213,13 @@ export const sendIncidentNotification = async (incident: Incident): Promise<Noti
   if (isFirebaseAvailable() && db) {
     try {
       // Create a clean version for Firebase (remove any undefined values)
-      const cleanNotificationForFirebase = JSON.parse(JSON.stringify({
+      const cleanNotificationForFirebase = cleanObjectForFirebase({
         ...notification,
         timestamps: {
           created: serverTimestamp(),
           sent: serverTimestamp()
         }
-      }));
+      });
 
       const docRef = await addDoc(collection(db, 'notifications'), cleanNotificationForFirebase);
       
