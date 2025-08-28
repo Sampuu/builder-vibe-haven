@@ -237,24 +237,58 @@ export default function Login() {
                 </AlertDescription>
               </Alert>
 
-              <Button
-                type="submit"
-                className="w-full"
-                variant="danger"
-                disabled={isSubmitting || isRetrying}
-              >
-                {isSubmitting || isRetrying ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    {isRetrying ? "Retrying..." : "Signing In..."}
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
-                )}
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  variant="danger"
+                  disabled={isSubmitting || isRetrying}
+                >
+                  {isSubmitting || isRetrying ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      {isRetrying ? "Retrying..." : "Signing In..."}
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={async () => {
+                    console.log('Testing Firebase auth directly...');
+                    setError('');
+                    setIsSubmitting(true);
+                    try {
+                      const result = await firebaseAuth.login({
+                        email: 'test@rescue.com',
+                        password: 'test123'
+                      });
+                      console.log('Test login result:', result);
+                      if (result.success) {
+                        alert('Login successful! Redirecting...');
+                        navigate('/dashboard/user');
+                      } else {
+                        setError(`Test failed: ${result.error}`);
+                      }
+                    } catch (err) {
+                      console.error('Test login error:', err);
+                      setError(`Test error: ${err}`);
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                >
+                  🧪 Test Login (Debug)
+                </Button>
+              </div>
             </form>
 
             <div className="mt-6 text-center">
