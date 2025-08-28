@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import IncidentManagement from '@/components/IncidentManagement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Flame, MapPin, AlertTriangle } from 'lucide-react';
@@ -58,13 +59,11 @@ export default function FireDashboard() {
           </Card>
         </div>
 
-        <Card>
-          <CardContent className="p-12 text-center text-slate-500">
-            <Flame className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium mb-2">Fire Brigade Dashboard</p>
-            <p>Detailed fire incident management will be implemented here</p>
-          </CardContent>
-        </Card>
+        <IncidentManagement
+          department="fire"
+          title="Fire Incident Management"
+          description="Monitor and respond to fire-related emergencies"
+        />
       </div>
     </DashboardLayout>
   );
