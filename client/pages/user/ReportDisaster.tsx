@@ -20,21 +20,9 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { disasterReportsService, createNotificationForReport, DisasterReport } from '@/lib/firestore';
 
-interface DisasterReport {
-  id: string;
-  type: 'fire' | 'medical' | 'accident' | 'natural' | 'other';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  location: string;
-  coordinates?: { lat: number; lng: number };
-  contactName: string;
-  contactPhone: string;
-  images?: string[];
-  status: 'submitted' | 'acknowledged' | 'in-progress' | 'resolved';
-  timestamp: string;
-}
+// Remove local interface - using the one from firestore.ts
 
 const disasterTypes = [
   { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
@@ -90,25 +78,36 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
+    if (!user) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
+      // Create the disaster report in Firebase
+      const reportData: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'> = {
         ...formData,
+        contactEmail: user.email,
+        userId: user.id,
         status: 'submitted',
-        timestamp: new Date().toISOString(),
       };
 
-      console.log('Disaster report submitted:', report);
+      const reportId = await disasterReportsService.create(reportData);
+
+      // Create notifications for relevant authorities
+      const reportWithId: DisasterReport = {
+        ...reportData,
+        id: reportId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await createNotificationForReport(reportWithId);
+
+      console.log('Disaster report submitted successfully:', reportId);
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
         type: '',
@@ -122,6 +121,7 @@ export default function ReportDisaster() {
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
+      setError('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
