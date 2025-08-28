@@ -8,6 +8,28 @@ import { useNotifications } from '@/hooks/use-notifications';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { broadcastNews } = useIncidents();
+  const { addTargetedNotification } = useNotifications();
+
+  const handleBroadcastNews = () => {
+    broadcastNews(
+      'Emergency Alert - System Wide',
+      'Severe weather warning: All emergency services remain on high alert. Citizens advised to stay indoors.',
+      'warning',
+      'high'
+    );
+  };
+
+  const handleTargetedNotification = () => {
+    addTargetedNotification({
+      title: 'Fire Department - Equipment Check',
+      message: 'Mandatory equipment inspection scheduled for all fire units at 14:00 today.',
+      type: 'info',
+      priority: 'medium',
+      category: 'system'
+    }, ['fire']);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
