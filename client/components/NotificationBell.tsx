@@ -24,13 +24,23 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!user || user.role === 'user') return;
 
-    // Listen for real-time notifications for this user's role
-    const unsubscribe = adaptiveNotificationService.onSnapshot(user.role, (newNotifications) => {
-      setNotifications(newNotifications);
-      setUnreadCount(newNotifications.filter(n => !n.read).length);
-    });
+    let unsubscribe: (() => void) | undefined;
 
-    return () => unsubscribe();
+    // Listen for real-time notifications for this user's role
+    const setupListener = async () => {
+      unsubscribe = await adaptiveNotificationService.onSnapshot(user.role, (newNotifications) => {
+        setNotifications(newNotifications);
+        setUnreadCount(newNotifications.filter(n => !n.read).length);
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   const handleNotificationClick = async (notification: Notification) => {

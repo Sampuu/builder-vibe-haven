@@ -89,6 +89,8 @@ export default function ReportDisaster() {
       // Create the disaster report in Firebase
       const reportData: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'> = {
         ...formData,
+        type: formData.type as DisasterReport['type'],
+        severity: formData.severity as DisasterReport['severity'],
         contactEmail: user.email,
         userId: user.id,
         status: 'submitted',
@@ -122,7 +124,7 @@ export default function ReportDisaster() {
       });
     } catch (error) {
       console.error('Failed to submit report:', error);
-      setError('Failed to submit report. Please try again.');
+      setErrors({ general: 'Failed to submit report. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

@@ -56,21 +56,21 @@ export const adaptiveDisasterService = {
     }
   },
 
-  onSnapshot(callback: (reports: DisasterReport[]) => void) {
-    checkFirebaseAvailability().then(isFirebaseAvailable => {
-      if (isFirebaseAvailable) {
-        return firebaseDisasterService.onSnapshot(callback);
-      } else {
-        // For offline mode, simulate real-time updates by polling
-        const pollInterval = setInterval(async () => {
-          const reports = await offlineDisasterService.getAll();
-          callback(reports);
-        }, 1000);
+  async onSnapshot(callback: (reports: DisasterReport[]) => void): Promise<() => void> {
+    const isFirebaseAvailable = await checkFirebaseAvailability();
 
-        // Return cleanup function
-        return () => clearInterval(pollInterval);
-      }
-    });
+    if (isFirebaseAvailable) {
+      return firebaseDisasterService.onSnapshot(callback);
+    } else {
+      // For offline mode, simulate real-time updates by polling
+      const pollInterval = setInterval(async () => {
+        const reports = await offlineDisasterService.getAll();
+        callback(reports);
+      }, 1000);
+
+      // Return cleanup function
+      return () => clearInterval(pollInterval);
+    }
   }
 };
 
@@ -117,21 +117,21 @@ export const adaptiveHelpService = {
     }
   },
 
-  onSnapshot(callback: (requests: HelpRequest[]) => void) {
-    checkFirebaseAvailability().then(isFirebaseAvailable => {
-      if (isFirebaseAvailable) {
-        return firebaseHelpService.onSnapshot(callback);
-      } else {
-        // For offline mode, simulate real-time updates by polling
-        const pollInterval = setInterval(async () => {
-          const requests = await offlineHelpService.getAll();
-          callback(requests);
-        }, 1000);
+  async onSnapshot(callback: (requests: HelpRequest[]) => void): Promise<() => void> {
+    const isFirebaseAvailable = await checkFirebaseAvailability();
 
-        // Return cleanup function
-        return () => clearInterval(pollInterval);
-      }
-    });
+    if (isFirebaseAvailable) {
+      return firebaseHelpService.onSnapshot(callback);
+    } else {
+      // For offline mode, simulate real-time updates by polling
+      const pollInterval = setInterval(async () => {
+        const requests = await offlineHelpService.getAll();
+        callback(requests);
+      }, 1000);
+
+      // Return cleanup function
+      return () => clearInterval(pollInterval);
+    }
   }
 };
 
@@ -167,21 +167,21 @@ export const adaptiveNotificationService = {
     }
   },
 
-  onSnapshot(role: string, callback: (notifications: Notification[]) => void) {
-    checkFirebaseAvailability().then(isFirebaseAvailable => {
-      if (isFirebaseAvailable) {
-        return firebaseNotificationService.onSnapshot(role, callback);
-      } else {
-        // For offline mode, simulate real-time updates by polling
-        const pollInterval = setInterval(async () => {
-          const notifications = await offlineNotificationService.getByRole(role);
-          callback(notifications);
-        }, 1000);
+  async onSnapshot(role: string, callback: (notifications: Notification[]) => void): Promise<() => void> {
+    const isFirebaseAvailable = await checkFirebaseAvailability();
 
-        // Return cleanup function
-        return () => clearInterval(pollInterval);
-      }
-    });
+    if (isFirebaseAvailable) {
+      return firebaseNotificationService.onSnapshot(role, callback);
+    } else {
+      // For offline mode, simulate real-time updates by polling
+      const pollInterval = setInterval(async () => {
+        const notifications = await offlineNotificationService.getByRole(role);
+        callback(notifications);
+      }, 1000);
+
+      // Return cleanup function
+      return () => clearInterval(pollInterval);
+    }
   }
 };
 
