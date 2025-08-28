@@ -32,6 +32,7 @@ import ManageUsers from "./pages/admin/ManageUsers";
 import MissionControl from "./pages/admin/MissionControl";
 import AuditLogs from "./pages/admin/AuditLogs";
 import AllDashboards from "./pages/admin/AllDashboards";
+import SystemDemo from "./pages/admin/SystemDemo";
 
 // User Pages
 import ReportDisaster from "./pages/user/ReportDisaster";
