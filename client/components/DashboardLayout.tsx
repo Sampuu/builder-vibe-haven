@@ -43,9 +43,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const RoleIcon = roleIcons[user.role];
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still redirect on error
+      window.location.href = '/';
+    }
   };
 
   return (
