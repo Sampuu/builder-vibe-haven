@@ -78,29 +78,47 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
+
+    if (!validateForm() || !user || !formData.type) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
+      // Create incident in database
+      const incident = await createIncident({
+        type: formData.type as IncidentType,
+        severity: formData.severity,
         status: 'submitted',
-        timestamp: new Date().toISOString(),
-      };
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        reporterUserId: user.id,
+        reporterName: formData.contactName || user.name,
+        reporterPhone: formData.contactPhone,
+        images: formData.images
+      });
 
-      console.log('Disaster report submitted:', report);
+      console.log('✅ Incident created:', incident.id);
+
+      // Send notifications to relevant departments
+      const notification = await sendIncidentNotification(incident);
+      console.log('✅ Notifications sent to departments:', notification.targetDepartments.join(', '));
+
+      // Show which departments were notified
+      const notifiedDepartments = getNotificationRouting(formData.type as IncidentType, formData.severity);
+      const departmentNames = notifiedDepartments.map(dept => DEPARTMENT_CONTACTS[dept]?.name).join(', ');
+
+      console.log(`🚨 EMERGENCY ALERT SENT TO: ${departmentNames}`);
+      console.log(`📍 Location: ${formData.location}`);
+      console.log(`📞 Contact: ${formData.contactPhone}`);
+      console.log(`⚠️ Severity: ${formData.severity.toUpperCase()}`);
+
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
-        type: '',
-        severity: 'medium',
+        type: '' as IncidentType | '',
+        severity: 'medium' as IncidentSeverity,
         title: '',
         description: '',
         location: '',
@@ -109,7 +127,8 @@ export default function ReportDisaster() {
         images: []
       });
     } catch (error) {
-      console.error('Failed to submit report:', error);
+      console.error('Failed to submit incident report:', error);
+      setErrors({ submit: 'Failed to submit report. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
