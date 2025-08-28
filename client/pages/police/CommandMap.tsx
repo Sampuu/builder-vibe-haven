@@ -1,10 +1,14 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import MapSystem from '@/components/MapSystem';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import { useAuth } from '@/hooks/use-auth';
+import { TrackedEntity } from '@shared/api';
+import {
+  Map,
   ArrowLeft,
   MapPin,
   Shield,
