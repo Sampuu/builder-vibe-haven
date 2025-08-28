@@ -183,12 +183,14 @@ export const createHelpRequest = async (helpData: Omit<HelpRequest, 'id' | 'time
 
   if (isFirebaseAvailable() && db) {
     try {
-      const docRef = await addDoc(collection(db, 'help-requests'), {
+      const cleanHelpRequestForFirebase = cleanObjectForFirebase({
         ...helpRequest,
         timestamps: {
           requested: serverTimestamp()
         }
       });
+
+      const docRef = await addDoc(collection(db, 'help-requests'), cleanHelpRequestForFirebase);
       
       const createdRequest = { ...helpRequest, id: docRef.id, timestamps: { requested: new Date() } };
       console.log('🔥 Help request stored in Firebase:', createdRequest.id);
