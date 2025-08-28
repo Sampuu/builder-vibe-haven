@@ -270,6 +270,23 @@ export default function RequestHelp() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
+                  <Flame className="mr-2 h-5 w-5 text-emergency-warning" />
+                  Fire Emergency
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li>• Fire suppression and rescue</li>
+                  <li>• Emergency evacuation</li>
+                  <li>• Hazardous material response</li>
+                  <li>• Search and rescue operations</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
                   <Package className="mr-2 h-5 w-5 text-emergency-info" />
                   Emergency Supplies
                 </CardTitle>
