@@ -238,6 +238,15 @@ export const IncidentProvider: React.FC<IncidentProviderProps> = ({ children }) 
     return incidents.filter(incident => incident.reporter.id === userId);
   };
 
+  const broadcastNews = (title: string, message: string, type: 'emergency' | 'warning' | 'info' | 'success', priority: 'high' | 'medium' | 'low') => {
+    addNewsNotification({
+      title,
+      message,
+      type,
+      priority
+    });
+  };
+
   const value: IncidentContextType = {
     incidents,
     submitIncident,
