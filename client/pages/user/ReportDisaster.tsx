@@ -17,37 +17,55 @@ import {
   Clock,
   CheckCircle,
   Upload,
-  Camera
+  Camera,
+  Route
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { UserDashboardService } from '@/lib/user-dashboard-db';
-import { CreateReportDisasterForm } from '@shared/user-dashboard-types';
+import { useRoleBasedFirebase } from '@/contexts/RoleBasedFirebaseContext';
+import { CreateEmergencyReportForm, EmergencyType, EmergencyPriority } from '@shared/role-based-database-types';
+import { EmergencyRoutingService } from '@/lib/emergency-routing-service';
 
-const disasterTypes = [
-  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions' },
-  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies' },
-  { value: 'accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents' },
-  { value: 'flood', label: 'Flood/Water Emergency', description: 'Flooding, water damage, broken pipes' },
-  { value: 'earthquake', label: 'Earthquake', description: 'Seismic activity, structural damage' },
-  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation' }
-] as const;
+const emergencyTypes: { value: EmergencyType; label: string; description: string; icon: string }[] = [
+  { value: 'fire', label: 'Fire Emergency', description: 'Building fires, wildfires, explosions', icon: '🔥' },
+  { value: 'medical', label: 'Medical Emergency', description: 'Injuries, accidents, health emergencies', icon: '🚑' },
+  { value: 'traffic_accident', label: 'Traffic/Transport Accident', description: 'Vehicle collisions, road incidents', icon: '🚗' },
+  { value: 'flood', label: 'Flood/Water Emergency', description: 'Flooding, water damage, burst pipes', icon: '🌊' },
+  { value: 'earthquake', label: 'Earthquake', description: 'Seismic activity, structural damage', icon: '🌍' },
+  { value: 'other', label: 'Other Emergency', description: 'Any other emergency situation', icon: '⚠️' }
+];
 
-const severityLevels = [
+const severityLevels: { value: EmergencyPriority; label: string; description: string; color: string }[] = [
   { value: 'low', label: 'Low', description: 'Minor incident, no immediate danger', color: 'text-slate-600' },
   { value: 'medium', label: 'Medium', description: 'Moderate incident, some risk', color: 'text-emergency-info' },
   { value: 'high', label: 'High', description: 'Serious incident, significant risk', color: 'text-emergency-warning' },
   { value: 'critical', label: 'Critical', description: 'Life-threatening, immediate response needed', color: 'text-emergency-danger' }
-] as const;
+];
 
 export default function ReportDisaster() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { submitEmergencyReport } = useRoleBasedFirebase();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    type: '' as CreateReportDisasterForm['type'] | '',
-    severity: 'medium' as CreateReportDisasterForm['severity'],
+  const [submissionResult, setSubmissionResult] = useState<{
+    success: boolean;
+    forwardedTo?: string[];
+    error?: string;
+  } | null>(null);
+  
+  const [formData, setFormData] = useState<{
+    type: EmergencyType | '';
+    severity: EmergencyPriority;
+    description: string;
+    location: {
+      latitude: number;
+      longitude: number;
+      address: string;
+    };
+    contact: string;
+  }>({
+    type: '',
+    severity: 'medium',
     description: '',
     location: {
       latitude: 0,
@@ -56,6 +74,7 @@ export default function ReportDisaster() {
     },
     contact: ''
   });
+  
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: string, value: any) => {
@@ -95,7 +114,7 @@ export default function ReportDisaster() {
     setIsSubmitting(true);
 
     try {
-      const reportData: CreateReportDisasterForm = {
+      const reportData: CreateEmergencyReportForm = {
         type: formData.type,
         severity: formData.severity,
         description: formData.description,
@@ -103,23 +122,22 @@ export default function ReportDisaster() {
         contact: formData.contact
       };
 
-      const reportId = await UserDashboardService.createDisasterReport(
-        user.id,
-        reportData,
-        user.name || 'Anonymous User'
-      );
-
-      setSubmittedReportId(reportId);
-      setShowSuccess(true);
+      const result = await submitEmergencyReport(reportData);
+      setSubmissionResult(result);
       
-      // Reset form
-      setFormData({
-        type: '',
-        severity: 'medium',
-        description: '',
-        location: { latitude: 0, longitude: 0, address: '' },
-        contact: ''
-      });
+      if (result.success) {
+        setShowSuccess(true);
+        // Reset form
+        setFormData({
+          type: '',
+          severity: 'medium',
+          description: '',
+          location: { latitude: 0, longitude: 0, address: '' },
+          contact: ''
+        });
+      } else {
+        setErrors({ submit: result.error || 'Failed to submit report' });
+      }
     } catch (error) {
       console.error('Failed to submit report:', error);
       setErrors({ submit: 'Failed to submit report. Please try again.' });
@@ -152,6 +170,10 @@ export default function ReportDisaster() {
     }
   };
 
+  // Get routing information for selected emergency type
+  const routingInfo = formData.type ? EmergencyRoutingService.getRoutingConfiguration(formData.type) : null;
+  const targetRoles = formData.type ? EmergencyRoutingService.getTargetRoles(formData.type) : [];
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -166,7 +188,7 @@ export default function ReportDisaster() {
               <AlertTriangle className="mr-3 h-8 w-8 text-emergency-danger" />
               Report Emergency
             </h1>
-            <p className="text-slate-600">Report fires, accidents, medical emergencies, and other incidents</p>
+            <p className="text-slate-600">Report fires, accidents, medical emergencies, and other incidents with automatic routing</p>
           </div>
         </div>
 
@@ -185,7 +207,7 @@ export default function ReportDisaster() {
               <CardHeader>
                 <CardTitle>Emergency Report Form</CardTitle>
                 <CardDescription>
-                  Provide detailed information about the emergency situation. This will be stored in your Firebase sub-collection.
+                  Provide detailed information about the emergency. Your report will be automatically routed to the appropriate emergency services.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -198,11 +220,14 @@ export default function ReportDisaster() {
                         <SelectValue placeholder="Select emergency type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {disasterTypes.map(type => (
+                        {emergencyTypes.map(type => (
                           <SelectItem key={type.value} value={type.value}>
-                            <div>
-                              <div className="font-medium">{type.label}</div>
-                              <div className="text-xs text-slate-500">{type.description}</div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-lg">{type.icon}</span>
+                              <div>
+                                <div className="font-medium">{type.label}</div>
+                                <div className="text-xs text-slate-500">{type.description}</div>
+                              </div>
                             </div>
                           </SelectItem>
                         ))}
@@ -210,6 +235,34 @@ export default function ReportDisaster() {
                     </Select>
                     {errors.type && <p className="text-sm text-emergency-danger">{errors.type}</p>}
                   </div>
+
+                  {/* Emergency Routing Preview */}
+                  {routingInfo && (
+                    <Card className="bg-blue-50 border-blue-200">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center text-blue-800">
+                          <Route className="mr-2 h-4 w-4" />
+                          Emergency Routing Preview
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-blue-700">
+                          <p className="mb-2">This report will be automatically forwarded to:</p>
+                          <div className="space-y-1">
+                            {routingInfo.targetCollections.map((target, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="capitalize">{target.collection.replace('Brigade', ' Brigade')}</span>
+                                <span className="text-xs bg-blue-200 px-2 py-1 rounded">
+                                  Priority {target.priority}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Severity */}
                   <div className="space-y-2">
@@ -293,7 +346,7 @@ export default function ReportDisaster() {
                     {isSubmitting ? (
                       <>
                         <Clock className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting to Firebase...
+                        Submitting & Routing Emergency...
                       </>
                     ) : (
                       <>
@@ -323,19 +376,19 @@ export default function ReportDisaster() {
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-emergency-warning rounded-full mt-2"></div>
                   <div className="text-sm">
-                    <strong>Location accuracy:</strong> Provide exact address or landmarks
+                    <strong>Automatic routing:</strong> Your report will be sent to the right departments
                   </div>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-emergency-info rounded-full mt-2"></div>
                   <div className="text-sm">
-                    <strong>Firebase Storage:</strong> Your report is stored securely in your sub-collection
+                    <strong>Real-time notifications:</strong> Emergency services will be notified instantly
                   </div>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-emergency-resolved rounded-full mt-2"></div>
                   <div className="text-sm">
-                    <strong>Follow up:</strong> We'll contact you for additional information
+                    <strong>Follow up:</strong> You'll receive updates on your report status
                   </div>
                 </div>
               </CardContent>
@@ -372,14 +425,15 @@ export default function ReportDisaster() {
             {/* Firebase Integration Status */}
             <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
               <CardHeader>
-                <CardTitle className="text-green-800 text-sm">🔥 Firebase Integration</CardTitle>
+                <CardTitle className="text-green-800 text-sm">🔥 Emergency Routing System</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-xs text-green-700 space-y-1">
-                  <div>✓ Connected to reportDisaster collection</div>
-                  <div>✓ Analytics tracking enabled</div>
-                  <div>✓ User-specific sub-collection</div>
-                  <div>✓ Role-based security rules active</div>
+                  <div>✓ Automatic emergency routing</div>
+                  <div>✓ Real-time notifications</div>
+                  <div>✓ Role-based database storage</div>
+                  <div>✓ Multi-service coordination</div>
+                  <div>��� Analytics tracking</div>
                 </div>
               </CardContent>
             </Card>
@@ -392,26 +446,45 @@ export default function ReportDisaster() {
             <DialogHeader>
               <DialogTitle className="flex items-center text-emergency-resolved">
                 <CheckCircle className="mr-2 h-6 w-6" />
-                Report Submitted Successfully
+                Emergency Report Submitted Successfully
               </DialogTitle>
               <DialogDescription>
-                Your emergency report has been saved to Firebase and emergency responders have been notified.
+                Your emergency report has been submitted and automatically routed to the appropriate emergency services.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="bg-emergency-resolved/10 p-4 rounded-lg">
                 <div className="text-sm text-emergency-resolved">
-                  <strong>Report ID:</strong> {submittedReportId}
+                  <strong>Report Status:</strong> Successfully submitted and routed
+                  <br />
+                  <strong>Forwarded to:</strong> {submissionResult?.forwardedTo?.length || 0} emergency service(s)
                   <br />
                   <strong>What happens next:</strong>
                   <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>Emergency responders will be dispatched</li>
-                    <li>Your report is stored in your Firebase sub-collection</li>
+                    <li>Emergency responders have been automatically notified</li>
+                    <li>Your report is stored in role-specific databases</li>
                     <li>You may receive a call for additional information</li>
                     <li>Track the status in your dashboard</li>
                   </ul>
                 </div>
               </div>
+              
+              {submissionResult?.forwardedTo && submissionResult.forwardedTo.length > 0 && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="text-sm text-blue-700">
+                    <strong>Routing Details:</strong>
+                    <ul className="mt-2 space-y-1">
+                      {submissionResult.forwardedTo.map((destination, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span>{destination.replace('/', ' → ')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => navigate('/dashboard/user')}>
                   Back to Dashboard
