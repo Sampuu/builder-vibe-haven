@@ -11,12 +11,24 @@ export default function HospitalDashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
-            <Building2 className="mr-3 h-8 w-8 text-emergency-info" />
-            Hospital Management Center
-          </h2>
-          <p className="text-slate-600">Manage medical equipment requests and dispatch services.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center">
+                <Building2 className="mr-3 h-8 w-8 text-emergency-info" />
+                Hospital Management Center
+              </h2>
+              <p className="text-slate-600">Manage medical equipment requests and dispatch services.</p>
+            </div>
+            <NotificationBell department="hospital" />
+          </div>
         </div>
+
+        {/* Emergency Notifications */}
+        <NotificationCenter
+          department="hospital"
+          showUnreadOnly={false}
+          maxHeight="300px"
+        />
 
         <div className="grid md:grid-cols-3 gap-6">
           <Card>
