@@ -3,6 +3,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Truck, MapPin, Heart } from 'lucide-react';
+import NotificationCenter, { NotificationBell } from '@/components/NotificationCenter';
 
 export default function AmbulanceDashboard() {
   const navigate = useNavigate();
