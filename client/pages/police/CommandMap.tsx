@@ -16,14 +16,47 @@ import {
   Navigation
 } from 'lucide-react';
 
-const activeUnits = [
-  { id: 'Unit 12', status: 'responding', location: 'Highway 101', incident: 'Traffic Accident' },
-  { id: 'Unit 8', status: 'patrolling', location: 'Downtown', incident: null },
-  { id: 'Unit 15', status: 'available', location: 'Station 2', incident: null },
-];
-
 export default function CommandMap() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [trackedEntities, setTrackedEntities] = useState<TrackedEntity[]>([]);
+
+  // Fetch tracked entities
+  const fetchTrackedEntities = async () => {
+    try {
+      const response = await fetch('/api/entities?type=police', {
+        headers: {
+          'x-user-id': user?.id || '',
+          'x-user-role': user?.role || 'police'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTrackedEntities(data.entities || []);
+      } else {
+        console.error('Failed to fetch tracked entities');
+      }
+    } catch (error) {
+      console.error('Error fetching tracked entities:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrackedEntities();
+    // Set up polling for real-time updates
+    const interval = setInterval(fetchTrackedEntities, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'responding': return 'bg-emergency-danger';
+      case 'busy': return 'bg-emergency-warning';
+      case 'idle': return 'bg-emergency-resolved';
+      default: return 'bg-slate-500';
+    }
+  };
 
   return (
     <DashboardLayout>
