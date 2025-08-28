@@ -1,31 +1,72 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Map, 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import MapSystem from "@/components/MapSystem";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
+import { TrackedEntity } from "@shared/api";
+import {
+  Map,
   ArrowLeft,
   MapPin,
   Shield,
   Radio,
-  Navigation
-} from 'lucide-react';
-
-const activeUnits = [
-  { id: 'Unit 12', status: 'responding', location: 'Highway 101', incident: 'Traffic Accident' },
-  { id: 'Unit 8', status: 'patrolling', location: 'Downtown', incident: null },
-  { id: 'Unit 15', status: 'available', location: 'Station 2', incident: null },
-];
+  Navigation,
+} from "lucide-react";
 
 export default function CommandMap() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [trackedEntities, setTrackedEntities] = useState<TrackedEntity[]>([]);
+
+  // Fetch tracked entities
+  const fetchTrackedEntities = async () => {
+    try {
+      const response = await fetch("/api/entities?type=police", {
+        headers: {
+          "x-user-id": user?.id || "",
+          "x-user-role": user?.role || "police",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTrackedEntities(data.entities || []);
+      } else {
+        console.error("Failed to fetch tracked entities");
+      }
+    } catch (error) {
+      console.error("Error fetching tracked entities:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrackedEntities();
+    // Set up polling for real-time updates
+    const interval = setInterval(fetchTrackedEntities, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "responding":
+        return "bg-emergency-danger";
+      case "busy":
+        return "bg-emergency-warning";
+      case "idle":
+        return "bg-emergency-resolved";
+      default:
+        return "bg-slate-500";
+    }
+  };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/police')}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard/police")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Police Dashboard
           </Button>
@@ -34,28 +75,20 @@ export default function CommandMap() {
               <Map className="mr-3 h-8 w-8 text-emergency-info" />
               Police Command Map
             </h1>
-            <p className="text-slate-600">Real-time tracking of units and incidents</p>
+            <p className="text-slate-600">
+              Real-time tracking of units and incidents
+            </p>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
-            <Card>
-              <CardContent className="p-0">
-                <div className="relative bg-slate-100 h-96 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center">
-                  <div className="text-center text-slate-500">
-                    <Map className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Police Command Map</p>
-                    <p className="text-sm">Real-time unit tracking and incident mapping</p>
-                    <div className="mt-4 space-y-1 text-sm">
-                      <p>• Blue markers: Police units</p>
-                      <p>• Red markers: Active incidents</p>
-                      <p>• Green routes: Navigation paths</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <MapSystem
+              height="700px"
+              showControls={true}
+              defaultCenter={[20.5937, 78.9629]}
+              defaultZoom={5}
+            />
           </div>
 
           <div className="space-y-6">
@@ -63,37 +96,53 @@ export default function CommandMap() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Shield className="mr-2 h-5 w-5" />
-                  Active Units
+                  Police Units ({trackedEntities.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {activeUnits.map((unit) => (
-                    <div key={unit.id} className="p-3 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{unit.id}</span>
-                        <Badge className={`text-xs ${
-                          unit.status === 'responding' ? 'bg-emergency-danger' :
-                          unit.status === 'patrolling' ? 'bg-emergency-warning' : 'bg-emergency-resolved'
-                        } text-white`}>
-                          {unit.status}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-slate-600 flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {unit.location}
-                      </div>
-                      {unit.incident && (
-                        <div className="text-xs text-slate-500 mt-1">
-                          Responding to: {unit.incident}
-                        </div>
-                      )}
-                      <Button size="sm" variant="outline" className="w-full mt-2">
-                        <Radio className="mr-2 h-4 w-4" />
-                        Contact Unit
-                      </Button>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {trackedEntities.length === 0 ? (
+                    <div className="text-center text-slate-500 py-8">
+                      <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No police units online</p>
                     </div>
-                  ))}
+                  ) : (
+                    trackedEntities.map((entity) => (
+                      <div key={entity.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">{entity.name}</span>
+                          <Badge
+                            className={`text-xs ${getStatusColor(entity.status)} text-white`}
+                          >
+                            {entity.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-slate-600 flex items-center mb-1">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Lat: {entity.latitude.toFixed(4)}, Lng:{" "}
+                          {entity.longitude.toFixed(4)}
+                        </div>
+                        {entity.speed !== undefined && entity.speed > 0 && (
+                          <div className="text-xs text-slate-500 mb-2">
+                            Speed: {entity.speed} km/h
+                          </div>
+                        )}
+                        {entity.assignedIncidentId && (
+                          <div className="text-xs text-blue-600 mb-2">
+                            Assigned to incident: {entity.assignedIncidentId}
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-400 mb-2">
+                          Last update:{" "}
+                          {new Date(entity.lastUpdate).toLocaleTimeString()}
+                        </div>
+                        <Button size="sm" variant="outline" className="w-full">
+                          <Radio className="mr-2 h-4 w-4" />
+                          Contact Unit
+                        </Button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

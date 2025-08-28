@@ -1,18 +1,19 @@
-import { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  AlertTriangle, 
-  LogOut, 
-  Shield, 
-  Flame, 
-  Truck, 
-  Building2, 
-  User, 
+import { ReactNode } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { useWebSocket } from "@/hooks/use-websocket";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import {
+  AlertTriangle,
+  LogOut,
+  Shield,
+  Flame,
+  Truck,
+  Building2,
+  User,
   Settings,
-  Bell
-} from 'lucide-react';
+} from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -28,24 +29,25 @@ const roleIcons = {
 };
 
 const roleColors = {
-  user: 'text-emergency-info',
-  police: 'text-emergency-danger',
-  fire: 'text-emergency-warning',
-  ambulance: 'text-emergency-resolved',
-  hospital: 'text-emergency-info',
-  admin: 'text-slate-700',
+  user: "text-emergency-info",
+  police: "text-emergency-danger",
+  fire: "text-emergency-warning",
+  ambulance: "text-emergency-resolved",
+  hospital: "text-emergency-info",
+  admin: "text-slate-700",
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
-  
+  const { isConnected } = useWebSocket(); // Initialize WebSocket connection
+
   if (!user) return null;
 
   const RoleIcon = roleIcons[user.role];
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   return (
@@ -74,17 +76,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* User Info and Actions */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-emergency-danger rounded-full"></div>
-              </Button>
+              <NotificationDropdown />
 
               {/* User Avatar and Info */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {user.name}
+                  </p>
                   <p className="text-xs text-slate-500 capitalize flex items-center">
-                    <RoleIcon className={`h-3 w-3 mr-1 ${roleColors[user.role]}`} />
+                    <RoleIcon
+                      className={`h-3 w-3 mr-1 ${roleColors[user.role]}`}
+                    />
                     {user.role}
                   </p>
                 </div>

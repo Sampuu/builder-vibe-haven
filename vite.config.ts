@@ -9,12 +9,15 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     fs: {
-      allow: ["./client", "./shared"],
+      allow: ["./client", "./shared", "./node_modules"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },
   build: {
     outDir: "dist/spa",
+  },
+  optimizeDeps: {
+    exclude: ["socket.io-client"],
   },
   plugins: [react(), expressPlugin()],
   resolve: {
@@ -30,7 +33,7 @@ function expressPlugin(): Plugin {
     name: "express-plugin",
     apply: "serve", // Only apply during development (serve mode)
     configureServer(server) {
-      const app = createServer();
+      const { app } = createServer();
 
       // Add Express app as middleware to Vite dev server
       server.middlewares.use(app);
