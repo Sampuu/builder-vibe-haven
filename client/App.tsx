@@ -57,7 +57,15 @@ import SupplyRequests from "./pages/hospital/SupplyRequests";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Setup demo accounts if in demo mode
+    if (isDemoMode()) {
+      setupDemoAccounts().catch(console.error);
+    }
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -244,6 +252,7 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);
