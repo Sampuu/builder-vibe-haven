@@ -84,15 +84,59 @@ export default function RequestHelp() {
   if (submitted) {
     return (
       <DashboardLayout>
-        <div className="max-w-md mx-auto mt-12">
+        <div className="max-w-2xl mx-auto mt-12">
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle className="h-16 w-16 text-emergency-resolved mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted</h2>
-              <p className="text-slate-600 mb-6">Medical assistance has been requested. Help is on the way.</p>
-              <Button onClick={() => navigate('/dashboard/user')} className="w-full">
-                Back to Dashboard
-              </Button>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted Successfully</h2>
+              <p className="text-slate-600 mb-4">Your help request has been sent to the appropriate departments.</p>
+
+              <Alert className="border-green-200 bg-green-50 mb-6">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="text-green-800">
+                  <strong>🆘 HELP REQUEST SENT!</strong>
+                  <br />
+                  <span className="text-sm mt-1 block">
+                    Notified departments: {notifiedDepartments.join(', ')}
+                  </span>
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-slate-50 p-4 rounded-lg mb-6 text-left">
+                <h4 className="font-medium text-slate-900 mb-2">What happens next:</h4>
+                <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
+                  <li>Medical personnel have been notified</li>
+                  <li>Response teams will coordinate assistance</li>
+                  <li>You may receive a call to confirm details</li>
+                  <li>Track the status in your dashboard</li>
+                </ul>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/dashboard/user')}
+                  className="flex-1"
+                >
+                  Back to Dashboard
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSubmitted(false);
+                    setFormData({
+                      type: 'medical',
+                      urgency: 'medium',
+                      description: '',
+                      location: '',
+                      contactPhone: '',
+                      specialRequests: ''
+                    });
+                  }}
+                  className="flex-1"
+                >
+                  Submit Another Request
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
