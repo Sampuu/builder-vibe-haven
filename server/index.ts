@@ -56,6 +56,7 @@ export function createServer() {
 
   // Routing API routes
   app.post("/api/routes/calculate", calculateRoute);
+  app.get("/api/geocode", geocodeLocation);
 
   // Setup WebSocket
   setupWebSocket(server);
