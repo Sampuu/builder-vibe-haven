@@ -3,53 +3,60 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
+import { AlertTriangle, ArrowLeft, Mail } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth-firebase';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { UserRole } from '@shared/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login } = useAuth();
+  const [requiresVerification, setRequiresVerification] = useState(false);
+
+  const { login, error } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setLocalError('');
+    setRequiresVerification(false);
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
-      setError('Please fill in all fields');
+    if (!email || !password) {
+      setLocalError('Please fill in all fields');
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
-    if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
-    } else {
-      setError('Invalid credentials. Please try again.');
+    try {
+      const response = await login(email, password);
+
+      if (response.success && response.user) {
+        if (response.requiresEmailVerification) {
+          setRequiresVerification(true);
+        } else if (response.user.status === 'pending') {
+          setLocalError('Your account is pending approval. Please wait for an administrator to approve your account.');
+        } else if (response.user.status === 'suspended') {
+          setLocalError('Your account has been suspended. Please contact an administrator.');
+        } else if (response.user.status === 'active') {
+          // Redirect to appropriate dashboard based on role
+          navigate(`/dashboard/${response.user.role}`);
+        }
+      } else {
+        setLocalError(response.error || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLocalError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
-  const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
-  ];
+  const displayError = localError || error;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
@@ -78,30 +85,20 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
+              {displayError && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>{displayError}</AlertDescription>
                 </Alert>
               )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roleOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+
+              {requiresVerification && (
+                <Alert>
+                  <Mail className="h-4 w-4" />
+                  <AlertDescription className="text-emergency-info">
+                    Please verify your email address before logging in. Check your inbox for a verification link.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -126,15 +123,6 @@ export default function Login() {
                   required
                 />
               </div>
-
-              {(role === 'police' || role === 'admin') && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This role requires enhanced security authentication in production.
-                  </AlertDescription>
-                </Alert>
-              )}
 
               <Button 
                 type="submit" 

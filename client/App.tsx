@@ -8,13 +8,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Auth
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider } from "@/hooks/use-auth-firebase";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 // Dashboards
@@ -64,6 +65,16 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+
+            {/* Profile Route - Available to all authenticated users */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected Dashboard Routes */}
             <Route

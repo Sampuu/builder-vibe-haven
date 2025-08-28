@@ -1,21 +1,34 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  Newspaper, 
-  Plus, 
-  Clock, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Newspaper,
+  Plus,
+  Clock,
   AlertTriangle,
   Info,
   CheckCircle,
-  User
-} from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+  User,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface NewsItem {
   id: string;
@@ -24,49 +37,52 @@ interface NewsItem {
   author: string;
   role: string;
   timestamp: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  category: 'fire' | 'medical' | 'accident' | 'weather' | 'general';
+  priority: "low" | "medium" | "high" | "critical";
+  category: "fire" | "medical" | "accident" | "weather" | "general";
 }
 
 // Mock news data
 const mockNews: NewsItem[] = [
   {
-    id: '1',
-    title: 'Major Fire Incident at Downtown Plaza - Contained',
-    content: 'Fire department has successfully contained the fire at Downtown Plaza. All residents have been evacuated safely. Investigation ongoing.',
-    author: 'Fire Chief Johnson',
-    role: 'fire',
-    timestamp: '2 hours ago',
-    priority: 'high',
-    category: 'fire'
+    id: "1",
+    title: "Major Fire Incident at Downtown Plaza - Contained",
+    content:
+      "Fire department has successfully contained the fire at Downtown Plaza. All residents have been evacuated safely. Investigation ongoing.",
+    author: "Fire Chief Johnson",
+    role: "fire",
+    timestamp: "2 hours ago",
+    priority: "high",
+    category: "fire",
   },
   {
-    id: '2',
-    title: 'Traffic Accident on Highway 101 - Lane Closure',
-    content: 'Multi-vehicle accident on Highway 101 northbound. Right two lanes closed. Ambulance on scene, minor injuries reported.',
-    author: 'Officer Martinez',
-    role: 'police',
-    timestamp: '30 minutes ago',
-    priority: 'medium',
-    category: 'accident'
+    id: "2",
+    title: "Traffic Accident on Highway 101 - Lane Closure",
+    content:
+      "Multi-vehicle accident on Highway 101 northbound. Right two lanes closed. Ambulance on scene, minor injuries reported.",
+    author: "Officer Martinez",
+    role: "police",
+    timestamp: "30 minutes ago",
+    priority: "medium",
+    category: "accident",
   },
   {
-    id: '3',
-    title: 'Weather Alert: Heavy Rain Expected',
-    content: 'National Weather Service issues heavy rain warning for the region. Possible flooding in low-lying areas. Stay alert.',
-    author: 'Admin System',
-    role: 'admin',
-    timestamp: '1 hour ago',
-    priority: 'medium',
-    category: 'weather'
-  }
+    id: "3",
+    title: "Weather Alert: Heavy Rain Expected",
+    content:
+      "National Weather Service issues heavy rain warning for the region. Possible flooding in low-lying areas. Stay alert.",
+    author: "Admin System",
+    role: "admin",
+    timestamp: "1 hour ago",
+    priority: "medium",
+    category: "weather",
+  },
 ];
 
 const priorityColors = {
-  low: 'bg-slate-500',
-  medium: 'bg-emergency-info',
-  high: 'bg-emergency-warning',
-  critical: 'bg-emergency-danger',
+  low: "bg-slate-500",
+  medium: "bg-emergency-info",
+  high: "bg-emergency-warning",
+  critical: "bg-emergency-danger",
 };
 
 const categoryIcons = {
@@ -81,12 +97,12 @@ export default function NewsPortal() {
   const [news, setNews] = useState<NewsItem[]>(mockNews);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [newPost, setNewPost] = useState({
-    title: '',
-    content: '',
-    priority: 'medium' as NewsItem['priority'],
-    category: 'general' as NewsItem['category'],
+    title: "",
+    content: "",
+    priority: "medium" as NewsItem["priority"],
+    category: "general" as NewsItem["category"],
   });
-  
+
   const { user } = useAuth();
 
   const handlePostNews = () => {
@@ -96,26 +112,37 @@ export default function NewsPortal() {
       id: Date.now().toString(),
       title: newPost.title,
       content: newPost.content,
-      author: user.name,
+      author: user.displayName,
       role: user.role,
-      timestamp: 'Just now',
+      timestamp: "Just now",
       priority: newPost.priority,
       category: newPost.category,
     };
 
     setNews([newsItem, ...news]);
-    setNewPost({ title: '', content: '', priority: 'medium', category: 'general' });
+    setNewPost({
+      title: "",
+      content: "",
+      priority: "medium",
+      category: "general",
+    });
     setIsPostDialogOpen(false);
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'police': return 'text-emergency-danger';
-      case 'fire': return 'text-emergency-warning';
-      case 'ambulance': return 'text-emergency-resolved';
-      case 'hospital': return 'text-emergency-info';
-      case 'admin': return 'text-slate-700';
-      default: return 'text-emergency-info';
+      case "police":
+        return "text-emergency-danger";
+      case "fire":
+        return "text-emergency-warning";
+      case "ambulance":
+        return "text-emergency-resolved";
+      case "hospital":
+        return "text-emergency-info";
+      case "admin":
+        return "text-slate-700";
+      default:
+        return "text-emergency-info";
     }
   };
 
@@ -127,7 +154,9 @@ export default function NewsPortal() {
             <Newspaper className="mr-2 h-5 w-5 text-emergency-warning" />
             <div>
               <CardTitle>Disaster News Portal</CardTitle>
-              <CardDescription>Latest updates and emergency information</CardDescription>
+              <CardDescription>
+                Latest updates and emergency information
+              </CardDescription>
             </div>
           </div>
           <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
@@ -141,7 +170,8 @@ export default function NewsPortal() {
               <DialogHeader>
                 <DialogTitle>Post Emergency News</DialogTitle>
                 <DialogDescription>
-                  Share important information with all emergency responders and citizens.
+                  Share important information with all emergency responders and
+                  citizens.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -150,7 +180,9 @@ export default function NewsPortal() {
                   <Input
                     id="title"
                     value={newPost.title}
-                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                    onChange={(e) =>
+                      setNewPost({ ...newPost, title: e.target.value })
+                    }
                     placeholder="Emergency update title..."
                   />
                 </div>
@@ -159,7 +191,9 @@ export default function NewsPortal() {
                   <Textarea
                     id="content"
                     value={newPost.content}
-                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    onChange={(e) =>
+                      setNewPost({ ...newPost, content: e.target.value })
+                    }
                     placeholder="Detailed information about the situation..."
                     rows={4}
                   />
@@ -170,7 +204,12 @@ export default function NewsPortal() {
                     <select
                       id="priority"
                       value={newPost.priority}
-                      onChange={(e) => setNewPost({ ...newPost, priority: e.target.value as NewsItem['priority'] })}
+                      onChange={(e) =>
+                        setNewPost({
+                          ...newPost,
+                          priority: e.target.value as NewsItem["priority"],
+                        })
+                      }
                       className="w-full h-10 px-3 py-2 text-sm border border-input bg-background rounded-md"
                     >
                       <option value="low">Low</option>
@@ -184,7 +223,12 @@ export default function NewsPortal() {
                     <select
                       id="category"
                       value={newPost.category}
-                      onChange={(e) => setNewPost({ ...newPost, category: e.target.value as NewsItem['category'] })}
+                      onChange={(e) =>
+                        setNewPost({
+                          ...newPost,
+                          category: e.target.value as NewsItem["category"],
+                        })
+                      }
                       className="w-full h-10 px-3 py-2 text-sm border border-input bg-background rounded-md"
                     >
                       <option value="general">General</option>
@@ -196,7 +240,10 @@ export default function NewsPortal() {
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsPostDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsPostDialogOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handlePostNews} variant="warning">
@@ -213,13 +260,20 @@ export default function NewsPortal() {
           {news.map((item) => {
             const CategoryIcon = categoryIcons[item.category];
             return (
-              <div key={item.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+              <div
+                key={item.id}
+                className="border border-slate-200 rounded-lg p-4 bg-slate-50"
+              >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <CategoryIcon className="h-4 w-4 text-slate-600" />
-                    <h3 className="font-semibold text-slate-900 text-sm">{item.title}</h3>
+                    <h3 className="font-semibold text-slate-900 text-sm">
+                      {item.title}
+                    </h3>
                   </div>
-                  <Badge className={`${priorityColors[item.priority]} text-white text-xs`}>
+                  <Badge
+                    className={`${priorityColors[item.priority]} text-white text-xs`}
+                  >
                     {item.priority}
                   </Badge>
                 </div>
