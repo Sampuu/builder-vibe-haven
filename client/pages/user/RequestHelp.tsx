@@ -23,9 +23,10 @@ import { sendHelpRequestNotification, DEPARTMENT_CONTACTS, getHelpRequestRouting
 
 export default function RequestHelp() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    type: '',
-    urgency: 'medium',
+    type: 'medical' as 'medical' | 'supplies' | 'transport' | 'other',
+    urgency: 'medium' as 'low' | 'medium' | 'high' | 'critical',
     description: '',
     location: '',
     contactPhone: '',
@@ -33,13 +34,51 @@ export default function RequestHelp() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [notifiedDepartments, setNotifiedDepartments] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) return;
+
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setIsSubmitting(false);
+
+    try {
+      // Create help request
+      const helpRequest = await createHelpRequest({
+        type: formData.type,
+        urgency: formData.urgency,
+        description: formData.description,
+        location: formData.location,
+        requesterUserId: user.id,
+        requesterName: user.name,
+        requesterPhone: formData.contactPhone,
+        status: 'submitted',
+        specialRequests: formData.specialRequests
+      });
+
+      console.log('✅ Help request created:', helpRequest.id);
+
+      // Send notifications to relevant departments
+      const notification = await sendHelpRequestNotification(helpRequest);
+      console.log('✅ Help request notifications sent to:', notification.targetDepartments.join(', '));
+
+      // Get department names for display
+      const departments = getHelpRequestRouting(formData.type, formData.urgency);
+      const departmentNames = departments.map(dept => DEPARTMENT_CONTACTS[dept]?.name || dept);
+      setNotifiedDepartments(departmentNames);
+
+      console.log(`🆘 HELP REQUEST SENT TO: ${departmentNames.join(', ')}`);
+      console.log(`📍 Location: ${formData.location}`);
+      console.log(`📞 Contact: ${formData.contactPhone}`);
+      console.log(`⚠️ Urgency: ${formData.urgency.toUpperCase()}`);
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Failed to submit help request:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
