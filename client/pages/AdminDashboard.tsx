@@ -112,13 +112,8 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-12 text-center text-slate-500">
-              <Settings className="h-16 w-16 mx-auto mb-4 opacity-30" />
-              <p className="text-lg font-medium mb-2">Admin Dashboard</p>
-              <p>Advanced system management tools will be implemented here</p>
-            </CardContent>
-          </Card>
+          {/* Notification System Testing */}
+          <NotificationSystemTest />
         </div>
       </div>
     </DashboardLayout>
