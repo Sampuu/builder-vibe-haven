@@ -2,7 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Users, Activity, FileText, Shield } from 'lucide-react';
+import { Settings, Users, Activity, FileText, Shield, Bell, Megaphone } from 'lucide-react';
+import { useIncidents } from '@/hooks/use-incidents';
+import { useNotifications } from '@/hooks/use-notifications';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
