@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { AlertTriangle, ArrowLeft, UserPlus, Play } from 'lucide-react';
 import { useAuth, UserRole } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -85,6 +87,35 @@ export default function Signup() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
         </Button>
+
+        {/* Demo Notice */}
+        <Card className="shadow-lg border-0 mb-6 bg-emergency-info/5 border-emergency-info/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-center mb-2">
+              <Play className="h-4 w-4 text-emergency-info mr-2" />
+              <Badge variant="secondary" className="bg-emergency-info/10 text-emergency-info border-emergency-info/20">
+                Demo Available
+              </Badge>
+            </div>
+            <p className="text-center text-sm text-slate-600">
+              Want to try the system first?{' '}
+              <Button
+                variant="link"
+                onClick={() => navigate('/login')}
+                className="p-0 h-auto text-emergency-info hover:text-emergency-info/80 text-sm"
+              >
+                Use demo accounts
+              </Button>
+              {' '}with pre-configured roles
+            </p>
+          </CardContent>
+        </Card>
+
+        <div className="flex items-center mb-6">
+          <Separator className="flex-1" />
+          <span className="px-3 text-sm text-slate-500">Or create your own account</span>
+          <Separator className="flex-1" />
+        </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="text-center">
