@@ -1,34 +1,36 @@
 // Adaptive services that switch between Firebase and offline storage
-import { checkFirebaseAvailability } from './serviceDetector';
-import { 
+import { checkFirebaseAvailability } from "./serviceDetector";
+import {
   disasterReportsService as firebaseDisasterService,
   helpRequestsService as firebaseHelpService,
   notificationsService as firebaseNotificationService,
   DisasterReport,
   HelpRequest,
-  Notification
-} from './firestore';
+  Notification,
+} from "./firestore";
 import {
   offlineDisasterService,
   offlineHelpService,
-  offlineNotificationService
-} from './offlineStorage';
+  offlineNotificationService,
+} from "./offlineStorage";
 import {
   backendDisasterService,
   backendHelpService,
-  testBackend
-} from './backendService';
+  testBackend,
+} from "./backendService";
 
 // Adaptive disaster reports service
 export const adaptiveDisasterService = {
-  async create(report: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(
+    report: Omit<DisasterReport, "id" | "createdAt" | "updatedAt">,
+  ): Promise<string> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
 
     if (isFirebaseAvailable) {
       try {
         return await firebaseDisasterService.create(report);
       } catch (error) {
-        console.warn('Firebase failed, trying backend API:', error);
+        console.warn("Firebase failed, trying backend API:", error);
         // Fall back to backend API if Firebase fails
       }
     }
@@ -39,7 +41,7 @@ export const adaptiveDisasterService = {
       try {
         return await backendDisasterService.create(report);
       } catch (error) {
-        console.warn('Backend API failed, using offline mode:', error);
+        console.warn("Backend API failed, using offline mode:", error);
       }
     }
 
@@ -49,7 +51,7 @@ export const adaptiveDisasterService = {
 
   async getAll(): Promise<DisasterReport[]> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseDisasterService.getAll();
     } else {
@@ -59,7 +61,7 @@ export const adaptiveDisasterService = {
 
   async getByUser(userId: string): Promise<DisasterReport[]> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseDisasterService.getByUser(userId);
     } else {
@@ -67,9 +69,13 @@ export const adaptiveDisasterService = {
     }
   },
 
-  async updateStatus(id: string, status: DisasterReport['status'], assignedTo?: string): Promise<void> {
+  async updateStatus(
+    id: string,
+    status: DisasterReport["status"],
+    assignedTo?: string,
+  ): Promise<void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseDisasterService.updateStatus(id, status, assignedTo);
     } else {
@@ -77,7 +83,9 @@ export const adaptiveDisasterService = {
     }
   },
 
-  async onSnapshot(callback: (reports: DisasterReport[]) => void): Promise<() => void> {
+  async onSnapshot(
+    callback: (reports: DisasterReport[]) => void,
+  ): Promise<() => void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
 
     if (isFirebaseAvailable) {
@@ -92,19 +100,21 @@ export const adaptiveDisasterService = {
       // Return cleanup function
       return () => clearInterval(pollInterval);
     }
-  }
+  },
 };
 
 // Adaptive help requests service
 export const adaptiveHelpService = {
-  async create(request: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(
+    request: Omit<HelpRequest, "id" | "createdAt" | "updatedAt">,
+  ): Promise<string> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
 
     if (isFirebaseAvailable) {
       try {
         return await firebaseHelpService.create(request);
       } catch (error) {
-        console.warn('Firebase failed, trying backend API:', error);
+        console.warn("Firebase failed, trying backend API:", error);
       }
     }
 
@@ -114,7 +124,7 @@ export const adaptiveHelpService = {
       try {
         return await backendHelpService.create(request);
       } catch (error) {
-        console.warn('Backend API failed, using offline mode:', error);
+        console.warn("Backend API failed, using offline mode:", error);
       }
     }
 
@@ -124,7 +134,7 @@ export const adaptiveHelpService = {
 
   async getAll(): Promise<HelpRequest[]> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseHelpService.getAll();
     } else {
@@ -134,7 +144,7 @@ export const adaptiveHelpService = {
 
   async getByUser(userId: string): Promise<HelpRequest[]> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseHelpService.getByUser(userId);
     } else {
@@ -142,18 +152,26 @@ export const adaptiveHelpService = {
     }
   },
 
-  async updateStatus(id: string, status: HelpRequest['status'], assignedTo?: string): Promise<void> {
+  async updateStatus(
+    id: string,
+    status: HelpRequest["status"],
+    assignedTo?: string,
+  ): Promise<void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseHelpService.updateStatus(id, status, assignedTo);
     } else {
       // Offline mode doesn't have this method yet, so we'll skip it
-      console.log('Offline mode: updateStatus not implemented for help requests');
+      console.log(
+        "Offline mode: updateStatus not implemented for help requests",
+      );
     }
   },
 
-  async onSnapshot(callback: (requests: HelpRequest[]) => void): Promise<() => void> {
+  async onSnapshot(
+    callback: (requests: HelpRequest[]) => void,
+  ): Promise<() => void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
 
     if (isFirebaseAvailable) {
@@ -168,14 +186,16 @@ export const adaptiveHelpService = {
       // Return cleanup function
       return () => clearInterval(pollInterval);
     }
-  }
+  },
 };
 
 // Adaptive notifications service
 export const adaptiveNotificationService = {
-  async create(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<string> {
+  async create(
+    notification: Omit<Notification, "id" | "createdAt">,
+  ): Promise<string> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseNotificationService.create(notification);
     } else {
@@ -185,7 +205,7 @@ export const adaptiveNotificationService = {
 
   async getByRole(role: string): Promise<Notification[]> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseNotificationService.getByRole(role);
     } else {
@@ -195,7 +215,7 @@ export const adaptiveNotificationService = {
 
   async markAsRead(id: string): Promise<void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
-    
+
     if (isFirebaseAvailable) {
       return firebaseNotificationService.markAsRead(id);
     } else {
@@ -203,7 +223,10 @@ export const adaptiveNotificationService = {
     }
   },
 
-  async onSnapshot(role: string, callback: (notifications: Notification[]) => void): Promise<() => void> {
+  async onSnapshot(
+    role: string,
+    callback: (notifications: Notification[]) => void,
+  ): Promise<() => void> {
     const isFirebaseAvailable = await checkFirebaseAvailability();
 
     if (isFirebaseAvailable) {
@@ -218,32 +241,38 @@ export const adaptiveNotificationService = {
       // Return cleanup function
       return () => clearInterval(pollInterval);
     }
-  }
+  },
 };
 
 // Simplified notification helpers for offline mode
-export const createNotificationForReport = async (report: DisasterReport): Promise<void> => {
+export const createNotificationForReport = async (
+  report: DisasterReport,
+): Promise<void> => {
   const isFirebaseAvailable = await checkFirebaseAvailability();
-  
+
   if (isFirebaseAvailable) {
     // Use the existing Firebase implementation
-    const { createNotificationForReport: firebaseCreateNotification } = await import('./firestore');
+    const { createNotificationForReport: firebaseCreateNotification } =
+      await import("./firestore");
     return firebaseCreateNotification(report);
   } else {
     // Notification creation is handled automatically by offlineDisasterService.create
-    console.log('Notification created for disaster report:', report.id);
+    console.log("Notification created for disaster report:", report.id);
   }
 };
 
-export const createNotificationForHelpRequest = async (request: HelpRequest): Promise<void> => {
+export const createNotificationForHelpRequest = async (
+  request: HelpRequest,
+): Promise<void> => {
   const isFirebaseAvailable = await checkFirebaseAvailability();
-  
+
   if (isFirebaseAvailable) {
     // Use the existing Firebase implementation
-    const { createNotificationForHelpRequest: firebaseCreateNotification } = await import('./firestore');
+    const { createNotificationForHelpRequest: firebaseCreateNotification } =
+      await import("./firestore");
     return firebaseCreateNotification(request);
   } else {
     // Notification creation is handled automatically by offlineHelpService.create
-    console.log('Notification created for help request:', request.id);
+    console.log("Notification created for help request:", request.id);
   }
 };

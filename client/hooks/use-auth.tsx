@@ -1,17 +1,33 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { getFirebaseAuth, getFirebaseFirestore, isFirebaseAvailable } from '@/lib/firebase';
-import { checkFirebaseAvailability } from '@/lib/serviceDetector';
-import { offlineUserService } from '@/lib/offlineStorage';
+  onAuthStateChanged,
+} from "firebase/auth";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  getFirebaseAuth,
+  getFirebaseFirestore,
+  isFirebaseAvailable,
+} from "@/lib/firebase";
+import { checkFirebaseAvailability } from "@/lib/serviceDetector";
+import { offlineUserService } from "@/lib/offlineStorage";
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface User {
   id: string;
@@ -24,7 +40,12 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<boolean>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    role: UserRole,
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -34,7 +55,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -65,7 +86,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Use Firebase mode
         const firebaseAuth = getFirebaseAuth();
         if (!firebaseAuth) {
-          console.log('Firebase Auth not available, falling back to offline mode');
+          console.log(
+            "Firebase Auth not available, falling back to offline mode",
+          );
           setIsOfflineMode(true);
           const currentUser = offlineUserService.getCurrentUser();
           setUser(currentUser);
@@ -73,41 +96,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
-        const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
-          try {
-            if (firebaseUser) {
-              // Get user data from Firestore
-            const firebaseDb = getFirebaseFirestore();
-            if (!firebaseDb) {
-              throw new Error('Firestore not available');
-            }
-            const userDoc = await getDoc(doc(firebaseDb, 'users', firebaseUser.uid));
-              if (userDoc.exists()) {
-                const userData = userDoc.data();
-                setUser({
-                  id: firebaseUser.uid,
-                  email: firebaseUser.email!,
-                  name: userData.name,
-                  role: userData.role,
-                  firebaseUser
-                });
-              } else {
-                // Handle case where Firestore document doesn't exist
-                console.error('User document not found in Firestore');
-                if (firebaseAuth) {
-                  await signOut(firebaseAuth);
+        const unsubscribe = onAuthStateChanged(
+          firebaseAuth,
+          async (firebaseUser) => {
+            try {
+              if (firebaseUser) {
+                // Get user data from Firestore
+                const firebaseDb = getFirebaseFirestore();
+                if (!firebaseDb) {
+                  throw new Error("Firestore not available");
                 }
+                const userDoc = await getDoc(
+                  doc(firebaseDb, "users", firebaseUser.uid),
+                );
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  setUser({
+                    id: firebaseUser.uid,
+                    email: firebaseUser.email!,
+                    name: userData.name,
+                    role: userData.role,
+                    firebaseUser,
+                  });
+                } else {
+                  // Handle case where Firestore document doesn't exist
+                  console.error("User document not found in Firestore");
+                  if (firebaseAuth) {
+                    await signOut(firebaseAuth);
+                  }
+                }
+              } else {
+                setUser(null);
               }
-            } else {
+            } catch (error) {
+              console.error("Error in auth state change:", error);
               setUser(null);
+            } finally {
+              setIsLoading(false);
             }
-          } catch (error) {
-            console.error('Error in auth state change:', error);
-            setUser(null);
-          } finally {
-            setIsLoading(false);
-          }
-        });
+          },
+        );
 
         return () => {
           if (unsubscribe) {
@@ -115,7 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         };
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error("Error initializing auth:", error);
         setIsLoading(false);
       }
     };
@@ -136,7 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             id: result.uid,
             email: result.email,
             name: userData.name,
-            role: userData.role
+            role: userData.role,
           });
           setIsLoading(false);
           return true;
@@ -148,32 +176,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Use Firebase authentication
         const firebaseAuth = getFirebaseAuth();
         if (!firebaseAuth) {
-          throw new Error('Firebase Auth not available');
+          throw new Error("Firebase Auth not available");
         }
-        const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        const userCredential = await signInWithEmailAndPassword(
+          firebaseAuth,
+          email,
+          password,
+        );
         // User state will be updated via onAuthStateChanged
         return true;
       }
     } catch (error: any) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
       setIsLoading(false);
       return false;
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<boolean> => {
+  const signup = async (
+    email: string,
+    password: string,
+    name: string,
+    role: UserRole,
+  ): Promise<boolean> => {
     setIsLoading(true);
 
     try {
       if (isOfflineMode) {
         // Use offline user creation
-        const result = await offlineUserService.createUser(email, password, name, role);
+        const result = await offlineUserService.createUser(
+          email,
+          password,
+          name,
+          role,
+        );
         const userData = await offlineUserService.getUserData(result.uid);
         setUser({
           id: result.uid,
           email: result.email,
           name: userData.name,
-          role: userData.role
+          role: userData.role,
         });
         setIsLoading(false);
         return true;
@@ -183,25 +225,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const firebaseDb = getFirebaseFirestore();
 
         if (!firebaseAuth || !firebaseDb) {
-          throw new Error('Firebase Auth or Firestore not available');
+          throw new Error("Firebase Auth or Firestore not available");
         }
 
-        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          firebaseAuth,
+          email,
+          password,
+        );
 
         // Save additional user data to Firestore
-        await setDoc(doc(firebaseDb, 'users', userCredential.user.uid), {
+        await setDoc(doc(firebaseDb, "users", userCredential.user.uid), {
           name,
           email,
           role,
           createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString()
+          lastLogin: new Date().toISOString(),
         });
 
         // User state will be updated via onAuthStateChanged
         return true;
       }
     } catch (error: any) {
-      console.error('Signup failed:', error);
+      console.error("Signup failed:", error);
       setIsLoading(false);
       return false;
     }
@@ -222,7 +268,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -231,8 +277,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (user && user.firebaseUser && !isOfflineMode) {
       const firebaseDb = getFirebaseFirestore();
       if (firebaseDb) {
-        updateDoc(doc(firebaseDb, 'users', user.id), {
-          lastLogin: new Date().toISOString()
+        updateDoc(doc(firebaseDb, "users", user.id), {
+          lastLogin: new Date().toISOString(),
         }).catch(console.error);
       }
     }

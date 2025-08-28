@@ -1,17 +1,23 @@
-import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getAuth, connectAuthEmulator, Auth } from "firebase/auth";
+import {
+  getFirestore,
+  connectFirestoreEmulator,
+  Firestore,
+} from "firebase/firestore";
 
 // Check if we have valid Firebase credentials
 const hasValidCredentials = () => {
   const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
   const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
 
-  return apiKey &&
-         projectId &&
-         apiKey !== 'demo-api-key' &&
-         projectId !== 'demo-project' &&
-         apiKey.length > 10; // Basic validation
+  return (
+    apiKey &&
+    projectId &&
+    apiKey !== "demo-api-key" &&
+    projectId !== "demo-project" &&
+    apiKey.length > 10
+  ); // Basic validation
 };
 
 let app: FirebaseApp | null = null;
@@ -23,7 +29,9 @@ const initializeFirebase = () => {
   if (app) return { app, auth, db }; // Already initialized
 
   if (!hasValidCredentials()) {
-    console.log('Firebase: Invalid or demo credentials detected, skipping initialization');
+    console.log(
+      "Firebase: Invalid or demo credentials detected, skipping initialization",
+    );
     return { app: null, auth: null, db: null };
   }
 
@@ -43,19 +51,24 @@ const initializeFirebase = () => {
     db = getFirestore(app);
 
     // Connect to emulators in development (only if using Firebase emulators)
-    if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+    if (
+      import.meta.env.DEV &&
+      import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true"
+    ) {
       try {
-        connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
-        connectFirestoreEmulator(db, 'localhost', 8081);
+        connectAuthEmulator(auth, "http://localhost:9099", {
+          disableWarnings: true,
+        });
+        connectFirestoreEmulator(db, "localhost", 8081);
       } catch (error) {
-        console.log('Firebase emulators already connected or not available');
+        console.log("Firebase emulators already connected or not available");
       }
     }
 
-    console.log('Firebase initialized successfully');
+    console.log("Firebase initialized successfully");
     return { app, auth, db };
   } catch (error) {
-    console.error('Failed to initialize Firebase:', error);
+    console.error("Failed to initialize Firebase:", error);
     return { app: null, auth: null, db: null };
   }
 };

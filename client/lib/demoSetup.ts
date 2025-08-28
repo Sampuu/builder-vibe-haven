@@ -1,9 +1,9 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { getFirebaseAuth, getFirebaseFirestore } from './firebase';
-import { UserRole } from '@/hooks/use-auth';
-import { checkFirebaseAvailability } from './serviceDetector';
-import { offlineDemoService } from './offlineStorage';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirebaseAuth, getFirebaseFirestore } from "./firebase";
+import { UserRole } from "@/hooks/use-auth";
+import { checkFirebaseAvailability } from "./serviceDetector";
+import { offlineDemoService } from "./offlineStorage";
 
 export interface DemoAccount {
   email: string;
@@ -14,55 +14,59 @@ export interface DemoAccount {
 
 export const demoAccounts: DemoAccount[] = [
   {
-    email: 'user@demo.com',
-    password: 'demo123',
-    name: 'John Citizen',
-    role: 'user'
+    email: "user@demo.com",
+    password: "demo123",
+    name: "John Citizen",
+    role: "user",
   },
   {
-    email: 'police@demo.com',
-    password: 'demo123',
-    name: 'Officer Smith',
-    role: 'police'
+    email: "police@demo.com",
+    password: "demo123",
+    name: "Officer Smith",
+    role: "police",
   },
   {
-    email: 'fire@demo.com',
-    password: 'demo123',
-    name: 'Chief Johnson',
-    role: 'fire'
+    email: "fire@demo.com",
+    password: "demo123",
+    name: "Chief Johnson",
+    role: "fire",
   },
   {
-    email: 'ambulance@demo.com',
-    password: 'demo123',
-    name: 'Paramedic Davis',
-    role: 'ambulance'
+    email: "ambulance@demo.com",
+    password: "demo123",
+    name: "Paramedic Davis",
+    role: "ambulance",
   },
   {
-    email: 'hospital@demo.com',
-    password: 'demo123',
-    name: 'Dr. Wilson',
-    role: 'hospital'
+    email: "hospital@demo.com",
+    password: "demo123",
+    name: "Dr. Wilson",
+    role: "hospital",
   },
   {
-    email: 'admin@demo.com',
-    password: 'demo123',
-    name: 'System Admin',
-    role: 'admin'
-  }
+    email: "admin@demo.com",
+    password: "demo123",
+    name: "System Admin",
+    role: "admin",
+  },
 ];
 
-export const createDemoAccount = async (account: DemoAccount): Promise<boolean> => {
+export const createDemoAccount = async (
+  account: DemoAccount,
+): Promise<boolean> => {
   try {
     const firebaseAuth = getFirebaseAuth();
     const firebaseDb = getFirebaseFirestore();
 
     if (!firebaseAuth || !firebaseDb) {
-      console.log(`Firebase not available, skipping demo account creation for ${account.email}`);
+      console.log(
+        `Firebase not available, skipping demo account creation for ${account.email}`,
+      );
       return false;
     }
 
     // Check if account already exists in Firestore
-    const userDocRef = doc(firebaseDb, 'demoUsers', account.email);
+    const userDocRef = doc(firebaseDb, "demoUsers", account.email);
     const userDoc = await getDoc(userDocRef);
 
     if (userDoc.exists()) {
@@ -71,55 +75,61 @@ export const createDemoAccount = async (account: DemoAccount): Promise<boolean> 
     }
 
     // Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, account.email, account.password);
+    const userCredential = await createUserWithEmailAndPassword(
+      firebaseAuth,
+      account.email,
+      account.password,
+    );
 
     // Save user data to Firestore
-    await setDoc(doc(firebaseDb, 'users', userCredential.user.uid), {
+    await setDoc(doc(firebaseDb, "users", userCredential.user.uid), {
       name: account.name,
       email: account.email,
       role: account.role,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
-      isDemo: true
+      isDemo: true,
     });
 
     // Mark as created in demo tracking
     await setDoc(userDocRef, {
       created: true,
       createdAt: new Date().toISOString(),
-      uid: userCredential.user.uid
+      uid: userCredential.user.uid,
     });
 
     console.log(`Demo account created: ${account.email} (${account.role})`);
     return true;
   } catch (error: any) {
     // If user already exists in Firebase Auth, that's okay
-    if (error.code === 'auth/email-already-in-use') {
-      console.log(`Demo account ${account.email} already exists in Firebase Auth`);
-      
+    if (error.code === "auth/email-already-in-use") {
+      console.log(
+        `Demo account ${account.email} already exists in Firebase Auth`,
+      );
+
       // Still mark as created in demo tracking if not already marked
       const firebaseDb = getFirebaseFirestore();
       if (firebaseDb) {
-        const userDocRef = doc(firebaseDb, 'demoUsers', account.email);
+        const userDocRef = doc(firebaseDb, "demoUsers", account.email);
         const userDoc = await getDoc(userDocRef);
         if (!userDoc.exists()) {
           await setDoc(userDocRef, {
             created: true,
             createdAt: new Date().toISOString(),
-            existedBefore: true
+            existedBefore: true,
           });
         }
       }
       return true;
     }
-    
+
     console.error(`Failed to create demo account ${account.email}:`, error);
     return false;
   }
 };
 
 export const setupDemoAccounts = async (): Promise<void> => {
-  console.log('Setting up demo accounts...');
+  console.log("Setting up demo accounts...");
 
   const isFirebaseAvailable = await checkFirebaseAvailability();
 
@@ -134,10 +144,10 @@ export const setupDemoAccounts = async (): Promise<void> => {
     await createDemoAccount(account);
   }
 
-  console.log('Demo accounts setup completed');
+  console.log("Demo accounts setup completed");
 };
 
 // Helper function to check if we're in demo mode (using demo Firebase config)
 export const isDemoMode = (): boolean => {
-  return import.meta.env.VITE_FIREBASE_PROJECT_ID === 'demo-project';
+  return import.meta.env.VITE_FIREBASE_PROJECT_ID === "demo-project";
 };

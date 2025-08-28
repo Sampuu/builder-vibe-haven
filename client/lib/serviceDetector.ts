@@ -17,10 +17,14 @@ export const checkFirebaseAvailability = async (): Promise<boolean> => {
   checkPromise = (async () => {
     try {
       // First check if we have valid credentials using the Firebase module
-      const { isFirebaseAvailable: hasValidCreds } = await import('@/lib/firebase');
+      const { isFirebaseAvailable: hasValidCreds } = await import(
+        "@/lib/firebase"
+      );
 
       if (!hasValidCreds()) {
-        console.log('Using demo/missing Firebase credentials - switching to offline mode');
+        console.log(
+          "Using demo/missing Firebase credentials - switching to offline mode",
+        );
         isFirebaseAvailable = false;
         return false;
       }
@@ -30,23 +34,23 @@ export const checkFirebaseAvailability = async (): Promise<boolean> => {
       const response = await fetch(
         `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken: 'test' })
-        }
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken: "test" }),
+        },
       );
 
       // If we get any response (even an error like 400), Firebase is reachable
       // A 400 error is expected since we're sending an invalid token
       if (response.status === 400 || response.status === 200) {
         isFirebaseAvailable = true;
-        console.log('Firebase is available - using Firebase services');
+        console.log("Firebase is available - using Firebase services");
         return true;
       } else {
         throw new Error(`Unexpected status: ${response.status}`);
       }
     } catch (error) {
-      console.log('Firebase is not available - using offline services', error);
+      console.log("Firebase is not available - using offline services", error);
       isFirebaseAvailable = false;
       return false;
     }

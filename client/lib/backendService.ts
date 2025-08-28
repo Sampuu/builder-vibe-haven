@@ -1,14 +1,16 @@
 // Backend API service for when Firebase is not available
-import { DisasterReport, HelpRequest } from './firestore';
+import { DisasterReport, HelpRequest } from "./firestore";
 
-const API_BASE = '/api';
+const API_BASE = "/api";
 
 export const backendDisasterService = {
-  async create(report: Omit<DisasterReport, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(
+    report: Omit<DisasterReport, "id" | "createdAt" | "updatedAt">,
+  ): Promise<string> {
     const response = await fetch(`${API_BASE}/disasters`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(report),
     });
@@ -19,7 +21,7 @@ export const backendDisasterService = {
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create disaster report');
+      throw new Error(result.error || "Failed to create disaster report");
     }
 
     return result.id;
@@ -27,46 +29,58 @@ export const backendDisasterService = {
 
   async getAll(): Promise<DisasterReport[]> {
     const response = await fetch(`${API_BASE}/disasters`);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch disaster reports');
+      throw new Error(result.error || "Failed to fetch disaster reports");
     }
 
     return result.reports || [];
   },
 
   async getByUser(userId: string): Promise<DisasterReport[]> {
-    const response = await fetch(`${API_BASE}/disasters?userId=${encodeURIComponent(userId)}`);
-    
+    const response = await fetch(
+      `${API_BASE}/disasters?userId=${encodeURIComponent(userId)}`,
+    );
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch user disaster reports');
+      throw new Error(result.error || "Failed to fetch user disaster reports");
     }
 
     return result.reports || [];
   },
 
-  async updateStatus(id: string, status: DisasterReport['status'], assignedTo?: string): Promise<void> {
+  async updateStatus(
+    id: string,
+    status: DisasterReport["status"],
+    assignedTo?: string,
+  ): Promise<void> {
     // This would be implemented when we add update endpoints
-    console.log('Backend updateStatus not implemented yet:', { id, status, assignedTo });
-  }
+    console.log("Backend updateStatus not implemented yet:", {
+      id,
+      status,
+      assignedTo,
+    });
+  },
 };
 
 export const backendHelpService = {
-  async create(request: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(
+    request: Omit<HelpRequest, "id" | "createdAt" | "updatedAt">,
+  ): Promise<string> {
     const response = await fetch(`${API_BASE}/help-requests`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(request),
     });
@@ -77,7 +91,7 @@ export const backendHelpService = {
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create help request');
+      throw new Error(result.error || "Failed to create help request");
     }
 
     return result.id;
@@ -85,33 +99,35 @@ export const backendHelpService = {
 
   async getAll(): Promise<HelpRequest[]> {
     const response = await fetch(`${API_BASE}/help-requests`);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch help requests');
+      throw new Error(result.error || "Failed to fetch help requests");
     }
 
     return result.requests || [];
   },
 
   async getByUser(userId: string): Promise<HelpRequest[]> {
-    const response = await fetch(`${API_BASE}/help-requests?userId=${encodeURIComponent(userId)}`);
-    
+    const response = await fetch(
+      `${API_BASE}/help-requests?userId=${encodeURIComponent(userId)}`,
+    );
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch user help requests');
+      throw new Error(result.error || "Failed to fetch user help requests");
     }
 
     return result.requests || [];
-  }
+  },
 };
 
 // Test backend connectivity
@@ -120,7 +136,7 @@ export const testBackend = async (): Promise<boolean> => {
     const response = await fetch(`${API_BASE}/ping`);
     return response.ok;
   } catch (error) {
-    console.error('Backend test failed:', error);
+    console.error("Backend test failed:", error);
     return false;
   }
 };

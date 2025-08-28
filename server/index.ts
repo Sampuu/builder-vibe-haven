@@ -7,7 +7,7 @@ import {
   getDisasterReports,
   createHelpRequest,
   getHelpRequests,
-  getAllData
+  getAllData,
 } from "./routes/disasters";
 
 export function createServer() {
