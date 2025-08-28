@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-  AlertTriangle, 
+import { Badge } from '@/components/ui/badge';
+import {
+  AlertTriangle,
   ArrowLeft,
   MapPin,
   Phone,
@@ -20,6 +21,7 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useIncidents, Incident } from '@/hooks/use-incidents';
 
 interface DisasterReport {
   id: string;
