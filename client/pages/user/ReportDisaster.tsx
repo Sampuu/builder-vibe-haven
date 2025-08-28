@@ -56,8 +56,10 @@ const severityLevels = [
 export default function ReportDisaster() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { submitIncident } = useIncidents();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedIncidentId, setSubmittedIncidentId] = useState<string>('');
   const [formData, setFormData] = useState({
     type: '',
     severity: 'medium',
@@ -92,25 +94,35 @@ export default function ReportDisaster() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
+
+    if (!validateForm() || !user) return;
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report: DisasterReport = {
-        id: Date.now().toString(),
-        ...formData,
-        status: 'submitted',
-        timestamp: new Date().toISOString(),
+      const incidentData: Omit<Incident, 'id' | 'assignedDepartments' | 'status' | 'timestamps'> = {
+        type: 'disaster_report',
+        category: formData.type as Incident['category'],
+        urgency: formData.severity as Incident['urgency'],
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        reporter: {
+          id: user.id,
+          name: formData.contactName || user.name,
+          phone: formData.contactPhone,
+          role: user.role,
+        },
+        priority: formData.severity as Incident['priority'],
+        metadata: {
+          images: formData.images,
+        }
       };
 
-      console.log('Disaster report submitted:', report);
+      const incidentId = await submitIncident(incidentData);
+      setSubmittedIncidentId(incidentId);
       setShowSuccess(true);
-      
+
       // Reset form
       setFormData({
         type: '',
