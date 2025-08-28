@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AuthRedirect from "@/components/AuthRedirect";
 
 // Pages
 import Index from "./pages/Index";
@@ -59,6 +60,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AuthRedirect />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
