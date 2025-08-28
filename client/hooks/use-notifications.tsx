@@ -41,7 +41,20 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth();
+
+  // Filter notifications based on user role
+  const notifications = allNotifications.filter(notification => {
+    // If no target roles specified, show to all users (global notifications like news)
+    if (!notification.targetRoles) return true;
+
+    // If user is admin, show all notifications
+    if (user?.role === 'admin') return true;
+
+    // Show only if user's role is in target roles
+    return user?.role && notification.targetRoles.includes(user.role);
+  });
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
