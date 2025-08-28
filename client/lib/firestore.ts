@@ -173,7 +173,11 @@ export const disasterReportsService = {
 export const helpRequestsService = {
   // Create a new help request
   async create(request: Omit<HelpRequest, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'helpRequests'), {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
+    const docRef = await addDoc(collection(firebaseDb, 'helpRequests'), {
       ...request,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -183,17 +187,25 @@ export const helpRequestsService = {
 
   // Get all help requests
   async getAll(): Promise<HelpRequest[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
-      query(collection(db, 'helpRequests'), orderBy('createdAt', 'desc'))
+      query(collection(firebaseDb, 'helpRequests'), orderBy('createdAt', 'desc'))
     );
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as HelpRequest));
   },
 
   // Get help requests by user
   async getByUser(userId: string): Promise<HelpRequest[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
       query(
-        collection(db, 'helpRequests'), 
+        collection(firebaseDb, 'helpRequests'),
         where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       )
@@ -203,24 +215,32 @@ export const helpRequestsService = {
 
   // Update help request status
   async updateStatus(id: string, status: HelpRequest['status'], assignedTo?: string): Promise<void> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const updateData: any = {
       status,
       updatedAt: serverTimestamp(),
     };
     if (assignedTo) updateData.assignedTo = assignedTo;
     if (status === 'resolved') updateData.resolvedAt = serverTimestamp();
-    
-    await updateDoc(doc(db, 'helpRequests', id), updateData);
+
+    await updateDoc(doc(firebaseDb, 'helpRequests', id), updateData);
   },
 
   // Listen to real-time updates
   onSnapshot(callback: (requests: HelpRequest[]) => void) {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     return onSnapshot(
-      query(collection(db, 'helpRequests'), orderBy('createdAt', 'desc')),
+      query(collection(firebaseDb, 'helpRequests'), orderBy('createdAt', 'desc')),
       (querySnapshot) => {
-        const requests = querySnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
+        const requests = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         } as HelpRequest));
         callback(requests);
       }
@@ -231,7 +251,11 @@ export const helpRequestsService = {
 export const notificationsService = {
   // Create a new notification
   async create(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<string> {
-    const docRef = await addDoc(collection(db, 'notifications'), {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
+    const docRef = await addDoc(collection(firebaseDb, 'notifications'), {
       ...notification,
       createdAt: serverTimestamp(),
     });
@@ -240,9 +264,13 @@ export const notificationsService = {
 
   // Get notifications for a specific role
   async getByRole(role: string): Promise<Notification[]> {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     const querySnapshot = await getDocs(
       query(
-        collection(db, 'notifications'), 
+        collection(firebaseDb, 'notifications'),
         where('targetRole', 'in', [role, 'all']),
         orderBy('createdAt', 'desc')
       )
@@ -252,7 +280,11 @@ export const notificationsService = {
 
   // Mark notification as read
   async markAsRead(id: string): Promise<void> {
-    await updateDoc(doc(db, 'notifications', id), {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
+    await updateDoc(doc(firebaseDb, 'notifications', id), {
       read: true,
       readAt: serverTimestamp(),
     });
@@ -260,16 +292,20 @@ export const notificationsService = {
 
   // Listen to real-time notifications for a role
   onSnapshot(role: string, callback: (notifications: Notification[]) => void) {
+    const firebaseDb = getFirebaseFirestore();
+    if (!firebaseDb) {
+      throw new Error('Firestore not available');
+    }
     return onSnapshot(
       query(
-        collection(db, 'notifications'), 
+        collection(firebaseDb, 'notifications'),
         where('targetRole', 'in', [role, 'all']),
         orderBy('createdAt', 'desc')
       ),
       (querySnapshot) => {
-        const notifications = querySnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
+        const notifications = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         } as Notification));
         callback(notifications);
       }
