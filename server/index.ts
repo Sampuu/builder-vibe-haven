@@ -1,12 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import { createServer as createHttpServer } from "http";
 import { handleDemo } from "./routes/demo";
 import { createIncident, getIncidents, updateIncidentStatus } from "./routes/incidents";
 import { getNotifications, updateNotification, markAllAsRead } from "./routes/notifications";
+import { setupWebSocket } from "./websocket";
 
 export function createServer() {
   const app = express();
+  const server = createHttpServer(app);
 
   // Middleware
   app.use(cors());
@@ -31,5 +34,8 @@ export function createServer() {
   app.patch("/api/notifications/:id", updateNotification);
   app.post("/api/notifications/mark-all-read", markAllAsRead);
 
-  return app;
+  // Setup WebSocket
+  setupWebSocket(server);
+
+  return { app, server };
 }
