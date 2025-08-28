@@ -97,12 +97,17 @@ export default function Index() {
                   );
                 })}
               </div>
-              <div className="text-center">
-                <Button onClick={handleLogin} variant="outline" className="border-emergency-info text-emergency-info hover:bg-emergency-info hover:text-white">
-                  <Play className="mr-2 h-4 w-4" />
-                  Try Demo Accounts
-                </Button>
-                <p className="text-sm text-slate-500 mt-2">
+              <div className="text-center space-y-3">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button onClick={handleLogin} variant="outline" className="border-emergency-info text-emergency-info hover:bg-emergency-info hover:text-white">
+                    <Play className="mr-2 h-4 w-4" />
+                    Try Demo Accounts
+                  </Button>
+                  <Button onClick={() => navigate('/demo')} variant="ghost" className="text-slate-600 hover:text-slate-900">
+                    View Demo Guide
+                  </Button>
+                </div>
+                <p className="text-sm text-slate-500">
                   All demo accounts use password: <code className="bg-slate-100 px-1 rounded text-xs">demo123</code>
                 </p>
               </div>

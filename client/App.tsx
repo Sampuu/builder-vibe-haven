@@ -20,6 +20,7 @@ import { setupDemoAccounts, isDemoMode } from "@/lib/demoSetup";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import DemoGuide from "./pages/DemoGuide";
 import NotFound from "./pages/NotFound";
 
 // Dashboards
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/demo" element={<DemoGuide />} />
 
             {/* Protected Dashboard Routes */}
             <Route
