@@ -140,13 +140,24 @@ export const signInUser = async (email: string, password: string): Promise<User>
 
 /**
  * Sign out the current user
+ * Falls back to localStorage if Firebase is not configured
  */
 export const signOutUser = async (): Promise<void> => {
+  // Use fallback authentication if Firebase is not available
+  if (!isFirebaseAvailable()) {
+    console.log('📱 Using fallback authentication for sign out');
+    return await signOutFallback();
+  }
+
   try {
     await signOut(auth);
+    console.log('🔥 Firebase sign out successful');
   } catch (error: any) {
-    console.error('Error signing out:', error);
-    throw new Error(error.message || 'Failed to sign out');
+    console.error('Error signing out with Firebase:', error);
+    console.log('📱 Falling back to local storage sign out');
+
+    // Fallback to localStorage on Firebase error
+    await signOutFallback();
   }
 };
 
