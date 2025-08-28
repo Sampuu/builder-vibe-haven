@@ -183,7 +183,7 @@ export default function NotificationSystemTest() {
 
   const getDepartmentIcon = (dept: string) => {
     switch (dept) {
-      case 'fire': return <Fire className="h-4 w-4 text-orange-600" />;
+      case 'fire': return <Flame className="h-4 w-4 text-orange-600" />;
       case 'police': return <Shield className="h-4 w-4 text-red-600" />;
       case 'ambulance': return <Truck className="h-4 w-4 text-green-600" />;
       case 'hospital': return <Building2 className="h-4 w-4 text-blue-600" />;
