@@ -144,12 +144,14 @@ export const createIncident = async (incidentData: Omit<Incident, 'id' | 'timest
 
   if (isFirebaseAvailable() && db) {
     try {
-      const docRef = await addDoc(collection(db, 'incidents'), {
+      const cleanIncidentForFirebase = cleanObjectForFirebase({
         ...incident,
         timestamps: {
           reported: serverTimestamp()
         }
       });
+
+      const docRef = await addDoc(collection(db, 'incidents'), cleanIncidentForFirebase);
       
       const createdIncident = { ...incident, id: docRef.id, timestamps: { reported: new Date() } };
       console.log('🔥 Incident stored in Firebase:', createdIncident.id);
