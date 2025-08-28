@@ -93,15 +93,22 @@ export const createUserAccount = async (
 
 /**
  * Sign in user with email and password
+ * Falls back to localStorage if Firebase is not configured
  */
 export const signInUser = async (email: string, password: string): Promise<User> => {
+  // Use fallback authentication if Firebase is not available
+  if (!isFirebaseAvailable()) {
+    console.log('📱 Using fallback authentication for sign in');
+    return await signInFallback(email, password);
+  }
+
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
     // Get user data from Firestore
     const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-    
+
     if (!userDoc.exists()) {
       throw new Error('User data not found');
     }
@@ -114,6 +121,8 @@ export const signInUser = async (email: string, password: string): Promise<User>
       lastLogin: new Date()
     }, { merge: true });
 
+    console.log('🔥 Firebase sign in successful');
+
     return {
       id: firebaseUser.uid,
       email: firebaseUser.email!,
@@ -121,8 +130,11 @@ export const signInUser = async (email: string, password: string): Promise<User>
       role: userData.role
     };
   } catch (error: any) {
-    console.error('Error signing in:', error);
-    throw new Error(error.message || 'Failed to sign in');
+    console.error('Error signing in with Firebase:', error);
+    console.log('📱 Falling back to local storage authentication');
+
+    // Fallback to localStorage on Firebase error
+    return await signInFallback(email, password);
   }
 };
 
