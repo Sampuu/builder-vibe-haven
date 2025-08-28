@@ -217,26 +217,13 @@ export const calculateRoute: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Start and end coordinates are required' });
     }
 
-    // For now, return a mock response
-    // In production, integrate with OpenRouteService API
-    const mockRoute: RouteResponse = {
-      route: {
-        coordinates: [
-          [routeRequest.start.lng, routeRequest.start.lat],
-          [routeRequest.end.lng, routeRequest.end.lat]
-        ],
-        distance: 5000, // 5km
-        duration: 600,  // 10 minutes
-        instructions: [
-          { instruction: 'Head north', distance: 2500, time: 300 },
-          { instruction: 'Turn right', distance: 2500, time: 300 }
-        ]
-      },
-      avoidedZones: routeRequest.avoidZones ? 
-        accidentZones.filter(zone => zone.isActive) : []
-    };
+    // Use OpenRouteService for intelligent routing
+    const routeResponse = await RoutingService.calculateRoute(
+      routeRequest,
+      accidentZones.filter(zone => zone.isActive)
+    );
 
-    res.json(mockRoute);
+    res.json(routeResponse);
   } catch (error) {
     console.error('Error calculating route:', error);
     res.status(500).json({ error: 'Failed to calculate route' });
