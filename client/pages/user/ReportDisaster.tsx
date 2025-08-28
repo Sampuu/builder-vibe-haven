@@ -45,8 +45,8 @@ export default function ReportDisaster() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    type: '',
-    severity: 'medium',
+    type: '' as IncidentType | '',
+    severity: 'medium' as IncidentSeverity,
     title: '',
     description: '',
     location: '',
