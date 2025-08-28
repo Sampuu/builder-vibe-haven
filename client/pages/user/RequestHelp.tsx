@@ -110,8 +110,16 @@ export default function RequestHelp() {
           <Card>
             <CardContent className="p-8 text-center">
               <CheckCircle className="h-16 w-16 text-emergency-resolved mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted</h2>
-              <p className="text-slate-600 mb-6">Medical assistance has been requested. Help is on the way.</p>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Help Request Submitted Successfully</h2>
+              <p className="text-slate-600 mb-6">
+                Emergency responders have been automatically notified based on your request type.
+                They should contact you shortly at {formData.contactPhone}.
+              </p>
+              <div className="text-sm text-slate-500 mb-6">
+                <p>• Medical teams have been alerted</p>
+                <p>• Police and emergency coordinators notified</p>
+                <p>• Your location: {formData.location}</p>
+              </div>
               <Button onClick={() => navigate('/dashboard/user')} className="w-full">
                 Back to Dashboard
               </Button>
