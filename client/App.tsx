@@ -152,6 +152,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin/demo"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <SystemDemo />
+                </ProtectedRoute>
+              }
+            />
 
             {/* User Pages */}
             <Route
