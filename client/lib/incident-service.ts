@@ -237,7 +237,8 @@ export const updateIncidentStatus = async (incidentId: string, status: IncidentS
         updateData.updates = [...(await getIncidentUpdates(incidentId)), update];
       }
 
-      await updateDoc(incidentRef, updateData);
+      const cleanUpdateData = cleanObjectForFirebase(updateData);
+      await updateDoc(incidentRef, cleanUpdateData);
       console.log('🔥 Incident status updated in Firebase:', incidentId);
       return;
     } catch (error) {
