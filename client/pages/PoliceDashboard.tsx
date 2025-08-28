@@ -90,55 +90,12 @@ export default function PoliceDashboard() {
           </Card>
         </div>
 
-        {/* All Incidents View */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center">
-                <AlertTriangle className="mr-2 h-5 w-5 text-emergency-danger" />
-                All Active Incidents
-              </span>
-              <Button variant="danger" size="sm" onClick={() => navigate('/police/incidents')}>
-                <Users className="mr-2 h-4 w-4" />
-                View All
-              </Button>
-            </CardTitle>
-            <CardDescription>
-              Monitor and coordinate response for all emergency incidents
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {incidents.map((incident) => (
-                <div key={incident.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(incident.status)}`}></div>
-                    <div>
-                      <div className="font-medium text-slate-900">{incident.type} Emergency</div>
-                      <div className="text-sm text-slate-600 flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {incident.location}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge className={`${getPriorityColor(incident.priority)} text-white`}>
-                      {incident.priority}
-                    </Badge>
-                    <div className="text-sm text-slate-500 flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {incident.time}
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Navigate
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Incident Management */}
+        <IncidentManagement
+          department="police"
+          title="Police Incident Management"
+          description="Monitor and coordinate response for all emergency incidents"
+        />
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
