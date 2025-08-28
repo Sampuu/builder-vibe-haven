@@ -1,38 +1,42 @@
 import { RequestHandler } from "express";
-import { 
+import {
   GetNotificationsResponse,
   BroadcastNewsRequest,
   BroadcastNewsResponse,
-  UserRole
+  UserRole,
 } from "../../shared/types";
-import { 
-  getNotificationsForUser, 
+import {
+  getNotificationsForUser,
   getAllNotifications,
   markNotificationAsRead,
   markAllNotificationsAsReadForUser,
   deleteNotification,
-  clearNotificationsForUser
+  clearNotificationsForUser,
 } from "../database/store";
-import { 
-  broadcastNewsNotification, 
-  sendTargetedNotification 
+import {
+  broadcastNewsNotification,
+  sendTargetedNotification,
 } from "../services/notificationService";
-import { addSSEClient, getConnectedClients, getClientCount } from "../services/sseService";
+import {
+  addSSEClient,
+  getConnectedClients,
+  getClientCount,
+} from "../services/sseService";
 
 // GET /api/notifications?userRole=police - Get notifications for user
 export const handleGetNotifications: RequestHandler = async (req, res) => {
   try {
     const { userRole, all } = req.query;
 
-    if (!userRole && all !== 'true') {
+    if (!userRole && all !== "true") {
       return res.status(400).json({
         success: false,
-        message: "Must specify userRole or all=true"
+        message: "Must specify userRole or all=true",
       });
     }
 
     let notifications;
-    if (all === 'true') {
+    if (all === "true") {
       // Admin can get all notifications
       notifications = getAllNotifications();
     } else {
@@ -41,7 +45,7 @@ export const handleGetNotifications: RequestHandler = async (req, res) => {
 
     const response: GetNotificationsResponse = {
       success: true,
-      notifications
+      notifications,
     };
 
     res.json(response);
@@ -49,13 +53,16 @@ export const handleGetNotifications: RequestHandler = async (req, res) => {
     console.error("❌ Error getting notifications:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
 
 // PUT /api/notifications/:id/read - Mark notification as read
-export const handleMarkNotificationAsRead: RequestHandler = async (req, res) => {
+export const handleMarkNotificationAsRead: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { id } = req.params;
     const success = markNotificationAsRead(id);
@@ -63,32 +70,35 @@ export const handleMarkNotificationAsRead: RequestHandler = async (req, res) => 
     if (!success) {
       return res.status(404).json({
         success: false,
-        message: "Notification not found"
+        message: "Notification not found",
       });
     }
 
     res.json({
       success: true,
-      message: "Notification marked as read"
+      message: "Notification marked as read",
     });
   } catch (error) {
     console.error("❌ Error marking notification as read:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
 
 // PUT /api/notifications/mark-all-read - Mark all notifications as read for user
-export const handleMarkAllNotificationsAsRead: RequestHandler = async (req, res) => {
+export const handleMarkAllNotificationsAsRead: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { userRole } = req.body;
 
     if (!userRole) {
       return res.status(400).json({
         success: false,
-        message: "Missing required field: userRole"
+        message: "Missing required field: userRole",
       });
     }
 
@@ -97,13 +107,13 @@ export const handleMarkAllNotificationsAsRead: RequestHandler = async (req, res)
     res.json({
       success: true,
       message: `Marked ${markedCount} notifications as read`,
-      markedCount
+      markedCount,
     });
   } catch (error) {
     console.error("❌ Error marking all notifications as read:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -117,19 +127,19 @@ export const handleDeleteNotification: RequestHandler = async (req, res) => {
     if (!success) {
       return res.status(404).json({
         success: false,
-        message: "Notification not found"
+        message: "Notification not found",
       });
     }
 
     res.json({
       success: true,
-      message: "Notification deleted"
+      message: "Notification deleted",
     });
   } catch (error) {
     console.error("❌ Error deleting notification:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -142,7 +152,7 @@ export const handleClearNotifications: RequestHandler = async (req, res) => {
     if (!userRole) {
       return res.status(400).json({
         success: false,
-        message: "Missing required field: userRole"
+        message: "Missing required field: userRole",
       });
     }
 
@@ -151,13 +161,13 @@ export const handleClearNotifications: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       message: `Cleared ${deletedCount} notifications`,
-      deletedCount
+      deletedCount,
     });
   } catch (error) {
     console.error("❌ Error clearing notifications:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -167,10 +177,15 @@ export const handleBroadcastNews: RequestHandler = async (req, res) => {
   try {
     const broadcastData: BroadcastNewsRequest = req.body;
 
-    if (!broadcastData.title || !broadcastData.message || !broadcastData.type || !broadcastData.priority) {
+    if (
+      !broadcastData.title ||
+      !broadcastData.message ||
+      !broadcastData.type ||
+      !broadcastData.priority
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: title, message, type, priority"
+        message: "Missing required fields: title, message, type, priority",
       });
     }
 
@@ -179,13 +194,13 @@ export const handleBroadcastNews: RequestHandler = async (req, res) => {
       broadcastData.message,
       broadcastData.type,
       broadcastData.priority,
-      broadcastData.broadcastBy
+      broadcastData.broadcastBy,
     );
 
     const response: BroadcastNewsResponse = {
       success: true,
       notificationId: notification.id,
-      message: "News broadcast sent to all users"
+      message: "News broadcast sent to all users",
     };
 
     console.log(`📢 News broadcast: ${broadcastData.title}`);
@@ -194,20 +209,32 @@ export const handleBroadcastNews: RequestHandler = async (req, res) => {
     console.error("❌ Error broadcasting news:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
 
 // POST /api/notifications/targeted - Send targeted notification
-export const handleSendTargetedNotification: RequestHandler = async (req, res) => {
+export const handleSendTargetedNotification: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
-    const { title, message, type, priority, category, targetRoles, relatedIncidentId } = req.body;
+    const {
+      title,
+      message,
+      type,
+      priority,
+      category,
+      targetRoles,
+      relatedIncidentId,
+    } = req.body;
 
     if (!title || !message || !type || !priority || !category || !targetRoles) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: title, message, type, priority, category, targetRoles"
+        message:
+          "Missing required fields: title, message, type, priority, category, targetRoles",
       });
     }
 
@@ -218,19 +245,19 @@ export const handleSendTargetedNotification: RequestHandler = async (req, res) =
       priority,
       category,
       targetRoles,
-      relatedIncidentId
+      relatedIncidentId,
     );
 
     res.status(201).json({
       success: true,
       notificationId: notification.id,
-      message: `Targeted notification sent to: ${targetRoles.join(', ')}`
+      message: `Targeted notification sent to: ${targetRoles.join(", ")}`,
     });
   } catch (error) {
     console.error("❌ Error sending targeted notification:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -243,7 +270,7 @@ export const handleSSEConnection: RequestHandler = async (req, res) => {
     if (!userRole || !userId) {
       return res.status(400).json({
         success: false,
-        message: "Missing required query parameters: userRole, userId"
+        message: "Missing required query parameters: userRole, userId",
       });
     }
 
@@ -255,7 +282,7 @@ export const handleSSEConnection: RequestHandler = async (req, res) => {
     console.error("❌ Error setting up SSE connection:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -269,13 +296,13 @@ export const handleGetConnectedClients: RequestHandler = async (req, res) => {
     res.json({
       success: true,
       clientCount,
-      clients
+      clients,
     });
   } catch (error) {
     console.error("❌ Error getting connected clients:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };

@@ -1,29 +1,29 @@
 import { RequestHandler } from "express";
-import { 
-  CreateIncidentRequest, 
+import {
+  CreateIncidentRequest,
   CreateIncidentResponse,
   GetIncidentsResponse,
   UpdateIncidentStatusRequest,
   UpdateIncidentStatusResponse,
   AcknowledgeIncidentRequest,
   AcknowledgeIncidentResponse,
-  UserRole
+  UserRole,
 } from "../../shared/types";
-import { 
-  createIncident, 
-  getIncidentsForDepartment, 
+import {
+  createIncident,
+  getIncidentsForDepartment,
   getUserIncidents,
   getAllIncidents,
   updateIncidentStatus,
   acknowledgeIncident,
   getIncidentById,
   getIncidentStats,
-  getRecentIncidents
+  getRecentIncidents,
 } from "../database/store";
-import { 
-  sendIncidentNotification, 
-  sendIncidentStatusNotification, 
-  sendIncidentAcknowledgmentNotification 
+import {
+  sendIncidentNotification,
+  sendIncidentStatusNotification,
+  sendIncidentAcknowledgmentNotification,
 } from "../services/notificationService";
 
 // POST /api/incidents - Create new incident
@@ -32,10 +32,17 @@ export const handleCreateIncident: RequestHandler = async (req, res) => {
     const incidentData: CreateIncidentRequest = req.body;
 
     // Validate required fields
-    if (!incidentData.type || !incidentData.category || !incidentData.title || !incidentData.description || !incidentData.location || !incidentData.reporter) {
+    if (
+      !incidentData.type ||
+      !incidentData.category ||
+      !incidentData.title ||
+      !incidentData.description ||
+      !incidentData.location ||
+      !incidentData.reporter
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields"
+        message: "Missing required fields",
       });
     }
 
@@ -60,7 +67,7 @@ export const handleCreateIncident: RequestHandler = async (req, res) => {
       success: true,
       incidentId: incident.id,
       assignedDepartments: incident.assignedDepartments,
-      message: `Incident created successfully. Notified departments: ${incident.assignedDepartments.join(', ')}`
+      message: `Incident created successfully. Notified departments: ${incident.assignedDepartments.join(", ")}`,
     };
 
     console.log(`✅ Created incident ${incident.id}: ${incident.title}`);
@@ -69,7 +76,7 @@ export const handleCreateIncident: RequestHandler = async (req, res) => {
     console.error("❌ Error creating incident:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -80,7 +87,7 @@ export const handleGetIncidents: RequestHandler = async (req, res) => {
     const { department, userId, all } = req.query;
     let incidents;
 
-    if (all === 'true') {
+    if (all === "true") {
       // Admin can get all incidents
       incidents = getAllIncidents();
     } else if (department) {
@@ -92,13 +99,13 @@ export const handleGetIncidents: RequestHandler = async (req, res) => {
     } else {
       return res.status(400).json({
         success: false,
-        message: "Must specify department, userId, or all=true"
+        message: "Must specify department, userId, or all=true",
       });
     }
 
     const response: GetIncidentsResponse = {
       success: true,
-      incidents
+      incidents,
     };
 
     res.json(response);
@@ -106,7 +113,7 @@ export const handleGetIncidents: RequestHandler = async (req, res) => {
     console.error("❌ Error getting incidents:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -120,19 +127,19 @@ export const handleGetIncident: RequestHandler = async (req, res) => {
     if (!incident) {
       return res.status(404).json({
         success: false,
-        message: "Incident not found"
+        message: "Incident not found",
       });
     }
 
     res.json({
       success: true,
-      incident
+      incident,
     });
   } catch (error) {
     console.error("❌ Error getting incident:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -146,7 +153,7 @@ export const handleUpdateIncidentStatus: RequestHandler = async (req, res) => {
     if (!updateData.status || !updateData.updatedBy) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: status, updatedBy"
+        message: "Missing required fields: status, updatedBy",
       });
     }
 
@@ -155,7 +162,7 @@ export const handleUpdateIncidentStatus: RequestHandler = async (req, res) => {
     if (!incident) {
       return res.status(404).json({
         success: false,
-        message: "Incident not found"
+        message: "Incident not found",
       });
     }
 
@@ -165,7 +172,7 @@ export const handleUpdateIncidentStatus: RequestHandler = async (req, res) => {
     const response: UpdateIncidentStatusResponse = {
       success: true,
       incident,
-      message: `Incident status updated to: ${updateData.status.replace('_', ' ')}`
+      message: `Incident status updated to: ${updateData.status.replace("_", " ")}`,
     };
 
     console.log(`✅ Updated incident ${id} status to: ${updateData.status}`);
@@ -174,7 +181,7 @@ export const handleUpdateIncidentStatus: RequestHandler = async (req, res) => {
     console.error("❌ Error updating incident status:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -188,7 +195,7 @@ export const handleAcknowledgeIncident: RequestHandler = async (req, res) => {
     if (!acknowledgeData.department || !acknowledgeData.acknowledgedBy) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: department, acknowledgedBy"
+        message: "Missing required fields: department, acknowledgedBy",
       });
     }
 
@@ -197,26 +204,31 @@ export const handleAcknowledgeIncident: RequestHandler = async (req, res) => {
     if (!incident) {
       return res.status(404).json({
         success: false,
-        message: "Incident not found"
+        message: "Incident not found",
       });
     }
 
     // Send acknowledgment notifications
-    sendIncidentAcknowledgmentNotification(incident, acknowledgeData.department);
+    sendIncidentAcknowledgmentNotification(
+      incident,
+      acknowledgeData.department,
+    );
 
     const response: AcknowledgeIncidentResponse = {
       success: true,
       incident,
-      message: `Incident acknowledged by ${acknowledgeData.department}`
+      message: `Incident acknowledged by ${acknowledgeData.department}`,
     };
 
-    console.log(`✅ Incident ${id} acknowledged by ${acknowledgeData.department}`);
+    console.log(
+      `✅ Incident ${id} acknowledged by ${acknowledgeData.department}`,
+    );
     res.json(response);
   } catch (error) {
     console.error("❌ Error acknowledging incident:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -227,13 +239,13 @@ export const handleGetIncidentStats: RequestHandler = async (req, res) => {
     const stats = getIncidentStats();
     res.json({
       success: true,
-      stats
+      stats,
     });
   } catch (error) {
     console.error("❌ Error getting incident stats:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };
@@ -243,16 +255,16 @@ export const handleGetRecentIncidents: RequestHandler = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 10;
     const incidents = getRecentIncidents(limit);
-    
+
     res.json({
       success: true,
-      incidents
+      incidents,
     });
   } catch (error) {
     console.error("❌ Error getting recent incidents:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
 };

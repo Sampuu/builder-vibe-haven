@@ -1,10 +1,24 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Users, Activity, FileText, Shield, Bell, Megaphone } from 'lucide-react';
-import { useIncidents } from '@/hooks/use-incidents';
-import { useNotifications } from '@/hooks/use-notifications';
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Settings,
+  Users,
+  Activity,
+  FileText,
+  Shield,
+  Bell,
+  Megaphone,
+} from "lucide-react";
+import { useIncidents } from "@/hooks/use-incidents";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -13,21 +27,25 @@ export default function AdminDashboard() {
 
   const handleBroadcastNews = () => {
     broadcastNews(
-      'Emergency Alert - System Wide',
-      'Severe weather warning: All emergency services remain on high alert. Citizens advised to stay indoors.',
-      'warning',
-      'high'
+      "Emergency Alert - System Wide",
+      "Severe weather warning: All emergency services remain on high alert. Citizens advised to stay indoors.",
+      "warning",
+      "high",
     );
   };
 
   const handleTargetedNotification = () => {
-    addTargetedNotification({
-      title: 'Fire Department - Equipment Check',
-      message: 'Mandatory equipment inspection scheduled for all fire units at 14:00 today.',
-      type: 'info',
-      priority: 'medium',
-      category: 'system'
-    }, ['fire']);
+    addTargetedNotification(
+      {
+        title: "Fire Department - Equipment Check",
+        message:
+          "Mandatory equipment inspection scheduled for all fire units at 14:00 today.",
+        type: "info",
+        priority: "medium",
+        category: "system",
+      },
+      ["fire"],
+    );
   };
 
   return (
@@ -38,7 +56,9 @@ export default function AdminDashboard() {
             <Settings className="mr-3 h-8 w-8 text-slate-700" />
             System Administration Center
           </h2>
-          <p className="text-slate-600">Full system access and management controls.</p>
+          <p className="text-slate-600">
+            Full system access and management controls.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -51,7 +71,13 @@ export default function AdminDashboard() {
               <CardDescription>Add, remove, edit users</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="default" onClick={() => navigate('/admin/users')}>Manage Users</Button>
+              <Button
+                className="w-full"
+                variant="default"
+                onClick={() => navigate("/admin/users")}
+              >
+                Manage Users
+              </Button>
             </CardContent>
           </Card>
 
@@ -64,7 +90,13 @@ export default function AdminDashboard() {
               <CardDescription>Mark complete, refresh, delete</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info" onClick={() => navigate('/admin/missions')}>Mission Control</Button>
+              <Button
+                className="w-full"
+                variant="info"
+                onClick={() => navigate("/admin/missions")}
+              >
+                Mission Control
+              </Button>
             </CardContent>
           </Card>
 
@@ -77,7 +109,13 @@ export default function AdminDashboard() {
               <CardDescription>View system activity logs</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning" onClick={() => navigate('/admin/logs')}>View Logs</Button>
+              <Button
+                className="w-full"
+                variant="warning"
+                onClick={() => navigate("/admin/logs")}
+              >
+                View Logs
+              </Button>
             </CardContent>
           </Card>
 
@@ -90,7 +128,13 @@ export default function AdminDashboard() {
               <CardDescription>Access to all role dashboards</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="danger" onClick={() => navigate('/admin/dashboards')}>View All</Button>
+              <Button
+                className="w-full"
+                variant="danger"
+                onClick={() => navigate("/admin/dashboards")}
+              >
+                View All
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -112,11 +156,15 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex justify-between">
                   <span>Resolved Today</span>
-                  <span className="font-semibold text-emergency-resolved">12</span>
+                  <span className="font-semibold text-emergency-resolved">
+                    12
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>System Status</span>
-                  <span className="font-semibold text-emergency-resolved">Online</span>
+                  <span className="font-semibold text-emergency-resolved">
+                    Online
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -134,9 +182,12 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-emergency-info/10 rounded-lg">
-                <h4 className="font-medium text-emergency-info mb-2">Broadcast News (All Users)</h4>
+                <h4 className="font-medium text-emergency-info mb-2">
+                  Broadcast News (All Users)
+                </h4>
                 <p className="text-sm text-slate-600 mb-3">
-                  Sends disaster news and system-wide alerts to all departments and users.
+                  Sends disaster news and system-wide alerts to all departments
+                  and users.
                 </p>
                 <Button onClick={handleBroadcastNews} variant="info" size="sm">
                   <Megaphone className="mr-2 h-4 w-4" />
@@ -145,18 +196,26 @@ export default function AdminDashboard() {
               </div>
 
               <div className="p-4 bg-emergency-warning/10 rounded-lg">
-                <h4 className="font-medium text-emergency-warning mb-2">Targeted Notification</h4>
+                <h4 className="font-medium text-emergency-warning mb-2">
+                  Targeted Notification
+                </h4>
                 <p className="text-sm text-slate-600 mb-3">
-                  Sends notifications only to specific departments (Fire Department in this example).
+                  Sends notifications only to specific departments (Fire
+                  Department in this example).
                 </p>
-                <Button onClick={handleTargetedNotification} variant="warning" size="sm">
+                <Button
+                  onClick={handleTargetedNotification}
+                  variant="warning"
+                  size="sm"
+                >
                   <Bell className="mr-2 h-4 w-4" />
                   Send Fire Dept. Alert
                 </Button>
               </div>
 
               <div className="text-xs text-slate-500 mt-3">
-                💡 Switch between different user roles (login as fire, police, etc.) to see how notifications are filtered.
+                💡 Switch between different user roles (login as fire, police,
+                etc.) to see how notifications are filtered.
               </div>
             </CardContent>
           </Card>

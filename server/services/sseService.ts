@@ -13,7 +13,12 @@ interface SSEClient {
 // Store connected SSE clients
 const sseClients: Map<string, SSEClient> = new Map();
 
-export function addSSEClient(clientId: string, response: Response, userRole: string, userId: string): void {
+export function addSSEClient(
+  clientId: string,
+  response: Response,
+  userRole: string,
+  userId: string,
+): void {
   const client: SSEClient = {
     id: clientId,
     response,
@@ -26,22 +31,24 @@ export function addSSEClient(clientId: string, response: Response, userRole: str
 
   // Setup SSE headers
   response.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Cache-Control',
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Cache-Control",
   });
 
   // Send initial connection confirmation
-  response.write(`data: ${JSON.stringify({ 
-    type: 'connection', 
-    message: 'Connected to notification stream',
-    timestamp: new Date().toISOString()
-  })}\n\n`);
+  response.write(
+    `data: ${JSON.stringify({
+      type: "connection",
+      message: "Connected to notification stream",
+      timestamp: new Date().toISOString(),
+    })}\n\n`,
+  );
 
   // Handle client disconnect
-  response.on('close', () => {
+  response.on("close", () => {
     sseClients.delete(clientId);
     console.log(`📱 SSE client ${clientId} (${userRole}) disconnected`);
   });
@@ -81,28 +88,33 @@ export function notifyClients(event: SSEEvent): void {
   }
 }
 
-function shouldSendNotificationToClient(event: SSEEvent, client: SSEClient): boolean {
-  if (event.type === 'incident_update') {
+function shouldSendNotificationToClient(
+  event: SSEEvent,
+  client: SSEClient,
+): boolean {
+  if (event.type === "incident_update") {
     // Send incident updates to assigned departments and admin
     const incident = event.data;
-    return client.userRole === 'admin' || 
-           incident.assignedDepartments.includes(client.userRole as any) ||
-           incident.reporter.id === client.userId;
+    return (
+      client.userRole === "admin" ||
+      incident.assignedDepartments.includes(client.userRole as any) ||
+      incident.reporter.id === client.userId
+    );
   }
 
-  if (event.type === 'notification') {
+  if (event.type === "notification") {
     const notification = event.data;
-    
+
     // If no target roles specified, send to all users (global notifications like news)
     if (!notification.targetRoles || notification.targetRoles.length === 0) {
       return true;
     }
-    
+
     // If user is admin, send all notifications
-    if (client.userRole === 'admin') {
+    if (client.userRole === "admin") {
       return true;
     }
-    
+
     // Send only if user's role is in target roles
     return notification.targetRoles.includes(client.userRole as any);
   }
@@ -110,8 +122,13 @@ function shouldSendNotificationToClient(event: SSEEvent, client: SSEClient): boo
   return false;
 }
 
-export function getConnectedClients(): Array<{ id: string; userRole: string; userId: string; connectedAt: Date }> {
-  return Array.from(sseClients.values()).map(client => ({
+export function getConnectedClients(): Array<{
+  id: string;
+  userRole: string;
+  userId: string;
+  connectedAt: Date;
+}> {
+  return Array.from(sseClients.values()).map((client) => ({
     id: client.id,
     userRole: client.userRole,
     userId: client.userId,
@@ -125,26 +142,29 @@ export function getClientCount(): number {
 
 export function getClientCountByRole(): Record<string, number> {
   const counts: Record<string, number> = {};
-  
-  sseClients.forEach(client => {
+
+  sseClients.forEach((client) => {
     counts[client.userRole] = (counts[client.userRole] || 0) + 1;
   });
-  
+
   return counts;
 }
 
 // Send heartbeat to keep connections alive
 export function sendHeartbeat(): void {
   const heartbeatEvent = {
-    type: 'heartbeat',
-    timestamp: new Date().toISOString()
+    type: "heartbeat",
+    timestamp: new Date().toISOString(),
   };
 
   sseClients.forEach((client) => {
     try {
       client.response.write(`data: ${JSON.stringify(heartbeatEvent)}\n\n`);
     } catch (error) {
-      console.error(`❌ Error sending heartbeat to client ${client.id}:`, error);
+      console.error(
+        `❌ Error sending heartbeat to client ${client.id}:`,
+        error,
+      );
       sseClients.delete(client.id);
     }
   });
@@ -161,7 +181,9 @@ setInterval(() => {
   sseClients.forEach((client, clientId) => {
     if (now - client.connectedAt.getTime() > timeout) {
       try {
-        client.response.write(`data: ${JSON.stringify({ type: 'timeout' })}\n\n`);
+        client.response.write(
+          `data: ${JSON.stringify({ type: "timeout" })}\n\n`,
+        );
         client.response.end();
       } catch (error) {
         // Client already disconnected

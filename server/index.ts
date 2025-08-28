@@ -11,7 +11,7 @@ import {
   handleUpdateIncidentStatus,
   handleAcknowledgeIncident,
   handleGetIncidentStats,
-  handleGetRecentIncidents
+  handleGetRecentIncidents,
 } from "./routes/incidents";
 
 // Import notification routes
@@ -24,7 +24,7 @@ import {
   handleBroadcastNews,
   handleSendTargetedNotification,
   handleSSEConnection,
-  handleGetConnectedClients
+  handleGetConnectedClients,
 } from "./routes/notifications";
 
 export function createServer() {

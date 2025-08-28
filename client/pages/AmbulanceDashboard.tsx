@@ -1,9 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '@/components/DashboardLayout';
-import IncidentManagement from '@/components/IncidentManagement';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, MapPin, Heart } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/DashboardLayout";
+import IncidentManagement from "@/components/IncidentManagement";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Truck, MapPin, Heart } from "lucide-react";
 
 export default function AmbulanceDashboard() {
   const navigate = useNavigate();
@@ -15,7 +21,9 @@ export default function AmbulanceDashboard() {
             <Truck className="mr-3 h-8 w-8 text-emergency-resolved" />
             Ambulance Service Command
           </h2>
-          <p className="text-slate-600">Respond to medical emergencies and transport patients.</p>
+          <p className="text-slate-600">
+            Respond to medical emergencies and transport patients.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -28,7 +36,13 @@ export default function AmbulanceDashboard() {
               <CardDescription>View medical/injury incidents</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="success" onClick={() => navigate('/ambulance/incidents')}>View Incidents</Button>
+              <Button
+                className="w-full"
+                variant="success"
+                onClick={() => navigate("/ambulance/incidents")}
+              >
+                View Incidents
+              </Button>
             </CardContent>
           </Card>
 
@@ -41,7 +55,13 @@ export default function AmbulanceDashboard() {
               <CardDescription>Navigate to patient locations</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="info" onClick={() => navigate('/ambulance/incidents')}>Open Map</Button>
+              <Button
+                className="w-full"
+                variant="info"
+                onClick={() => navigate("/ambulance/incidents")}
+              >
+                Open Map
+              </Button>
             </CardContent>
           </Card>
 
@@ -51,10 +71,14 @@ export default function AmbulanceDashboard() {
                 <Truck className="h-8 w-8 text-emergency-warning" />
               </div>
               <CardTitle>Update Status</CardTitle>
-              <CardDescription>Dispatched / Picked Up / At Hospital</CardDescription>
+              <CardDescription>
+                Dispatched / Picked Up / At Hospital
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="warning">Update Status</Button>
+              <Button className="w-full" variant="warning">
+                Update Status
+              </Button>
             </CardContent>
           </Card>
         </div>

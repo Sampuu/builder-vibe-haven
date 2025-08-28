@@ -1,6 +1,12 @@
 // Shared types between client and server for incident management
 
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
+export type UserRole =
+  | "user"
+  | "police"
+  | "fire"
+  | "ambulance"
+  | "hospital"
+  | "admin";
 
 export interface User {
   id: string;
@@ -11,9 +17,17 @@ export interface User {
 
 export interface Incident {
   id: string;
-  type: 'help_request' | 'disaster_report';
-  category: 'fire' | 'medical' | 'accident' | 'natural' | 'police' | 'supplies' | 'transport' | 'other';
-  urgency: 'low' | 'medium' | 'high' | 'critical';
+  type: "help_request" | "disaster_report";
+  category:
+    | "fire"
+    | "medical"
+    | "accident"
+    | "natural"
+    | "police"
+    | "supplies"
+    | "transport"
+    | "other";
+  urgency: "low" | "medium" | "high" | "critical";
   title: string;
   description: string;
   location: string;
@@ -25,8 +39,14 @@ export interface Incident {
     role: UserRole;
   };
   assignedDepartments: UserRole[];
-  status: 'submitted' | 'acknowledged' | 'assigned' | 'in_progress' | 'resolved' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status:
+    | "submitted"
+    | "acknowledged"
+    | "assigned"
+    | "in_progress"
+    | "resolved"
+    | "cancelled";
+  priority: "low" | "medium" | "high" | "critical";
   timestamps: {
     submitted: string; // ISO string
     acknowledged?: string;
@@ -47,20 +67,20 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'emergency' | 'warning' | 'info' | 'success';
+  type: "emergency" | "warning" | "info" | "success";
   timestamp: string; // ISO string
   read: boolean;
-  priority: 'high' | 'medium' | 'low';
-  category: 'incident' | 'system' | 'update' | 'alert' | 'news';
+  priority: "high" | "medium" | "low";
+  category: "incident" | "system" | "update" | "alert" | "news";
   targetRoles?: UserRole[];
   relatedIncidentId?: string;
 }
 
 // API Request/Response types
 export interface CreateIncidentRequest {
-  type: 'help_request' | 'disaster_report';
-  category: Incident['category'];
-  urgency: Incident['urgency'];
+  type: "help_request" | "disaster_report";
+  category: Incident["category"];
+  urgency: Incident["urgency"];
   title: string;
   description: string;
   location: string;
@@ -71,7 +91,7 @@ export interface CreateIncidentRequest {
     phone: string;
     role: UserRole;
   };
-  metadata?: Incident['metadata'];
+  metadata?: Incident["metadata"];
 }
 
 export interface CreateIncidentResponse {
@@ -88,7 +108,7 @@ export interface GetIncidentsResponse {
 
 export interface UpdateIncidentStatusRequest {
   incidentId: string;
-  status: Incident['status'];
+  status: Incident["status"];
   updatedBy: {
     userId: string;
     role: UserRole;
@@ -124,8 +144,8 @@ export interface GetNotificationsResponse {
 export interface BroadcastNewsRequest {
   title: string;
   message: string;
-  type: 'emergency' | 'warning' | 'info' | 'success';
-  priority: 'high' | 'medium' | 'low';
+  type: "emergency" | "warning" | "info" | "success";
+  priority: "high" | "medium" | "low";
   broadcastBy: {
     userId: string;
     role: UserRole;
@@ -140,12 +160,12 @@ export interface BroadcastNewsResponse {
 
 // SSE Event types
 export interface SSENotificationEvent {
-  type: 'notification';
+  type: "notification";
   data: Notification;
 }
 
 export interface SSEIncidentUpdateEvent {
-  type: 'incident_update';
+  type: "incident_update";
   data: Incident;
 }
 
