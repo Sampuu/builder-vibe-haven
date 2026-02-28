@@ -1,9 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Shield, Users, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { getRoleDashboardPath } from "@/lib/navigation-utils";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Redirect authenticated users to their dashboard
+      const dashboardPath = getRoleDashboardPath(user.role);
+      navigate(dashboardPath);
+    }
+  }, [user, isLoading, navigate]);
+
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emergency-danger mx-auto"></div>
+          <p className="mt-4 text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSignUp = () => {
     navigate("/signup");
@@ -27,31 +51,34 @@ export default function Index() {
               </div>
             </div>
           </div>
-          
+
           <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            Disaster Management &amp; 
-            <span className="block text-emergency-danger">Emergency Response System</span>
+            Disaster Management &amp;
+            <span className="block text-emergency-danger">
+              Emergency Response System
+            </span>
           </h1>
-          
+
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            A comprehensive platform connecting emergency responders, healthcare facilities, 
-            and citizens for rapid disaster response and coordinated emergency management.
+            A comprehensive platform connecting emergency responders, healthcare
+            facilities, and citizens for rapid disaster response and coordinated
+            emergency management.
           </p>
-          
+
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              size="lg" 
-              variant="danger" 
+            <Button
+              size="lg"
+              variant="danger"
               onClick={handleSignUp}
               className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Users className="mr-2 h-5 w-5" />
               Sign Up
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               onClick={handleLogin}
               className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2"
             >
@@ -60,34 +87,48 @@ export default function Index() {
             </Button>
           </div>
         </div>
-        
+
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
             <div className="bg-emergency-danger/10 p-3 rounded-lg w-fit mb-4">
               <AlertTriangle className="h-6 w-6 text-emergency-danger" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">Emergency Reporting</h3>
-            <p className="text-slate-600">Quick incident reporting and real-time updates for all emergency situations.</p>
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              Emergency Reporting
+            </h3>
+            <p className="text-slate-600">
+              Quick incident reporting and real-time updates for all emergency
+              situations.
+            </p>
           </div>
-          
+
           <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
             <div className="bg-emergency-info/10 p-3 rounded-lg w-fit mb-4">
               <Shield className="h-6 w-6 text-emergency-info" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">Coordinated Response</h3>
-            <p className="text-slate-600">Multi-agency coordination between police, fire, medical, and administrative teams.</p>
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              Coordinated Response
+            </h3>
+            <p className="text-slate-600">
+              Multi-agency coordination between police, fire, medical, and
+              administrative teams.
+            </p>
           </div>
-          
+
           <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
             <div className="bg-emergency-resolved/10 p-3 rounded-lg w-fit mb-4">
               <MapPin className="h-6 w-6 text-emergency-resolved" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">Real-time Tracking</h3>
-            <p className="text-slate-600">GPS-enabled incident tracking and resource deployment monitoring.</p>
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              Real-time Tracking
+            </h3>
+            <p className="text-slate-600">
+              GPS-enabled incident tracking and resource deployment monitoring.
+            </p>
           </div>
         </div>
-        
+
         {/* Status Indicators */}
         <div className="mt-16 flex justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200">

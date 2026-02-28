@@ -1,63 +1,122 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { useAuth, UserRole } from "@/hooks/use-auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getRoleDashboardPath } from "@/lib/navigation-utils";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<UserRole>("user");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login } = useAuth();
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+
+  const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
-    if (!email || !password || !role) {
-      setError('Please fill in all fields');
+    if (!email || !password) {
+      setError("Please fill in all fields");
       setIsSubmitting(false);
       return;
     }
 
-    const success = await login(email, password, role);
-    
+    const success = await login(email, password);
+
     if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${role}`);
+      // Wait a moment for user data to be loaded, then redirect
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     } else {
-      setError('Invalid credentials. Please try again.');
+      setError("Invalid credentials. Please check your email and password.");
     }
-    
+
     setIsSubmitting(false);
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setResetMessage("");
+
+    if (!resetEmail) {
+      setError("Please enter your email address");
+      return;
+    }
+
+    const success = await resetPassword(resetEmail);
+
+    if (success) {
+      setResetMessage("Password reset email sent! Check your inbox.");
+      setShowResetPassword(false);
+      setResetEmail("");
+    } else {
+      setError("Failed to send reset email. Please check your email address.");
+    }
+  };
+
   const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
+    {
+      value: "user",
+      label: "User",
+      description: "Report disasters & request help",
+    },
+    {
+      value: "police",
+      label: "Police",
+      description: "Monitor & coordinate response",
+    },
+    {
+      value: "fire",
+      label: "Fire Brigade",
+      description: "Handle fire emergencies",
+    },
+    {
+      value: "ambulance",
+      label: "Ambulance",
+      description: "Medical emergency response",
+    },
+    {
+      value: "hospital",
+      label: "Hospital",
+      description: "Medical supplies & dispatch",
+    },
+    { value: "admin", label: "Admin", description: "Full system access" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
           className="mb-6 p-2 hover:bg-white/60"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -71,7 +130,9 @@ export default function Login() {
                 <AlertTriangle className="h-8 w-8 text-emergency-danger" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Login to System</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Login to System
+            </CardTitle>
             <CardDescription className="text-slate-600">
               Access your emergency response dashboard
             </CardDescription>
@@ -83,25 +144,6 @@ export default function Login() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roleOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -127,31 +169,74 @@ export default function Login() {
                 />
               </div>
 
-              {(role === 'police' || role === 'admin') && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This role requires enhanced security authentication in production.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 variant="danger"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Logging in...' : 'Login'}
+                {isSubmitting ? "Logging in..." : "Login"}
               </Button>
             </form>
 
+            {!showResetPassword && (
+              <div className="mt-4 text-center">
+                <Button
+                  variant="link"
+                  onClick={() => setShowResetPassword(true)}
+                  className="p-0 h-auto text-sm text-slate-500 hover:text-slate-700"
+                >
+                  Forgot your password?
+                </Button>
+              </div>
+            )}
+
+            {showResetPassword && (
+              <div className="mt-4 p-4 border rounded-lg bg-slate-50">
+                <h3 className="text-sm font-medium mb-2">Reset Password</h3>
+                <form onSubmit={handlePasswordReset} className="space-y-3">
+                  <Input
+                    type="email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" className="flex-1">
+                      Send Reset Email
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowResetPassword(false);
+                        setResetEmail("");
+                        setError("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {resetMessage && (
+              <Alert className="mt-4">
+                <AlertDescription className="text-green-700">
+                  {resetMessage}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Don't have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/signup')}
+                Don't have an account?{" "}
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/signup")}
                   className="p-0 h-auto text-emergency-danger hover:text-emergency-danger/80"
                 >
                   Sign up here

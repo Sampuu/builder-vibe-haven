@@ -1,85 +1,109 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, ArrowLeft, UserPlus } from 'lucide-react';
-import { useAuth, UserRole } from '@/hooks/use-auth';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertTriangle, ArrowLeft, UserPlus } from "lucide-react";
+import { useAuth, UserRole } from "@/hooks/use-auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Signup() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'user' as UserRole,
-  });
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<UserRole>("user");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { login } = useAuth();
-  const navigate = useNavigate();
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
 
-    // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+    if (!email || !password || !confirmPassword || !displayName || !role) {
+      setError("Please fill in all fields");
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
       setIsSubmitting(false);
       return;
     }
 
-    // In a real app, this would create the account first, then login
-    const success = await login(formData.email, formData.password, formData.role);
-    
+    const success = await signUp(email, password, { displayName, role });
+
     if (success) {
-      // Redirect to appropriate dashboard based on role
-      navigate(`/dashboard/${formData.role}`);
+      // Redirect to home after successful signup
+      navigate("/");
     } else {
-      setError('Failed to create account. Please try again.');
+      setError("Failed to create account. Please try again.");
     }
-    
+
     setIsSubmitting(false);
   };
 
   const roleOptions = [
-    { value: 'user', label: 'User', description: 'Report disasters & request help' },
-    { value: 'police', label: 'Police', description: 'Monitor & coordinate response' },
-    { value: 'fire', label: 'Fire Brigade', description: 'Handle fire emergencies' },
-    { value: 'ambulance', label: 'Ambulance', description: 'Medical emergency response' },
-    { value: 'hospital', label: 'Hospital', description: 'Medical supplies & dispatch' },
-    { value: 'admin', label: 'Admin', description: 'Full system access' },
+    {
+      value: "user",
+      label: "User",
+      description: "Report disasters & request help",
+    },
+    {
+      value: "police",
+      label: "Police",
+      description: "Monitor & coordinate response",
+    },
+    {
+      value: "fire",
+      label: "Fire Brigade",
+      description: "Handle fire emergencies",
+    },
+    {
+      value: "ambulance",
+      label: "Ambulance",
+      description: "Medical emergency response",
+    },
+    {
+      value: "hospital",
+      label: "Hospital",
+      description: "Medical supplies & dispatch",
+    },
+    { value: "admin", label: "Admin", description: "Full system access" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/')}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
           className="mb-6 p-2 hover:bg-white/60"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -93,9 +117,11 @@ export default function Signup() {
                 <UserPlus className="h-8 w-8 text-emergency-info" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Create Account</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Create Account
+            </CardTitle>
             <CardDescription className="text-slate-600">
-              Join the emergency response network
+              Join the emergency response system
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,14 +131,14 @@ export default function Signup() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="displayName">Full Name</Label>
                 <Input
-                  id="name"
+                  id="displayName"
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Enter your full name"
                   required
                 />
@@ -123,8 +149,8 @@ export default function Signup() {
                 <Input
                   id="email"
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
                 />
@@ -132,7 +158,10 @@ export default function Signup() {
 
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                <Select
+                  value={role}
+                  onValueChange={(value) => setRole(value as UserRole)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
@@ -141,7 +170,9 @@ export default function Signup() {
                       <SelectItem key={option.value} value={option.value}>
                         <div>
                           <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-slate-500">{option.description}</div>
+                          <div className="text-xs text-slate-500">
+                            {option.description}
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -154,9 +185,9 @@ export default function Signup() {
                 <Input
                   id="password"
                   type="password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password (min. 6 characters)"
                   required
                 />
               </div>
@@ -166,41 +197,46 @@ export default function Signup() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
                   required
                 />
               </div>
 
-              {(formData.role === 'police' || formData.role === 'admin') && (
+              {(role === "police" ||
+                role === "admin" ||
+                role === "fire" ||
+                role === "ambulance" ||
+                role === "hospital") && (
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    This role requires additional verification and enhanced security in production.
+                    Emergency service roles require verification. Your account
+                    will be reviewed before activation.
                   </AlertDescription>
                 </Alert>
               )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                variant="info"
+              <Button
+                type="submit"
+                className="w-full"
+                variant="default"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                {isSubmitting ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Already have an account?{' '}
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate('/login')}
+                Already have an account?{" "}
+                <Button
+                  variant="link"
+                  onClick={() => navigate("/login")}
                   className="p-0 h-auto text-emergency-info hover:text-emergency-info/80"
                 >
-                  Login here
+                  Sign in here
                 </Button>
               </p>
             </div>
