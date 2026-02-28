@@ -1,27 +1,29 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type UserRole = 'user' | 'police' | 'fire' | 'ambulance' | 'hospital' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { firebaseAuth } from "@/lib/firebase-auth";
+import type { User, UserRole } from "@shared/types";
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
+  hasRole: (requiredRole: UserRole | UserRole[]) => boolean;
+  isAdmin: () => boolean;
+  isEmergencyResponder: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+// Named export for better HMR compatibility
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -30,63 +32,75 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on app load
-    const storedUser = localStorage.getItem('disaster-auth-user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('disaster-auth-user');
-      }
-    }
-    setIsLoading(false);
-  }, []);
+    let mounted = true;
 
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API call - in real app this would be a server request
-    try {
-      // Simple validation for demo purposes
-      if (email && password.length >= 6) {
-        const user: User = {
-          id: `${role}-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
-          role,
-        };
-        
-        setUser(user);
-        localStorage.setItem('disaster-auth-user', JSON.stringify(user));
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (mounted && isLoading) {
+        console.warn("Firebase auth initialization timeout");
         setIsLoading(false);
-        return true;
       }
-      setIsLoading(false);
-      return false;
+    }, 10000); // 10 second timeout
+
+    // Listen for authentication state changes
+    const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
+      if (mounted) {
+        clearTimeout(timeoutId);
+        setUser(user);
+        setIsLoading(false);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
+  }, [isLoading]);
+
+  const logout = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await firebaseAuth.logout();
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Logout error:", error);
+    } finally {
       setIsLoading(false);
-      return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('disaster-auth-user');
+  const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
+    return firebaseAuth.hasRole(user, requiredRole);
+  };
+
+  const isAdmin = (): boolean => {
+    return firebaseAuth.isAdmin(user);
+  };
+
+  const isEmergencyResponder = (): boolean => {
+    return firebaseAuth.isEmergencyResponder(user);
   };
 
   const value: AuthContextType = {
     user,
-    login,
     logout,
     isLoading,
+    hasRole,
+    isAdmin,
+    isEmergencyResponder,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// Export named functions for better HMR compatibility
+export { useAuth, AuthProvider };
+
+// Export types for components
+export type { User, UserRole };

@@ -1,11 +1,10 @@
-import "./global.css";
-
 import { Toaster } from "@/components/ui/toaster";
-import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import NotificationService from "@/lib/notification-service";
 
 // Auth
 import { AuthProvider } from "@/hooks/use-auth";
@@ -36,6 +35,7 @@ import ReportDisaster from "./pages/user/ReportDisaster";
 import RequestHelp from "./pages/user/RequestHelp";
 import ViewMap from "./pages/user/ViewMap";
 import News from "./pages/user/News";
+import Notifications from "./pages/Notifications";
 
 // Police Pages
 import AllIncidents from "./pages/police/AllIncidents";
@@ -52,192 +52,221 @@ import SupplyRequests from "./pages/hospital/SupplyRequests";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+function App() {
+  // Initialize notification service
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      try {
+        await NotificationService.initialize();
+        console.log('✅ Notification service initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize notification service:', error);
+      }
+    };
 
-            {/* Protected Dashboard Routes */}
-            <Route
-              path="/dashboard/user"
-              element={
-                <ProtectedRoute requiredRole="user">
-                  <UserDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/police"
-              element={
-                <ProtectedRoute requiredRole="police">
-                  <PoliceDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/fire"
-              element={
-                <ProtectedRoute requiredRole="fire">
-                  <FireDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/ambulance"
-              element={
-                <ProtectedRoute requiredRole="ambulance">
-                  <AmbulanceDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/hospital"
-              element={
-                <ProtectedRoute requiredRole="hospital">
-                  <HospitalDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/admin"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
+    initializeNotifications();
 
-            {/* Admin Pages */}
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <ManageUsers />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/missions"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <MissionControl />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/logs"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AuditLogs />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/dashboards"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AllDashboards />
-                </ProtectedRoute>
-              }
-            />
+    // Cleanup on unmount
+    return () => {
+      NotificationService.cleanup();
+    };
+  }, []);
 
-            {/* User Pages */}
-            <Route
-              path="/user/report"
-              element={
-                <ProtectedRoute requiredRole="user">
-                  <ReportDisaster />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/user/help"
-              element={
-                <ProtectedRoute requiredRole="user">
-                  <RequestHelp />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/user/map"
-              element={
-                <ProtectedRoute requiredRole="user">
-                  <ViewMap />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/user/news"
-              element={
-                <ProtectedRoute requiredRole="user">
-                  <News />
-                </ProtectedRoute>
-              }
-            />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
 
-            {/* Police Pages */}
-            <Route
-              path="/police/incidents"
-              element={
-                <ProtectedRoute requiredRole="police">
-                  <AllIncidents />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/police/map"
-              element={
-                <ProtectedRoute requiredRole="police">
-                  <CommandMap />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Dashboard Routes */}
+              <Route
+                path="/dashboard/user"
+                element={
+                  <ProtectedRoute requiredRole="user">
+                    <UserDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/police"
+                element={
+                  <ProtectedRoute requiredRole="police">
+                    <PoliceDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/fire"
+                element={
+                  <ProtectedRoute requiredRole="fire">
+                    <FireDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/ambulance"
+                element={
+                  <ProtectedRoute requiredRole="ambulance">
+                    <AmbulanceDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/hospital"
+                element={
+                  <ProtectedRoute requiredRole="hospital">
+                    <HospitalDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/admin"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Fire Pages */}
-            <Route
-              path="/fire/incidents"
-              element={
-                <ProtectedRoute requiredRole="fire">
-                  <FireIncidents />
-                </ProtectedRoute>
-              }
-            />
+              {/* Admin Pages */}
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <ManageUsers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/missions"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <MissionControl />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/logs"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AuditLogs />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboards"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AllDashboards />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Ambulance Pages */}
-            <Route
-              path="/ambulance/incidents"
-              element={
-                <ProtectedRoute requiredRole="ambulance">
-                  <MedicalIncidents />
-                </ProtectedRoute>
-              }
-            />
+              {/* User Pages */}
+              <Route
+                path="/user/report"
+                element={
+                  <ProtectedRoute requiredRole="user">
+                    <ReportDisaster />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/help"
+                element={
+                  <ProtectedRoute requiredRole="user">
+                    <RequestHelp />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/map"
+                element={
+                  <ProtectedRoute requiredRole="user">
+                    <ViewMap />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/news"
+                element={
+                  <ProtectedRoute requiredRole="user">
+                    <News />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <Notifications />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Hospital Pages */}
-            <Route
-              path="/hospital/supplies"
-              element={
-                <ProtectedRoute requiredRole="hospital">
-                  <SupplyRequests />
-                </ProtectedRoute>
-              }
-            />
+              {/* Police Pages */}
+              <Route
+                path="/police/incidents"
+                element={
+                  <ProtectedRoute requiredRole="police">
+                    <AllIncidents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/police/map"
+                element={
+                  <ProtectedRoute requiredRole="police">
+                    <CommandMap />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+              {/* Fire Pages */}
+              <Route
+                path="/fire/incidents"
+                element={
+                  <ProtectedRoute requiredRole="fire">
+                    <FireIncidents />
+                  </ProtectedRoute>
+                }
+              />
 
-createRoot(document.getElementById("root")!).render(<App />);
+              {/* Ambulance Pages */}
+              <Route
+                path="/ambulance/incidents"
+                element={
+                  <ProtectedRoute requiredRole="ambulance">
+                    <MedicalIncidents />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Hospital Pages */}
+              <Route
+                path="/hospital/supplies"
+                element={
+                  <ProtectedRoute requiredRole="hospital">
+                    <SupplyRequests />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
